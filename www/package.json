@@ -10,10 +10,14 @@
   "scripts": {
     "develop": "gatsby develop",
     "start": "gatsby develop",
+    "watch": "npm-watch develop",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "typecheck": "tsc --noEmit"
+  },
+  "watch": {
+    "develop": "../pkg/*"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
@@ -31,6 +35,7 @@
     "gatsby-transformer-sharp": "^4.24.0",
     "react": "^18.1.0",
     "react-bootstrap": "^2.5.0",
+    "npm-watch": "^0.11.0",
     "react-dom": "^18.1.0",
     "sass": "^1.55.0",
     "wasm-gatsby-lib": "file:../pkg"

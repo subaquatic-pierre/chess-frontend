@@ -49,11 +49,11 @@ cargo watch -i .gitignore -i "pkg/*" -i "www/*" -s "wasm-pack build"
 - **note: I would suggest creating alias in .bashrc config for this command.
   currently `wasm-pack` does not support watch mode for Development**
 
-2. start gatsby development server
+2. start gatsby development server with `npm-watch`, to watch for changes to `pkg`
 
 ```sh
 cd www
-gatsby develop
+npm run watch
 ```
 
 ### Notes:

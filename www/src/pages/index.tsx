@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, HeadFC } from 'gatsby';
 
 import Layout from '../layout';
-import CarContainer from '../components/CarContainer';
 
-import { run } from 'wasm-gatsby-lib';
-import { PageProps } from 'gatsby';
 import { INavLink } from '../types/NavLink';
-import RustContainer from '../components/RustContainer';
+
+import BoardContainer from '../components/BoardContainer';
+import '../static/js/main.ts';
+import Controls from '../components/Controls';
+import useGameContext from '../hooks/useGameContext';
+import GameWrapper from '../components/GameWrapper';
 
 interface ISiteMeta {
   site: {
@@ -23,14 +25,12 @@ interface Props {
 }
 
 const IndexPage: React.FC = () => {
-  useEffect(() => {
-    run();
-  }, []);
-
   return (
     <Layout>
-      <CarContainer />
-      <RustContainer />
+      <GameWrapper>
+        <Controls />
+        <BoardContainer />
+      </GameWrapper>
     </Layout>
   );
 };

@@ -1,1 +1,1 @@
-# Rust Wasm with Gatsby
+# Chess Rust Frontend

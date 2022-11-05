@@ -1,24 +1,29 @@
 {
-  "name": "wasm-gatsby-www",
+  "name": "chess-rust",
   "version": "1.0.0",
   "private": true,
-  "description": "Generate WASM with Rust, develop frontend with Gatsby JS",
+  "description": "Chess game developed with Rust, WASM and Gatsby",
   "author": "subaquatic-pierre",
   "keywords": [
     "gatsby"
   ],
   "scripts": {
     "develop": "gatsby develop",
+    "watch": "npm-watch develop",
     "start": "gatsby develop",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
     "typecheck": "tsc --noEmit"
   },
+  "watch": {
+    "develop": "../pkg/*"
+  },
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "bootstrap": "^5.2.2",
+    "chess-lib": "file:../pkg",
     "gatsby": "^4.24.4",
     "gatsby-plugin-emotion": "^7.24.0",
     "gatsby-plugin-image": "^2.24.0",
@@ -29,13 +34,14 @@
     "gatsby-source-filesystem": "^4.24.0",
     "gatsby-transformer-remark": "^5.24.0",
     "gatsby-transformer-sharp": "^4.24.0",
+    "npm-watch": "^0.11.0",
     "react": "^18.1.0",
     "react-bootstrap": "^2.5.0",
     "react-dom": "^18.1.0",
-    "sass": "^1.55.0",
-    "wasm-gatsby-lib": "file:../pkg"
+    "sass": "^1.55.0"
   },
   "devDependencies": {
+    "@emotion/eslint-plugin": "^11.10.0",
     "@types/bootstrap": "^5.2.5",
     "@types/node": "^17.0.45",
     "@types/react": "^18.0.21",

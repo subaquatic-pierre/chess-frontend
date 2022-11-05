@@ -3,8 +3,8 @@ import { headerNavLinks } from './src/config/navLinks';
 
 const config: GatsbyConfig = {
   siteMetadata: {
-    title: `Wasm Gatsby Life`,
-    siteUrl: `https://www.wasm-gatsby-life.io`,
+    title: `Chess Rust`,
+    siteUrl: `https://www.chess-rust.io`,
     headerNavLinks: headerNavLinks
   },
   graphqlTypegen: true,

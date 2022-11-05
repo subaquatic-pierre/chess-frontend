@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { graphql, HeadFC } from 'gatsby';
+import { Container } from 'react-bootstrap';
 
 import Layout from '../layout';
-import CarContainer from '../components/CarContainer';
-
-import { run } from 'wasm-gatsby-lib';
 import { INavLink } from '../types/NavLink';
 
 interface ISiteMeta {
@@ -21,13 +19,9 @@ interface Props {
 }
 
 const ContactPageQuery: React.FC = () => {
-  useEffect(() => {
-    run();
-  }, []);
-
   return (
     <Layout>
-      <CarContainer />
+      <Container>Contact Page</Container>
     </Layout>
   );
 };

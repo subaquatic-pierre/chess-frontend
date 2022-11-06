@@ -72,60 +72,6 @@ impl PieceMoveStrategy for PawnMoveStrategy {
         self.color
     }
 
-    fn handle_move(
-        &self,
-        new_coord: &TileCoord,
-        is_take: bool,
-    ) -> Option<super::strategy::ValidMove> {
-        let diagonal_moves = PawnMoveStrategy::diagonal_moves(self.color(), self.coord());
-        let is_diagonal = diagonal_moves.contains(new_coord);
-
-        // TODO:
-        // remove last en_passant if not taken on next move
-        // check for possible set of en passant
-        let move_distance = self.move_distance(new_coord.to_owned());
-        if move_distance == 2 && !is_diagonal {
-            let last_en_passant_coord = new_coord;
-            unsafe {
-                self.board
-                    .as_mut()
-                    .unwrap()
-                    .set_last_en_passant(Some(last_en_passant_coord.to_owned()))
-            }
-        }
-
-        let mut is_valid_move = false;
-
-        // return valid move taking and diagonal
-        if is_diagonal && is_take {
-            is_valid_move = true;
-        }
-
-        if is_diagonal && !is_take {
-            is_valid_move = false
-        }
-
-        // return not valid move if not diagonal and taking
-        if !is_diagonal && is_take {
-            is_valid_move = false
-        }
-
-        // return not valid move if not diagonal and taking
-        if !is_diagonal && !is_take {
-            is_valid_move = true;
-        }
-
-        if is_valid_move {
-            Some(ValidMove {
-                is_take,
-                is_valid: true,
-                en_passant_clear_coord: None,
-            })
-        } else {
-            None
-        }
-    }
-
     fn moves(&self) -> Vec<TileCoord> {
         let mut valid_moves = PawnMoveStrategy::diagonal_moves(self.color(), self.coord());
 

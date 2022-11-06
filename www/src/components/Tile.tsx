@@ -32,10 +32,7 @@ const Tile: React.FC<Props> = ({ tile }) => {
 
   // handle active state toggle on click
   const handleTileClick = () => {
-    console.log('tile', tile.to_json());
-    if (active) {
-      setActive(false);
-    } else {
+    if (!active) {
       setActive(true);
     }
   };
@@ -65,8 +62,8 @@ const Tile: React.FC<Props> = ({ tile }) => {
         activeRef.current = true;
       } else {
         board.set_tile_state(tile.coord(), TileState.Inactive);
-
         board.clear_highlights();
+
         activeRef.current = false;
       }
 
@@ -85,9 +82,13 @@ const Tile: React.FC<Props> = ({ tile }) => {
       setActive(false);
     }
 
-    // re render tiles
     setTiles(board.tiles());
   }, [active]);
+
+  useEffect(() => {
+    // re render tiles
+    // console.log('tiles', tile.to_json());
+  }, [tile]);
 
   // register click listener to remove active state on
   // away from tile click

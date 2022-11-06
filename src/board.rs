@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
-use crate::pieces::strategy::{MoveStrategy, MoveValidator, PieceMoveStrategy, StrategyBuilder};
+use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
 use crate::tile::{Tile, TileColor, TileCoord, TileState};
 
@@ -103,9 +103,7 @@ impl Board {
     pub fn clear_active_tiles(&mut self) {
         // clear all tile selected states
         for tile in self.tiles.iter_mut() {
-            if tile.state() == TileState::Active {
-                tile.set_state(TileState::Inactive)
-            }
+            tile.set_state(TileState::Inactive)
         }
     }
 
@@ -130,7 +128,8 @@ impl Board {
                     let validator = MoveValidator::new(new_coord, self);
 
                     // validate move
-                    if validator.is_valid_move(piece_strategy.as_ref()) {
+                    if validator.is_valid_move(piece_strategy.as_ref()) && !validator.is_king_take()
+                    {
                         valid_moves.push(new_coord)
                     }
                 }
@@ -176,31 +175,52 @@ impl Board {
         // both None tile and None piece case is handled above
         let piece = tile.unwrap().piece().unwrap();
 
+        // if !piece.is_selected() {
+        //     return;
+        // }
+
         // create new piece strategy based on piece type
         let piece_strategy = self.new_piece_strategy(piece.clone(), old_coord);
 
-        // validate move
-        let mut move_strategy = MoveStrategy::new(new_coord, self);
+        // remove last en passant if not pawn move and last_en_passant is some
+        if self.last_en_passant().is_some() && piece_strategy.piece_type() != PieceType::Pawn {
+            self.set_last_en_passant(None);
+        }
 
-        let valid_move = move_strategy.validate_move(piece_strategy.as_ref());
+        // move validator
+        let move_validator = MoveValidator::new(new_coord, self);
+
+        // check if king take
+        let is_king_take = move_validator.is_king_take();
 
         // only continue if move is valid
-        if !valid_move.is_valid {
+        if !move_validator.is_valid_move(piece_strategy.as_ref()) {
             return;
         }
 
         // if en passant take clear en passant coord
-        if let Some(en_passant_coord) = valid_move.en_passant_clear_coord {
-            self.set_new_tile(en_passant_coord, None, None);
-            // clear last en passant
-            self.set_last_en_passant(None);
+        if move_validator.is_en_passant_take(&piece_strategy.moves(), piece_strategy.as_ref()) {
+            if let Some(last_en_passant_coord) = self.last_en_passant() {
+                self.set_new_tile(last_en_passant_coord, None, None);
+                // clear last en passant
+                self.set_last_en_passant(None);
+            }
         }
 
-        // clear old tile
-        self.set_new_tile(old_coord, None, None);
+        let mut move_handler = MoveHandler::new(new_coord, self);
+        // handle pawn move
+        if piece_strategy.piece_type() == PieceType::Pawn {
+            move_handler.handle_pawn_move(piece_strategy.as_ref());
+        }
 
-        // set new tile
-        self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
+        // only clear tiles if not king take, ie. cannot take king off board
+        if !is_king_take {
+            // clear old tile
+            self.clear_tile(old_coord.row(), old_coord.col());
+
+            // set new tile
+            self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
+        }
 
         // TODO:
         // write move to game

@@ -46,6 +46,13 @@ impl Piece {
         self.state.clone()
     }
 
+    pub fn is_selected(&self) -> bool {
+        if self.state == PieceState::Selected {
+            return true;
+        }
+        false
+    }
+
     pub fn piece_type(&self) -> PieceType {
         self.piece_type
     }

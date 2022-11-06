@@ -37,14 +37,6 @@ impl PieceMoveStrategy for BishopMoveStrategy {
         moves_vec
     }
 
-    fn handle_move(&self, _new_coord: &TileCoord, is_take: bool) -> Option<ValidMove> {
-        Some(ValidMove {
-            is_take,
-            is_valid: true,
-            en_passant_clear_coord: None,
-        })
-    }
-
     fn coord(&self) -> TileCoord {
         self.coord
     }

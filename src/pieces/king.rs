@@ -58,14 +58,6 @@ impl PieceMoveStrategy for KingMoveStrategy {
         moves_vec
     }
 
-    fn handle_move(&self, _new_coord: &TileCoord, is_take: bool) -> Option<ValidMove> {
-        Some(ValidMove {
-            is_valid: true,
-            is_take,
-            en_passant_clear_coord: None,
-        })
-    }
-
     fn coord(&self) -> TileCoord {
         self.coord
     }

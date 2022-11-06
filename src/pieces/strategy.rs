@@ -13,7 +13,7 @@ use crate::pieces::pawn::PawnMoveStrategy;
 use crate::pieces::queen::QueenMoveStrategy;
 use crate::pieces::rook::RookMoveStrategy;
 
-pub struct MoveStrategy<'a> {
+pub struct MoveHandler<'a> {
     new_coord: TileCoord,
     board: &'a mut Board,
 }
@@ -26,161 +26,28 @@ pub struct ValidMove {
     pub en_passant_clear_coord: Option<TileCoord>,
 }
 
-impl<'a> MoveStrategy<'a> {
+impl<'a> MoveHandler<'a> {
     pub fn new(new_coord: TileCoord, board: &'a mut Board) -> Self {
         Self { new_coord, board }
     }
 
-    pub fn validate_move(&mut self, piece_strategy: &dyn PieceMoveStrategy) -> ValidMove {
-        // get possible piece moves based on piece_strategy
-        let possible_moves = piece_strategy.moves();
-        // check if new_coord contains enemy piece
-        let is_take = self.is_take();
+    pub fn handle_pawn_move(&mut self, piece_strategy: &dyn PieceMoveStrategy) {
+        let diagonal_moves =
+            PawnMoveStrategy::diagonal_moves(piece_strategy.color(), piece_strategy.coord());
+        let is_diagonal = diagonal_moves.contains(&self.new_coord);
 
-        // cannot take king off board
-        if let Some(invalid_move) = self.check_king_take() {
-            return invalid_move;
+        // clear last en passant
+        if self.board.last_en_passant().is_some() {
+            self.board.set_last_en_passant(None);
         }
 
-        // check if trying to move to same square as current
-        if let Some(invalid_move) = self.check_same_coord(piece_strategy) {
-            return invalid_move;
+        // set last en passant
+        let move_distance = piece_strategy.move_distance(self.new_coord.to_owned());
+        if move_distance == 2 && !is_diagonal {
+            let last_en_passant_coord = self.new_coord;
+            self.board
+                .set_last_en_passant(Some(last_en_passant_coord.to_owned()))
         }
-
-        // check if own piece take
-        if let Some(invalid_move) = self.check_own_piece_take(piece_strategy) {
-            return invalid_move;
-        }
-
-        // check if can take en passant
-        if let Some(invalid_move) = self.check_en_passant_take(&possible_moves, piece_strategy) {
-            return invalid_move;
-        }
-
-        // check if piece between cur_coord and new_coord
-        if let Some(invalid_move) = self.check_blocking_piece(&possible_moves, piece_strategy) {
-            return invalid_move;
-        }
-
-        // TODO
-        // check king in check
-
-        // handle rest piece moves
-        if possible_moves.contains(&self.new_coord) {
-            if let Some(valid_move) = piece_strategy.handle_move(&self.new_coord, is_take) {
-                return valid_move;
-            }
-        }
-
-        ValidMove {
-            is_take,
-            is_valid: false,
-            en_passant_clear_coord: None,
-        }
-    }
-
-    /// check if piece at new coord
-    fn is_take(&self) -> bool {
-        self.board.get_piece(&self.new_coord).is_some()
-    }
-
-    /// check if trying to take king
-    /// cannot take king off the board
-    fn check_king_take(&self) -> Option<ValidMove> {
-        let new_piece_at_coord = self.board.peek_tile(&self.new_coord);
-        match new_piece_at_coord {
-            Some(piece) => {
-                if piece.piece_type() == PieceType::King {
-                    return Some(ValidMove {
-                        is_take: false,
-                        is_valid: false,
-                        en_passant_clear_coord: None,
-                    });
-                }
-            }
-            None => (),
-        }
-        None
-    }
-
-    /// check if own piece at new coord
-    /// cannot take own piece space
-    fn check_own_piece_take(&self, piece_strategy: &dyn PieceMoveStrategy) -> Option<ValidMove> {
-        let new_piece_at_coord = self.board.peek_tile(&self.new_coord);
-        match new_piece_at_coord {
-            Some(piece) => {
-                if piece.color() == piece_strategy.color() {
-                    return Some(ValidMove {
-                        is_take: false,
-                        is_valid: false,
-                        en_passant_clear_coord: None,
-                    });
-                }
-            }
-            None => (),
-        }
-        None
-    }
-
-    /// check if pawn can take with en passant move
-    fn check_en_passant_take(
-        &self,
-        possible_moves: &[TileCoord],
-        piece_strategy: &dyn PieceMoveStrategy,
-    ) -> Option<ValidMove> {
-        if possible_moves.contains(&self.new_coord)
-            && piece_strategy.piece_type() == PieceType::Pawn
-            && PawnMoveStrategy::is_en_passant_take(
-                piece_strategy.coord(),
-                piece_strategy.color(),
-                self.new_coord,
-                self.board.last_en_passant(),
-            )
-        {
-            return Some(ValidMove {
-                is_take: true,
-                is_valid: true,
-                en_passant_clear_coord: self.board.last_en_passant(),
-            });
-        }
-        None
-    }
-
-    /// check if piece between cur_coord and new_coord
-    /// return invalid move if piece exists
-    /// Exception is PieceType::Knight
-    fn check_blocking_piece(
-        &self,
-        possible_moves: &[TileCoord],
-        piece_strategy: &dyn PieceMoveStrategy,
-    ) -> Option<ValidMove> {
-        if possible_moves.contains(&self.new_coord)
-            && piece_strategy.piece_type() != PieceType::Knight
-        {
-            let tiles_between = piece_strategy.tiles_between(self.new_coord);
-
-            for tile_coord in tiles_between {
-                if self.board.peek_tile(&tile_coord).is_some() {
-                    return Some(ValidMove {
-                        is_take: false,
-                        is_valid: false,
-                        en_passant_clear_coord: None,
-                    });
-                }
-            }
-        }
-        None
-    }
-
-    fn check_same_coord(&self, piece_strategy: &dyn PieceMoveStrategy) -> Option<ValidMove> {
-        if piece_strategy.coord() == self.new_coord {
-            return Some(ValidMove {
-                is_take: self.is_take(),
-                is_valid: false,
-                en_passant_clear_coord: None,
-            });
-        }
-        None
     }
 }
 
@@ -240,7 +107,7 @@ impl<'a> MoveValidator<'a> {
 
     /// check if trying to take king
     /// cannot take king off the board
-    fn _is_king_take(&self) -> bool {
+    pub fn is_king_take(&self) -> bool {
         let new_piece_at_coord = self.board.peek_tile(&self.new_coord);
         match new_piece_at_coord {
             Some(piece) => {
@@ -291,12 +158,13 @@ impl<'a> MoveValidator<'a> {
     }
 
     /// check if pawn can take with en passant move
-    fn is_en_passant_take(
+    pub fn is_en_passant_take(
         &self,
         possible_moves: &[TileCoord],
         piece_strategy: &dyn PieceMoveStrategy,
     ) -> bool {
         if possible_moves.contains(&self.new_coord)
+            && piece_strategy.piece_type() == PieceType::Pawn
             && PawnMoveStrategy::is_en_passant_take(
                 piece_strategy.coord(),
                 piece_strategy.color(),
@@ -305,11 +173,6 @@ impl<'a> MoveValidator<'a> {
             )
         {
             return true;
-            // return Some(ValidMove {
-            //     is_take: true,
-            //     is_valid: true,
-            //     en_passant_clear_coord: self.board.last_en_passant(),
-            // });
         }
         false
     }
@@ -344,57 +207,6 @@ impl<'a> MoveValidator<'a> {
     }
 }
 
-pub struct StrategyBuilder {}
-impl StrategyBuilder {
-    pub fn new_piece_strategy(
-        piece_type: PieceType,
-        coord: TileCoord,
-        piece_color: PieceColor,
-        board: *mut Board,
-    ) -> Box<dyn PieceMoveStrategy> {
-        // TODO:
-        // check is king is in check
-        match piece_type {
-            PieceType::Pawn => Box::new(PawnMoveStrategy {
-                color: piece_color,
-                piece_type,
-                coord,
-                board,
-            }),
-            PieceType::Rook => Box::new(RookMoveStrategy {
-                color: piece_color,
-                piece_type,
-                coord,
-                board,
-            }),
-            PieceType::Bishop => Box::new(BishopMoveStrategy {
-                color: piece_color,
-                piece_type,
-                coord,
-                board,
-            }),
-            PieceType::Knight => Box::new(KnightMoveStrategy {
-                color: piece_color,
-                piece_type,
-                coord,
-                board,
-            }),
-            PieceType::King => Box::new(KingMoveStrategy {
-                color: piece_color,
-                piece_type,
-                coord,
-                board,
-            }),
-            PieceType::Queen => Box::new(QueenMoveStrategy {
-                color: piece_color,
-                piece_type,
-                coord,
-                board,
-            }),
-        }
-    }
-}
-
 pub trait PieceMoveStrategy {
     /// Returns all possible moves a piece can make
     /// Does not check if any pieces in the way
@@ -403,7 +215,6 @@ pub trait PieceMoveStrategy {
     fn color(&self) -> PieceColor;
     fn coord(&self) -> TileCoord;
     fn piece_type(&self) -> PieceType;
-    fn handle_move(&self, new_coord: &TileCoord, is_take: bool) -> Option<ValidMove>;
 
     /// returns all tiles between current tile coord
     /// and new tile coord
@@ -749,5 +560,56 @@ impl TilesBetween for StraightMoves {
         }
 
         coords
+    }
+}
+
+pub struct StrategyBuilder {}
+impl StrategyBuilder {
+    pub fn new_piece_strategy(
+        piece_type: PieceType,
+        coord: TileCoord,
+        piece_color: PieceColor,
+        board: *mut Board,
+    ) -> Box<dyn PieceMoveStrategy> {
+        // TODO:
+        // check is king is in check
+        match piece_type {
+            PieceType::Pawn => Box::new(PawnMoveStrategy {
+                color: piece_color,
+                piece_type,
+                coord,
+                board,
+            }),
+            PieceType::Rook => Box::new(RookMoveStrategy {
+                color: piece_color,
+                piece_type,
+                coord,
+                board,
+            }),
+            PieceType::Bishop => Box::new(BishopMoveStrategy {
+                color: piece_color,
+                piece_type,
+                coord,
+                board,
+            }),
+            PieceType::Knight => Box::new(KnightMoveStrategy {
+                color: piece_color,
+                piece_type,
+                coord,
+                board,
+            }),
+            PieceType::King => Box::new(KingMoveStrategy {
+                color: piece_color,
+                piece_type,
+                coord,
+                board,
+            }),
+            PieceType::Queen => Box::new(QueenMoveStrategy {
+                color: piece_color,
+                piece_type,
+                coord,
+                board,
+            }),
+        }
     }
 }

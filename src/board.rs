@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
-use crate::pieces::strategy::{MoveStrategy, PieceMoveStrategy};
+use crate::pieces::strategy::{MoveStrategy, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
 use crate::tile::{Tile, TileColor, TileCoord, TileState};
 
@@ -120,19 +120,23 @@ impl Board {
         if let Some(piece) = self.get_piece(&coord) {
             let mut valid_moves = vec![];
             // create new piece strategy based on piece type
-            let piece_strategy = self.get_piece_strategy(piece, coord);
-            // clear all highlighted tiles
-            for tile in &self.tiles.clone() {
-                // validate move
-                let mut move_strategy = MoveStrategy::new(tile.coord(), self);
+            let piece_strategy = self.new_piece_strategy(piece, coord);
 
-                let valid_move = move_strategy.validate_move(piece_strategy.as_ref());
+            for tile in piece_strategy.moves() {
+                if tile.in_bounds() {
+                    let new_coord = TileCoord::new(tile.row(), tile.col());
 
-                if valid_move.is_valid {
-                    valid_moves.push(tile.coord())
+                    // new validator
+                    let validator = MoveValidator::new(new_coord, self);
+
+                    // validate move
+                    if validator.is_valid_move(piece_strategy.as_ref()) {
+                        valid_moves.push(new_coord)
+                    }
                 }
             }
 
+            // update tile state to be highlighted
             for coord in valid_moves {
                 self.tiles[Board::tile_idx_from_coord(&coord)].set_state(TileState::Highlight)
             }
@@ -146,8 +150,8 @@ impl Board {
 
     // piece methods
 
-    fn get_piece_strategy(&mut self, piece: Piece, coord: TileCoord) -> Box<dyn PieceMoveStrategy> {
-        MoveStrategy::new_piece_strategy(piece.piece_type(), coord, piece.color(), &mut *self)
+    fn new_piece_strategy(&mut self, piece: Piece, coord: TileCoord) -> Box<dyn PieceMoveStrategy> {
+        StrategyBuilder::new_piece_strategy(piece.piece_type(), coord, piece.color(), &mut *self)
     }
 
     pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) {
@@ -173,12 +177,7 @@ impl Board {
         let piece = tile.unwrap().piece().unwrap();
 
         // create new piece strategy based on piece type
-        let piece_strategy = MoveStrategy::new_piece_strategy(
-            piece.piece_type(),
-            old_coord,
-            piece.color(),
-            &mut *self,
-        );
+        let piece_strategy = self.new_piece_strategy(piece.clone(), old_coord);
 
         // validate move
         let mut move_strategy = MoveStrategy::new(new_coord, self);

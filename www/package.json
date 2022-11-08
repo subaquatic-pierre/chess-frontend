@@ -11,6 +11,7 @@
     "develop": "gatsby develop",
     "watch": "npm-watch develop",
     "start": "gatsby develop",
+    "watch": "npm-watch develop",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
@@ -37,6 +38,7 @@
     "npm-watch": "^0.11.0",
     "react": "^18.1.0",
     "react-bootstrap": "^2.5.0",
+    "npm-watch": "^0.11.0",
     "react-dom": "^18.1.0",
     "sass": "^1.55.0"
   },

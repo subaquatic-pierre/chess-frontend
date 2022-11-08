@@ -1,14 +1,14 @@
 // use crate::console_log;
 use crate::board::Board;
 use crate::pieces::piece::{PieceColor, PieceType};
-use crate::pieces::strategy::{PieceMoveStrategy, TilesBetween, ValidMove};
+use crate::pieces::strategy::{PieceMoveStrategy, TilesBetween};
 use crate::tile::TileCoord;
 
 pub struct RookMoveStrategy {
     pub color: PieceColor,
     pub coord: TileCoord,
     pub piece_type: PieceType,
-    pub board: *mut Board,
+    pub board: *const Board,
 }
 
 impl PieceMoveStrategy for RookMoveStrategy {

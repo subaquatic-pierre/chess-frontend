@@ -1,10 +1,10 @@
 use std::collections::HashSet;
-use wasm_bindgen::prelude::*;
 
 use crate::board::Board;
+use crate::console_log;
 // use crate::console_log;
 use crate::pieces::piece::{PieceColor, PieceType};
-use crate::tile::TileCoord;
+use crate::tile::{Tile, TileCoord};
 
 use crate::pieces::bishop::BishopMoveStrategy;
 use crate::pieces::king::KingMoveStrategy;
@@ -16,14 +16,6 @@ use crate::pieces::rook::RookMoveStrategy;
 pub struct MoveHandler<'a> {
     new_coord: TileCoord,
     board: &'a mut Board,
-}
-
-#[wasm_bindgen]
-#[derive(Debug)]
-pub struct ValidMove {
-    pub is_take: bool,
-    pub is_valid: bool,
-    pub en_passant_clear_coord: Option<TileCoord>,
 }
 
 impl<'a> MoveHandler<'a> {
@@ -49,6 +41,50 @@ impl<'a> MoveHandler<'a> {
                 .set_last_en_passant(Some(last_en_passant_coord.to_owned()))
         }
     }
+
+    // ---
+    // static methods
+    // ---
+    pub fn enemy_piece_coord(
+        piece_strategy: &dyn PieceMoveStrategy,
+        board: &Board,
+    ) -> Vec<TileCoord> {
+        let mut enemy_piece_tile = vec![];
+        // loop over all pieces
+        for i in 0..board.num_tiles() {
+            let coord: TileCoord = i.into();
+
+            // ensure tile has piece
+            if let Some(piece) = board.peek_tile(&coord) {
+                // only get enemy piece coords
+                if piece.color() != piece_strategy.color() {
+                    enemy_piece_tile.push(coord);
+                }
+            }
+        }
+
+        enemy_piece_tile
+    }
+    pub fn own_piece_coords(
+        piece_strategy: &dyn PieceMoveStrategy,
+        board: &Board,
+    ) -> Vec<TileCoord> {
+        let mut own_pieces = vec![];
+        // loop over all pieces
+        for i in 0..board.num_tiles() {
+            let coord: TileCoord = i.into();
+
+            // ensure tile has piece
+            if let Some(piece) = board.peek_tile(&coord) {
+                // only get enemy piece coords
+                if piece.color() == piece_strategy.color() {
+                    own_pieces.push(coord);
+                }
+            }
+        }
+
+        own_pieces
+    }
 }
 
 pub struct MoveValidator<'a> {
@@ -61,7 +97,15 @@ impl<'a> MoveValidator<'a> {
         Self { new_coord, board }
     }
 
-    pub fn is_valid_move(&self, piece_strategy: &dyn PieceMoveStrategy) -> bool {
+    /// main method to validate move
+    /// ignore_check flag is used to move pieces ignoring if king is in check
+    /// this is helpful in moving pieces to determine if the move
+    /// would result in king being in check
+    pub fn is_valid_move(
+        &self,
+        piece_strategy: &dyn PieceMoveStrategy,
+        ignore_check: bool,
+    ) -> bool {
         // get possible piece moves based on piece_strategy
         let possible_moves = piece_strategy.moves();
 
@@ -86,22 +130,34 @@ impl<'a> MoveValidator<'a> {
             return false;
         }
 
-        // TODO
-        // check if currently in check and possible move out of check
-
-        // TODO
-        // check possible move into check
-
         // handle rest piece moves
         if !possible_moves.contains(&self.new_coord) {
             return false;
+        }
+
+        if !ignore_check {
+            // cant move into check
+            if MoveValidator::is_possible_check(piece_strategy, self.board, self.new_coord) {
+                return false;
+            }
+
+            // check if currently in check and possible move out of check
+            if MoveValidator::is_check(piece_strategy, self.board)
+                && !MoveValidator::is_possible_check(piece_strategy, self.board, self.new_coord)
+            {
+                return true;
+            }
+
+            if MoveValidator::is_check(piece_strategy, self.board) {
+                return false;
+            }
         }
 
         true
     }
 
     /// check if piece at new coord
-    fn is_take(&self) -> bool {
+    pub fn is_take(&self) -> bool {
         self.board.get_piece(&self.new_coord).is_some()
     }
 
@@ -204,6 +260,118 @@ impl<'a> MoveValidator<'a> {
             return true;
         }
         false
+    }
+
+    // ---
+    // static methods
+    // ---
+
+    /// main method to validate whether king is in check
+    pub fn is_check(piece_strategy: &dyn PieceMoveStrategy, board: &Board) -> bool {
+        let enemy_piece_tile = MoveHandler::enemy_piece_coord(piece_strategy, board);
+
+        for coord in enemy_piece_tile {
+            // SAFETY:
+            // tile has piece, confirmed in above loop
+            let piece = board.peek_tile(&coord).unwrap();
+
+            // build enemy piece strategy
+            let enemy_piece_strategy = StrategyBuilder::new_piece_strategy(
+                piece.piece_type(),
+                coord,
+                piece.color(),
+                board,
+            );
+
+            for new_coord in enemy_piece_strategy.moves() {
+                if new_coord.in_bounds() {
+                    let move_validator = MoveValidator::new(new_coord, board);
+
+                    // check if any valid move can take king
+                    if move_validator.is_valid_move(enemy_piece_strategy.as_ref(), true)
+                        && move_validator.is_king_take()
+                    {
+                        // return true if can take king
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // no king check
+        false
+    }
+
+    /// possibility of check, method used to determine if moving into check
+    /// or possible move out of check
+    pub fn is_possible_check(
+        piece_strategy: &dyn PieceMoveStrategy,
+        board: &Board,
+        new_coord: TileCoord,
+    ) -> bool {
+        // copy board
+        let mut board_copy = board.clone();
+
+        // create new validator based on current board
+        let validator = MoveValidator::new(new_coord, &board_copy);
+
+        // ensure move is valid, ignoring king check
+        if validator.is_valid_move(piece_strategy, true) {
+            let (old_row, old_col) = piece_strategy.row_col();
+            let (new_row, new_col) = (new_coord.row(), new_coord.col());
+
+            // move piece ignoring check
+            board_copy.move_piece_ignore_check(old_row, old_col, new_row, new_col);
+
+            // check if king in check
+            if MoveValidator::is_check(piece_strategy, &board_copy) {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// possibility of checkmate
+    pub fn is_checkmate(piece_strategy: &dyn PieceMoveStrategy, board: &Board) -> bool {
+        let own_pieces = MoveHandler::own_piece_coords(piece_strategy, board);
+        // create new validator based on current board
+
+        console_log!("own_pieces:{:?}", own_pieces);
+
+        for coord in own_pieces {
+            // SAFETY:
+            // tile has piece, confirmed in above loop
+            let piece = board.peek_tile(&coord).unwrap();
+
+            // build enemy piece strategy
+            let own_piece_strategy = StrategyBuilder::new_piece_strategy(
+                piece.piece_type(),
+                coord,
+                piece.color(),
+                board,
+            );
+
+            for new_coord in own_piece_strategy.moves() {
+                if new_coord.in_bounds() {
+                    let move_validator = MoveValidator::new(new_coord, board);
+
+                    // check if any valid move and can move out of check
+                    if move_validator.is_valid_move(own_piece_strategy.as_ref(), true)
+                        && !MoveValidator::is_possible_check(
+                            own_piece_strategy.as_ref(),
+                            board,
+                            new_coord,
+                        )
+                    {
+                        // return false, ie. not checkmate
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // if not possible moves, then is checkmate
+        true
     }
 }
 
@@ -569,7 +737,7 @@ impl StrategyBuilder {
         piece_type: PieceType,
         coord: TileCoord,
         piece_color: PieceColor,
-        board: *mut Board,
+        board: *const Board,
     ) -> Box<dyn PieceMoveStrategy> {
         // TODO:
         // check is king is in check

@@ -2,6 +2,7 @@ use js_sys::Array;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+use crate::console_log;
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
@@ -44,7 +45,7 @@ impl Board {
 
     /// Returns JS array cloned copy of current tiles
     /// Used to render tiles from current board state
-    pub fn tiles(&mut self) -> Array {
+    pub fn tiles(&self) -> Array {
         self.tiles.clone().into_iter().map(JsValue::from).collect()
     }
 
@@ -118,7 +119,7 @@ impl Board {
         if let Some(piece) = self.get_piece(&coord) {
             let mut valid_moves = vec![];
             // create new piece strategy based on piece type
-            let piece_strategy = self.new_piece_strategy(piece, coord);
+            let piece_strategy = self.new_piece_strategy(piece);
 
             for tile in piece_strategy.moves() {
                 if tile.in_bounds() {
@@ -128,7 +129,8 @@ impl Board {
                     let validator = MoveValidator::new(new_coord, self);
 
                     // validate move
-                    if validator.is_valid_move(piece_strategy.as_ref()) && !validator.is_king_take()
+                    if validator.is_valid_move(piece_strategy.as_ref(), false)
+                        && !validator.is_king_take()
                     {
                         valid_moves.push(new_coord)
                     }
@@ -149,11 +151,49 @@ impl Board {
 
     // piece methods
 
-    fn new_piece_strategy(&mut self, piece: Piece, coord: TileCoord) -> Box<dyn PieceMoveStrategy> {
-        StrategyBuilder::new_piece_strategy(piece.piece_type(), coord, piece.color(), &mut *self)
+    fn new_piece_strategy(&self, piece: Piece) -> Box<dyn PieceMoveStrategy> {
+        StrategyBuilder::new_piece_strategy(
+            piece.piece_type(),
+            piece.coord(),
+            piece.color(),
+            &*self,
+        )
     }
 
+    /// main public method used to move pieces
     pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) {
+        // do not ignore check on main method to move pieces
+        self.handle_move_piece(old_row, old_col, new_row, new_col, false);
+
+        // TODO:
+        // write move to game
+        // ...
+
+        // TODO:
+        // update players pieces
+        // ...
+    }
+
+    /// method used to move piece ignoring if king is in check
+    /// used to check if possible to move in/out of check
+    pub fn move_piece_ignore_check(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) {
+        // ignore check flag active
+        // method used to check if king is in check
+        self.handle_move_piece(old_row, old_col, new_row, new_col, true);
+    }
+
+    /// used as base move command to move pieces
+    /// ignore check flag is used to perform all move operations
+    /// ignoring if king is in check
+    /// ignore flag is useful in validating moving into/out of check
+    fn handle_move_piece(
+        &mut self,
+        old_row: u8,
+        old_col: u8,
+        new_row: u8,
+        new_col: u8,
+        ignore_check: bool,
+    ) {
         let old_coord: TileCoord = TileCoord::new(old_row, old_col);
         let new_coord: TileCoord = TileCoord::new(new_row, new_col);
         // get old tile
@@ -180,7 +220,7 @@ impl Board {
         // }
 
         // create new piece strategy based on piece type
-        let piece_strategy = self.new_piece_strategy(piece.clone(), old_coord);
+        let piece_strategy = self.new_piece_strategy(piece.clone());
 
         // remove last en passant if not pawn move and last_en_passant is some
         if self.last_en_passant().is_some() && piece_strategy.piece_type() != PieceType::Pawn {
@@ -194,7 +234,7 @@ impl Board {
         let is_king_take = move_validator.is_king_take();
 
         // only continue if move is valid
-        if !move_validator.is_valid_move(piece_strategy.as_ref()) {
+        if !move_validator.is_valid_move(piece_strategy.as_ref(), ignore_check) {
             return;
         }
 
@@ -221,14 +261,6 @@ impl Board {
             // set new tile
             self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
         }
-
-        // TODO:
-        // write move to game
-        // ...
-
-        // TODO:
-        // update players pieces
-        // ...
     }
 
     pub fn get_js_piece(&mut self, coord: &TileCoord) -> JsValue {
@@ -276,6 +308,29 @@ impl Board {
         self.last_en_passant
     }
 
+    pub fn tile_at_index(&self, index: usize) -> Tile {
+        self.tiles[index].clone()
+    }
+
+    pub fn num_tiles(&self) -> usize {
+        self.tiles.len()
+    }
+
+    pub fn is_checkmate(&self, piece_color: PieceColor) -> Option<PieceColor> {
+        // SAFETY:
+        // there is always a king on the board
+        let king_coord = self.get_king_coord(piece_color).unwrap();
+
+        let king = self.get_piece(&king_coord).unwrap();
+
+        let piece_strategy = self.new_piece_strategy(king);
+        if MoveValidator::is_checkmate(piece_strategy.as_ref(), self) {
+            return Some(piece_color);
+        }
+
+        None
+    }
+
     // ---
     // static methods
     // ---
@@ -309,6 +364,17 @@ impl Board {
         } else {
             None
         }
+    }
+
+    fn get_king_coord(&self, piece_color: PieceColor) -> Option<TileCoord> {
+        for tile in &self.tiles {
+            if let Some(piece) = tile.piece() {
+                if piece.color() == piece_color && piece.piece_type() == PieceType::King {
+                    return Some(tile.coord());
+                }
+            }
+        }
+        None
     }
 }
 

@@ -63,6 +63,19 @@ const Board = () => {
     }
   }, [newPieceCoord, selectedPieceCoord]);
 
+  useEffect(() => {
+    const white_mate = board.is_checkmate(PieceColor.White);
+    const black_mate = board.is_checkmate(PieceColor.Black);
+
+    if (white_mate) {
+      alert(`Black Wins!, white is in checkmate`);
+    }
+
+    if (black_mate) {
+      alert(`White Wins!, black is in checkmate`);
+    }
+  }, [tiles]);
+
   return (
     <div
       css={(theme) => ({

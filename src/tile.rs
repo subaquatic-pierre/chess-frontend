@@ -99,6 +99,10 @@ impl Tile {
         serde_wasm_bindgen::to_value(&self).unwrap()
     }
 
+    pub fn from_json(json: JsValue) -> Tile {
+        serde_wasm_bindgen::from_value(json).unwrap()
+    }
+
     // ---
     // Private methods
     // ---
@@ -322,8 +326,36 @@ impl TileCoord {
     }
 }
 
+impl From<usize> for TileCoord {
+    fn from(index: usize) -> Self {
+        let col = index as u8 % 8;
+        let row = index as u8 / 8 as u8;
+        TileCoord { row, col }
+    }
+}
+
 impl Display for TileCoord {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{},{}", self.col, self.row)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::tile::TileCoord;
+
+    #[test]
+    pub fn test_tile_coord_from_u8() {
+        let coord: TileCoord = 19.into();
+        assert_eq!((2, 3), (coord.row(), coord.col()));
+
+        let coord: TileCoord = 37.into();
+        assert_eq!((4, 5), (coord.row(), coord.col()));
+
+        let coord: TileCoord = 63.into();
+        assert_eq!((7, 7), (coord.row(), coord.col()));
+
+        let coord: TileCoord = 0.into();
+        assert_eq!((0, 0), (coord.row(), coord.col()));
     }
 }

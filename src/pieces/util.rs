@@ -1,6 +1,6 @@
-use crate::board::{Board, BoardDirection};
+// use crate::board::{Board, BoardDirection};
 use crate::pieces::piece::{Piece, PieceColor, PieceType};
-use crate::tile::{Tile, TileCoord};
+use crate::tile::TileCoord;
 
 pub fn get_piece_default(row: u8, col: u8) -> Option<Piece> {
     let coord = TileCoord::new(row, col);

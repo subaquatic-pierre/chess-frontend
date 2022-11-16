@@ -64,14 +64,11 @@ const Board = () => {
   }, [newPieceCoord, selectedPieceCoord]);
 
   useEffect(() => {
-    const white_mate = board.is_checkmate(PieceColor.White);
-    const black_mate = board.is_checkmate(PieceColor.Black);
+    const check_mate = board.is_checkmate();
 
-    if (white_mate) {
+    if (check_mate === PieceColor.White) {
       alert(`Black Wins!, white is in checkmate`);
-    }
-
-    if (black_mate) {
+    } else if (check_mate === PieceColor.Black) {
       alert(`White Wins!, black is in checkmate`);
     }
   }, [tiles]);

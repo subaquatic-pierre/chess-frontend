@@ -163,6 +163,9 @@ impl Board {
         // do not ignore check on main method to move pieces
         self.handle_move_piece(old_row, old_col, new_row, new_col, false);
 
+        // update king castle state after move is completed
+        self.king_castle_state.update_state(&*self);
+
         // TODO:
         // write move to game
         // ...
@@ -255,10 +258,6 @@ impl Board {
             // set new tile
             self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
         }
-
-        // update king castle state after move is completed
-        self.king_castle_state
-            .update_state(&*self, piece_strategy.color());
     }
 
     pub fn get_js_piece(&mut self, coord: &TileCoord) -> JsValue {

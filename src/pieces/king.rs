@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::board::Board;
+use crate::console_log;
 use crate::pieces::piece::{PieceColor, PieceType};
 use crate::pieces::rook::RookFile;
 use crate::pieces::strategy::PieceMoveStrategy;
@@ -94,15 +95,24 @@ impl KingCastleBoardState {
         }
     }
 
-    pub fn update_state(&mut self, board: *const Board, piece_color: PieceColor) {}
+    pub fn update_state(&mut self, board: *const Board) {
+        unsafe {
+            self.handle_white_king_state(board.as_ref().unwrap());
+            self.handle_black_king_state(board.as_ref().unwrap());
+        }
+    }
 
     // ---
     // private methods
     // ---
 
-    fn handle_white_king_state(&self) {}
+    fn handle_white_king_state(&self, board: &Board) {
+        console_log!("This is where we check white king and rook move status, then update the KingCastleBoardState");
+    }
 
-    fn handle_black_king_state(&self) {}
+    fn handle_black_king_state(&self, board: &Board) {
+        console_log!("This is where we check black king and rook move status, then update the KingCastleBoardState");
+    }
 
     fn is_king_moved(&self, piece_color: PieceColor) -> bool {
         true

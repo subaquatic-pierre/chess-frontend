@@ -4,6 +4,11 @@ use crate::pieces::piece::{PieceColor, PieceType};
 use crate::pieces::strategy::{PieceMoveStrategy, TilesBetween};
 use crate::tile::TileCoord;
 
+pub enum RookFile {
+    AFile,
+    HFile,
+}
+
 pub struct RookMoveStrategy {
     pub color: PieceColor,
     pub coord: TileCoord,

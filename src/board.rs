@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::console_log;
+use crate::pieces::king::KingCastleBoardState;
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
@@ -15,6 +16,7 @@ pub struct Board {
     tiles: Vec<Tile>,
     board_direction: BoardDirection,
     last_en_passant: Option<TileCoord>,
+    king_castle_state: KingCastleBoardState,
 }
 
 #[wasm_bindgen]
@@ -26,6 +28,7 @@ impl Board {
             tiles: vec![],
             board_direction: BoardDirection::White,
             last_en_passant: None,
+            king_castle_state: KingCastleBoardState::default(),
         };
 
         let mut idx: u8 = 0;
@@ -152,18 +155,16 @@ impl Board {
     // piece methods
 
     fn new_piece_strategy(&self, piece: Piece) -> Box<dyn PieceMoveStrategy> {
-        StrategyBuilder::new_piece_strategy(
-            piece.piece_type(),
-            piece.coord(),
-            piece.color(),
-            &*self,
-        )
+        StrategyBuilder::new_piece_strategy(piece.piece_type(), piece.coord(), piece.color(), self)
     }
 
     /// main public method used to move pieces
     pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) {
         // do not ignore check on main method to move pieces
         self.handle_move_piece(old_row, old_col, new_row, new_col, false);
+
+        // update king castle state after move is completed
+        self.king_castle_state.update_state(&*self);
 
         // TODO:
         // write move to game
@@ -214,10 +215,6 @@ impl Board {
         // can safely unwrap piece
         // both None tile and None piece case is handled above
         let piece = tile.unwrap().piece().unwrap();
-
-        // if !piece.is_selected() {
-        //     return;
-        // }
 
         // create new piece strategy based on piece type
         let piece_strategy = self.new_piece_strategy(piece.clone());
@@ -316,16 +313,28 @@ impl Board {
         self.tiles.len()
     }
 
-    pub fn is_checkmate(&self, piece_color: PieceColor) -> Option<PieceColor> {
+    pub fn is_checkmate(&self) -> Option<PieceColor> {
         // SAFETY:
         // there is always a king on the board
-        let king_coord = self.get_king_coord(piece_color).unwrap();
+
+        // check if white is in checkmate
+        let king_coord = self.get_king_coord(PieceColor::White).unwrap();
 
         let king = self.get_piece(&king_coord).unwrap();
 
         let piece_strategy = self.new_piece_strategy(king);
         if MoveValidator::is_checkmate(piece_strategy.as_ref(), self) {
-            return Some(piece_color);
+            return Some(PieceColor::White);
+        }
+
+        // check if black is in checkmate
+        let king_coord = self.get_king_coord(PieceColor::Black).unwrap();
+
+        let king = self.get_piece(&king_coord).unwrap();
+
+        let piece_strategy = self.new_piece_strategy(king);
+        if MoveValidator::is_checkmate(piece_strategy.as_ref(), self) {
+            return Some(PieceColor::Black);
         }
 
         None

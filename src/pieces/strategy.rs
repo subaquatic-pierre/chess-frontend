@@ -1,10 +1,9 @@
 use std::collections::HashSet;
 
 use crate::board::Board;
-use crate::console_log;
 // use crate::console_log;
 use crate::pieces::piece::{PieceColor, PieceType};
-use crate::tile::{Tile, TileCoord};
+use crate::tile::TileCoord;
 
 use crate::pieces::bishop::BishopMoveStrategy;
 use crate::pieces::king::KingMoveStrategy;
@@ -45,7 +44,10 @@ impl<'a> MoveHandler<'a> {
     // ---
     // static methods
     // ---
-    pub fn enemy_piece_coord(
+
+    /// get coords all all enemy pieces
+    /// of current strategy color
+    pub fn enemy_piece_coords(
         piece_strategy: &dyn PieceMoveStrategy,
         board: &Board,
     ) -> Vec<TileCoord> {
@@ -65,6 +67,9 @@ impl<'a> MoveHandler<'a> {
 
         enemy_piece_tile
     }
+
+    /// get the coords of all pieces
+    /// of current strategy color
     pub fn own_piece_coords(
         piece_strategy: &dyn PieceMoveStrategy,
         board: &Board,
@@ -165,13 +170,10 @@ impl<'a> MoveValidator<'a> {
     /// cannot take king off the board
     pub fn is_king_take(&self) -> bool {
         let new_piece_at_coord = self.board.peek_tile(&self.new_coord);
-        match new_piece_at_coord {
-            Some(piece) => {
-                if piece.piece_type() == PieceType::King {
-                    return true;
-                }
+        if let Some(piece) = new_piece_at_coord {
+            if piece.piece_type() == PieceType::King {
+                return true;
             }
-            None => (),
         }
         false
     }
@@ -202,13 +204,10 @@ impl<'a> MoveValidator<'a> {
     /// cannot take own piece space
     fn is_own_piece_take(&self, piece_strategy: &dyn PieceMoveStrategy) -> bool {
         let new_piece_at_coord = self.board.peek_tile(&self.new_coord);
-        match new_piece_at_coord {
-            Some(piece) => {
-                if piece.color() == piece_strategy.color() {
-                    return true;
-                }
+        if let Some(piece) = new_piece_at_coord {
+            if piece.color() == piece_strategy.color() {
+                return true;
             }
-            None => (),
         }
         false
     }
@@ -268,7 +267,7 @@ impl<'a> MoveValidator<'a> {
 
     /// main method to validate whether king is in check
     pub fn is_check(piece_strategy: &dyn PieceMoveStrategy, board: &Board) -> bool {
-        let enemy_piece_tile = MoveHandler::enemy_piece_coord(piece_strategy, board);
+        let enemy_piece_tile = MoveHandler::enemy_piece_coords(piece_strategy, board);
 
         for coord in enemy_piece_tile {
             // SAFETY:
@@ -287,6 +286,8 @@ impl<'a> MoveValidator<'a> {
                 if new_coord.in_bounds() {
                     let move_validator = MoveValidator::new(new_coord, board);
 
+                    // RECURSIVE ALGORITHM
+                    // is_king_take() is the base case
                     // check if any valid move can take king
                     if move_validator.is_valid_move(enemy_piece_strategy.as_ref(), true)
                         && move_validator.is_king_take()
@@ -336,8 +337,6 @@ impl<'a> MoveValidator<'a> {
         let own_pieces = MoveHandler::own_piece_coords(piece_strategy, board);
         // create new validator based on current board
 
-        console_log!("own_pieces:{:?}", own_pieces);
-
         for coord in own_pieces {
             // SAFETY:
             // tile has piece, confirmed in above loop
@@ -356,13 +355,7 @@ impl<'a> MoveValidator<'a> {
                     let move_validator = MoveValidator::new(new_coord, board);
 
                     // check if any valid move and can move out of check
-                    if move_validator.is_valid_move(own_piece_strategy.as_ref(), true)
-                        && !MoveValidator::is_possible_check(
-                            own_piece_strategy.as_ref(),
-                            board,
-                            new_coord,
-                        )
-                    {
+                    if move_validator.is_valid_move(own_piece_strategy.as_ref(), false) {
                         // return false, ie. not checkmate
                         return false;
                     }

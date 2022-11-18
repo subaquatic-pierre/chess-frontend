@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IGameContext } from '../types/GameContext';
-import {
-  Board,
-  BoardDirection,
-  Game,
-  new_board,
-  new_game,
-  Tile,
-  TileCoord
-} from 'chess-lib';
-import { rotateBoard } from '../util/board';
+import { IGameContext } from '../types/Context';
+import { Game, GameState, PieceColor } from 'chess-lib';
 
 export const GameContext = React.createContext({} as IGameContext);
 
@@ -17,55 +8,49 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   // loading state
-  const [loading, setLoading] = useState<boolean>(true);
+  const [playerTurn, setPlayerTurn] = useState<PieceColor>(PieceColor.White);
+  const [checkmate, setCheckmate] = useState<PieceColor | null>(null);
 
   // game state
-  const [tiles, setTiles] = useState<Tile[]>([]);
-  const [game, setGame] = useState<Game>({} as Game);
-  const boardRef = useRef<Board>({} as Board);
-  // const [board, setBoard] = useState<Board>({} as Board);
+  const gameRef = useRef<Game>({} as Game);
 
   // players
   const [players, setPlayers] = useState(0);
 
-  // direction of the board
-  const [boardDirection, setBoardDirection] = useState<BoardDirection>(
-    BoardDirection.White
-  );
+  useEffect(() => {
+    if (checkmate !== null) {
+      if (checkmate === PieceColor.White) {
+        alert(`Black Wins!, white is in checkmate`);
+        gameRef.current.update_state(GameState.Ended);
+      } else if (checkmate === PieceColor.Black) {
+        alert(`White Wins!, black is in checkmate`);
+        gameRef.current.update_state(GameState.Ended);
+      }
+    }
+  }, [checkmate]);
 
-  // piece coords used for moving pieces
-  const [selectedPieceCoord, setSelectedPieceCoord] =
-    useState<TileCoord | null>(null);
-  const [newPieceCoord, setNewPieceCoord] = useState<TileCoord | null>(null);
+  const initGame = () => {
+    const game = new Game();
+    // setPlayerTurn(game.player_turn());
+    gameRef.current = game;
+  };
 
   useEffect(() => {
-    const board = Board.new();
-    const game = Game.new(board);
-    setTiles(board.tiles());
-    setGame(game);
-    boardRef.current = board;
-    setBoardDirection(board.board_direction());
-    setLoading(false);
+    initGame();
   }, []);
 
   return (
     <GameContext.Provider
       value={{
-        tiles,
-        board: boardRef.current,
-        loading,
-        boardDirection,
-        players,
-        selectedPieceCoord,
-        newPieceCoord,
-        game,
+        game: gameRef.current,
 
-        setLoading,
-        setBoardDirection,
-        setTiles,
+        setCheckmate,
+
+        players,
         setPlayers,
-        setSelectedPieceCoord,
-        setNewPieceCoord
+
+        playerTurn,
+        setPlayerTurn
       }}
     >
       {children}

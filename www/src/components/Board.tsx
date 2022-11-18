@@ -7,69 +7,40 @@ import {
   TileState,
   PieceType,
   PieceColor,
-  TileCoord
+  TileCoord,
+  GameState
 } from 'chess-lib';
 import Tile from './Tile';
 import { rotateBoard } from '../util/board';
 import { TILE_SPACE } from '../types/Board';
+import useBoardContext from '../hooks/useBoardContext';
+
+import { handleSelectedTileChange } from '../handlers/board';
 
 const Board = () => {
-  const {
-    tiles,
-    newPieceCoord,
-    selectedPieceCoord,
-    setNewPieceCoord,
-    board,
-    setSelectedPieceCoord,
-    boardDirection,
-    setTiles
-  } = useGameContext();
-
-  const movePiece = (oldCoord: TileCoord, newCoord: TileCoord) => {
-    const oldRow = oldCoord.row();
-    const oldCol = oldCoord.col();
-    const newRow = newCoord.row();
-    const newCol = newCoord.col();
-
-    const piece = board.get_piece(oldCoord);
-    if (piece) {
-      // console.log(piece);
-      // board.clear_tile(row, col);
-      board.move_piece(oldRow, oldCol, newRow, newCol);
-      // setTiles(board.tiles());
-      // console.log(board.tiles());
-      // clear new piece coord
-      // setNewPieceCoord(null);
-      setTiles(board.tiles());
-    }
-  };
-
-  const tryMovePiece = () => {
-    if (selectedPieceCoord && newPieceCoord) {
-      const rSelectedPieceCoord = TileCoord.from_json(selectedPieceCoord);
-      const rNewPieceCoord = TileCoord.from_json(newPieceCoord);
-      movePiece(rSelectedPieceCoord, rNewPieceCoord);
-    }
-  };
+  const { tiles, board, selectedTile, boardDirection, setTiles } =
+    useBoardContext();
+  const { setCheckmate, game } = useGameContext();
 
   useEffect(() => {
-    if (newPieceCoord) {
-      tryMovePiece();
-
-      // reset selected and new coord
-      board.clear_active_tiles();
-      setNewPieceCoord(null);
-      setSelectedPieceCoord(null);
+    // check if game is over
+    // return early if game is over
+    if (game.state() === GameState.Ended) {
+      return;
     }
-  }, [newPieceCoord, selectedPieceCoord]);
+
+    if (selectedTile) {
+      handleSelectedTileChange(selectedTile, board, game, setTiles);
+    }
+  }, [selectedTile]);
 
   useEffect(() => {
-    const check_mate = board.is_checkmate();
+    const checkmateColor = board.is_checkmate();
 
-    if (check_mate === PieceColor.White) {
-      alert(`Black Wins!, white is in checkmate`);
-    } else if (check_mate === PieceColor.Black) {
-      alert(`White Wins!, black is in checkmate`);
+    if (checkmateColor === PieceColor.White) {
+      setCheckmate(PieceColor.White);
+    } else if (checkmateColor === PieceColor.Black) {
+      setCheckmate(PieceColor.Black);
     }
   }, [tiles]);
 

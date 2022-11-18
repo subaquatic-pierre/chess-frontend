@@ -3,10 +3,10 @@ import { BoardDirection } from 'chess-lib';
 import { Button, Container } from 'react-bootstrap';
 import useGameContext from '../hooks/useGameContext';
 import useForceUpdate from '../hooks/forceUpdate';
+import useBoardContext from '../hooks/useBoardContext';
 
 const Controls = () => {
-  const { players, setBoardDirection, setPlayers, boardDirection } =
-    useGameContext();
+  const { setBoardDirection, boardDirection } = useBoardContext();
   const [direction, setDirection] = useState(boardDirection);
 
   const changeBoardDirection = () => {
@@ -25,9 +25,7 @@ const Controls = () => {
     <Container>
       <div className="d-flex py-3 my-2">
         <Button onClick={changeBoardDirection}>Toggle Board Direction</Button>
-        <Button onClick={() => setPlayers(players + 1)}>Set Players</Button>
       </div>
-      <div>num players: {players}</div>
     </Container>
   );
 };

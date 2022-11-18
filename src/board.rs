@@ -194,7 +194,7 @@ impl Board {
         new_row: u8,
         new_col: u8,
         ignore_check: bool,
-    ) {
+    ) -> bool {
         let old_coord: TileCoord = TileCoord::new(old_row, old_col);
         let new_coord: TileCoord = TileCoord::new(new_row, new_col);
         // get old tile
@@ -202,13 +202,13 @@ impl Board {
 
         // handle empty tile case
         if tile.is_none() {
-            return;
+            return false;
         };
 
         // handle empty piece case
         let piece = tile.unwrap().piece();
         if piece.is_none() {
-            return;
+            return false;
         }
 
         // SAFETY:
@@ -232,12 +232,15 @@ impl Board {
 
         // only continue if move is valid
         if !move_validator.is_valid_move(piece_strategy.as_ref(), ignore_check) {
-            return;
+            return false;
         }
 
         // if en passant take clear en passant coord
         if move_validator.is_en_passant_take(&piece_strategy.moves(), piece_strategy.as_ref()) {
             if let Some(last_en_passant_coord) = self.last_en_passant() {
+                // remove enemy piece pawn from their current coord
+                // ie. where the last en passant coord was set
+                // to be taken
                 self.set_new_tile(last_en_passant_coord, None, None);
                 // clear last en passant
                 self.set_last_en_passant(None);
@@ -257,7 +260,14 @@ impl Board {
 
             // set new tile
             self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
+
+            // return true as piece is move
+            return true;
         }
+
+        // if no piece if moved
+        // return false
+        false
     }
 
     pub fn get_js_piece(&mut self, coord: &TileCoord) -> JsValue {

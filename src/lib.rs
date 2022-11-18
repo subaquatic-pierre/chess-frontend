@@ -12,15 +12,3 @@ mod macros;
 mod pieces;
 mod player;
 mod tile;
-
-use game::Game;
-
-#[wasm_bindgen]
-pub fn new_board() -> Board {
-    Board::new()
-}
-
-#[wasm_bindgen]
-pub fn new_game(board: Board) -> Game {
-    Game::new(&board)
-}

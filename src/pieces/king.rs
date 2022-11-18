@@ -96,6 +96,10 @@ impl KingCastleBoardState {
     }
 
     pub fn update_state(&mut self, board: *const Board) {
+        // SAFETY:
+        // this struct is only ever used from within the board
+        // struct, the board is always valid withing itself
+        // the board always has 68 valid tiles from which to reference
         unsafe {
             self.handle_white_king_state(board.as_ref().unwrap());
             self.handle_black_king_state(board.as_ref().unwrap());

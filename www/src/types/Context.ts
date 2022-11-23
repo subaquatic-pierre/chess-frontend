@@ -3,14 +3,19 @@ import {
   BoardDirection,
   Game,
   PieceColor,
+  Piece,
   Tile,
   TileCoord
 } from 'chess-lib';
 import React from 'react';
+import { TileToPromote } from './Board';
+import { ModalContentProps } from './Modal';
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
-export interface IModalContext {}
+export interface IModalContext {
+  setModalContent: (component: React.FC<ModalContentProps>) => void;
+}
 
 export interface ILoadingContext {
   loading: boolean;
@@ -44,4 +49,10 @@ export interface IBoardContext {
   // board direction
   boardDirection: BoardDirection;
   setBoardDirection: SetState<BoardDirection>;
+
+  // promote piece state
+  promotePiece: Piece | null;
+  setPromotePiece: SetState<Piece | null>;
+  tileToPromote: TileToPromote | null;
+  setTileToPromote: SetState<TileToPromote | null>;
 }

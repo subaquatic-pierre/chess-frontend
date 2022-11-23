@@ -1,4 +1,13 @@
-import { Board, Game, PieceColor, Tile, TileCoord, TileState } from 'chess-lib';
+import {
+  Board,
+  Game,
+  PieceColor,
+  PieceType,
+  Tile,
+  TileCoord,
+  TileState
+} from 'chess-lib';
+import { TileToPromote } from '../types/Board';
 
 export const handleHighlightMoves = (tile: Tile, board: Board) => {
   // clear all current active tiles
@@ -70,4 +79,37 @@ export const isPlayerTurn = (tile: Tile, game: Game): boolean => {
   }
 
   return true;
+};
+
+export const checkTileToPromote = (tiles: Tile[]): false | TileToPromote => {
+  // check 1st rank
+  for (let i = 0; i < 8; i++) {
+    const tile = tiles[i];
+
+    const piece = tile.piece();
+
+    if (piece && piece.piece_type() === PieceType.Pawn) {
+      return {
+        row: tile.coord().row(),
+        col: tile.coord().col(),
+        pieceColor: piece.color()
+      };
+    }
+  }
+
+  // check 8th rank
+  for (let i = 56; i < 64; i++) {
+    const tile = tiles[i];
+
+    const piece = tile.piece();
+
+    if (piece && piece.piece_type() === PieceType.Pawn) {
+      return {
+        row: tile.coord().row(),
+        col: tile.coord().col(),
+        pieceColor: piece.color()
+      };
+    }
+  }
+  return false;
 };

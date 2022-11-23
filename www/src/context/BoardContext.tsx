@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IBoardContext } from '../types/Context';
-import { Board, BoardDirection, Game, Tile, TileCoord } from 'chess-lib';
+import { Board, BoardDirection, Game, Piece, Tile, TileCoord } from 'chess-lib';
 import useLoadingContext from '../hooks/useLoadingContext';
-
-import { handleSelectedTileChange } from '../handlers/board';
+import { TileToPromote } from '../types/Board';
 
 export const BoardContext = React.createContext({} as IBoardContext);
 
@@ -13,6 +12,12 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   const { setLoading } = useLoadingContext();
+
+  // promote piece state
+  const [tileToPromote, setTileToPromote] = useState<TileToPromote | null>(
+    null
+  );
+  const [promotePiece, setPromotePiece] = useState<Piece | null>(null);
   // loading state
 
   // tile state
@@ -55,7 +60,13 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
         setSelectedTile,
 
         setBoardDirection,
-        boardDirection
+        boardDirection,
+
+        // promote piece state
+        promotePiece,
+        setPromotePiece,
+        tileToPromote,
+        setTileToPromote
       }}
     >
       {children}

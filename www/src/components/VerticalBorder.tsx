@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import useGameContext from '../hooks/useGameContext';
+
 import { getBorderLabels } from '../util/board';
 import { BorderSide } from '../types/Board';
 import { TILE_SPACE } from '../types/Board';
+import useBoardContext from '../hooks/useBoardContext';
 
 interface Props {
   side: BorderSide;
@@ -28,7 +29,7 @@ const VertBorderTile: React.FC<BorderProps> = ({ label }) => {
 };
 
 const VerticalBorder: React.FC<Props> = ({ side }) => {
-  const { boardDirection } = useGameContext();
+  const { boardDirection } = useBoardContext();
   const [labels, setLabels] = useState<string[]>([]);
 
   useEffect(() => {

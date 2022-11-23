@@ -12,16 +12,16 @@ import BoardContextProvider from '../context/BoardContext';
 const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <LoadingContextProvider>
-      <ModalContextProvider>
-        <GameContextProvider>
-          <BoardContextProvider>
+      <GameContextProvider>
+        <BoardContextProvider>
+          <ModalContextProvider>
             <ThemeProvider theme={theme}>
               <Header />
               {children}
             </ThemeProvider>
-          </BoardContextProvider>
-        </GameContextProvider>
-      </ModalContextProvider>
+          </ModalContextProvider>
+        </BoardContextProvider>
+      </GameContextProvider>
     </LoadingContextProvider>
   );
 };

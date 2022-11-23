@@ -18,8 +18,10 @@ import useBoardContext from '../hooks/useBoardContext';
 import {
   handleMovePiece,
   handleHighlightMoves,
-  isPlayerTurn
+  checkTileToPromote
 } from '../handlers/board';
+import useModalContext from '../hooks/useModalContext';
+import PromotePieceModal from './PromotePieceModal';
 
 const Board = () => {
   const {
@@ -28,10 +30,16 @@ const Board = () => {
     selectedTile,
     boardDirection,
     setSelectedTile,
-    setTiles
+    setTiles,
+    promotePiece,
+    tileToPromote,
+    setTileToPromote,
+    setPromotePiece
   } = useBoardContext();
+  const { setModalContent } = useModalContext();
   const { setCheckmate, game } = useGameContext();
 
+  // handle move state
   useEffect(() => {
     // check if game is over
     // return early if game is over
@@ -63,6 +71,35 @@ const Board = () => {
     }
   }, [selectedTile]);
 
+  // handle piece promote sate
+  useEffect(() => {
+    if (tileToPromote) {
+      setModalContent(PromotePieceModal);
+    }
+  }, [tileToPromote]);
+
+  useEffect(() => {
+    // clear promote piece after board update
+    if (promotePiece && tileToPromote) {
+      const coord = TileCoord.new(tileToPromote.row, tileToPromote.col);
+
+      // update board with new piece
+      board.set_new_tile(
+        coord,
+        promotePiece.piece_type(),
+        promotePiece.color()
+      );
+
+      // clear promote piece state
+      setPromotePiece(null);
+      setTileToPromote(null);
+
+      // update board ui
+      setTiles(board.tiles());
+    }
+  }, [promotePiece]);
+
+  // handle checkmate sate
   useEffect(() => {
     const checkmateColor = board.is_checkmate();
 
@@ -70,6 +107,12 @@ const Board = () => {
       setCheckmate(PieceColor.White);
     } else if (checkmateColor === PieceColor.Black) {
       setCheckmate(PieceColor.Black);
+    }
+
+    // check tile to promote
+    const promotableTile = checkTileToPromote(tiles);
+    if (promotableTile) {
+      setTileToPromote(promotableTile);
     }
   }, [tiles]);
 

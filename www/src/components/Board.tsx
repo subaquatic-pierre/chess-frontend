@@ -15,11 +15,21 @@ import { rotateBoard } from '../util/board';
 import { TILE_SPACE } from '../types/Board';
 import useBoardContext from '../hooks/useBoardContext';
 
-import { handleSelectedTileChange } from '../handlers/board';
+import {
+  handleMovePiece,
+  handleHighlightMoves,
+  isPlayerTurn
+} from '../handlers/board';
 
 const Board = () => {
-  const { tiles, board, selectedTile, boardDirection, setTiles } =
-    useBoardContext();
+  const {
+    tiles,
+    board,
+    selectedTile,
+    boardDirection,
+    setSelectedTile,
+    setTiles
+  } = useBoardContext();
   const { setCheckmate, game } = useGameContext();
 
   useEffect(() => {
@@ -30,7 +40,26 @@ const Board = () => {
     }
 
     if (selectedTile) {
-      handleSelectedTileChange(selectedTile, board, game, setTiles);
+      // ensure current player can move
+      // get current player turn
+      // return early if not player turn
+      const curActiveCoord = board.get_selected_piece_coord();
+
+      // TODO
+      // uncomment to enable player turn capabilities
+      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+      //   return;
+      // }
+
+      if (curActiveCoord) {
+        handleMovePiece(selectedTile, board, game);
+      } else {
+        handleHighlightMoves(selectedTile, board);
+      }
+
+      // clear selected tile from coord
+      setSelectedTile(null);
+      setTiles(board.tiles());
     }
   }, [selectedTile]);
 

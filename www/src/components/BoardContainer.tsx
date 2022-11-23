@@ -1,4 +1,4 @@
-import React, { createRef, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Container } from 'react-bootstrap';
 
 import Board from '../components/Board';
@@ -8,7 +8,7 @@ import { BorderSide } from '../types/Board';
 import useBoardContext from '../hooks/useBoardContext';
 
 const BoardContainer = () => {
-  const { setSelectedTile } = useBoardContext();
+  const { setSelectedTile, board, setTiles } = useBoardContext();
   const divEl = useRef<HTMLDivElement>(null);
 
   // remove selected tile if not click on the board
@@ -18,9 +18,18 @@ const BoardContainer = () => {
     if (divEl.current) {
       if (!divEl.current.contains(e.target as HTMLDivElement)) {
         setSelectedTile(null);
+        board.clear_active_tiles();
+        setTiles(board.tiles());
       }
     }
   };
+
+  useEffect(() => {
+    window.addEventListener('click', handleAwayClickListener as any);
+    return () =>
+      window.removeEventListener('click', handleAwayClickListener as any);
+  }, []);
+
   return (
     <Container className="justify-content-center d-flex my-5">
       <div

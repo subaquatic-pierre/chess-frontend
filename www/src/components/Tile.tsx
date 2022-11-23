@@ -13,6 +13,7 @@ import { isPieceReverse } from '../util/piece';
 import { TILE_HEIGHT } from '../types/Board';
 import { parseTileColor, parseTileFilter } from '../util/tile';
 import useBoardContext from '../hooks/useBoardContext';
+import useForceUpdate from '../hooks/forceUpdate';
 
 interface Props {
   tile: ITile;

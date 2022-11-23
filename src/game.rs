@@ -17,7 +17,6 @@ pub struct Game {
 
 #[wasm_bindgen]
 impl Game {
-    #[wasm_bindgen]
     pub fn new() -> Self {
         Self {
             state: GameState::Started,

@@ -159,12 +159,12 @@ impl Board {
     }
 
     /// main public method used to move pieces
-    pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) {
+    pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) -> bool {
         // do not ignore check on main method to move pieces
-        self.handle_move_piece(old_row, old_col, new_row, new_col, false);
+        let is_piece_moved = self.handle_move_piece(old_row, old_col, new_row, new_col, false);
 
         // update king castle state after move is completed
-        self.king_castle_state.update_state(&*self);
+        // self.king_castle_state.update_state(&*self);
 
         // TODO:
         // write move to game
@@ -173,6 +173,8 @@ impl Board {
         // TODO:
         // update players pieces
         // ...
+
+        is_piece_moved
     }
 
     /// method used to move piece ignoring if king is in check

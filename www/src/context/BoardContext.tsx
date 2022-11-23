@@ -7,6 +7,8 @@ import { handleSelectedTileChange } from '../handlers/board';
 
 export const BoardContext = React.createContext({} as IBoardContext);
 
+const board = Board.new();
+
 const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
@@ -15,9 +17,6 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
 
   // tile state
   const [tiles, setTiles] = useState<Tile[]>([]);
-
-  // rust board
-  const boardRef = useRef<Board>({} as Board);
 
   // direction of the board
   const [boardDirection, setBoardDirection] = useState<BoardDirection>(
@@ -29,14 +28,12 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
 
   const initBoard = () => {
     // set base board element
-    const board = new Board();
-    boardRef.current = board;
 
     // set tiles based on initial board state
-    // setTiles(board.tiles());
+    setTiles(board.tiles());
 
     // set board direction
-    // setBoardDirection(board.board_direction());
+    setBoardDirection(board.board_direction());
 
     // completed loading
     setLoading(false);
@@ -49,7 +46,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   return (
     <BoardContext.Provider
       value={{
-        board: boardRef.current,
+        board,
 
         tiles,
         setTiles,

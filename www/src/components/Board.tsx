@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useGameContext from '../hooks/useGameContext';
-import {
-  BoardDirection,
-  Tile as ITile,
-  Board as IBoard,
-  TileState,
-  PieceType,
-  PieceColor,
-  TileCoord,
-  GameState
-} from 'chess-lib';
+import { Tile as ITile, PieceColor, TileCoord, GameState } from 'chess-lib';
 import Tile from './Tile';
 import { rotateBoard } from '../util/board';
 import { TILE_SPACE } from '../types/Board';
@@ -18,7 +9,8 @@ import useBoardContext from '../hooks/useBoardContext';
 import {
   handleMovePiece,
   handleHighlightMoves,
-  checkTileToPromote
+  checkTileToPromote,
+  isPlayerTurn
 } from '../handlers/board';
 import useModalContext from '../hooks/useModalContext';
 import PromotePieceModal from './PromotePieceModal';
@@ -36,6 +28,7 @@ const Board = () => {
     setTileToPromote,
     setPromotePiece
   } = useBoardContext();
+  const [localTiles, setLocalTiles] = useState<ITile[]>(tiles);
   const { setModalContent } = useModalContext();
   const { setCheckmate, game } = useGameContext();
 
@@ -55,9 +48,9 @@ const Board = () => {
 
       // TODO
       // uncomment to enable player turn capabilities
-      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
-      //   return;
-      // }
+      if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+        return;
+      }
 
       if (curActiveCoord) {
         handleMovePiece(selectedTile, board, game);
@@ -116,6 +109,10 @@ const Board = () => {
     }
   }, [tiles]);
 
+  useEffect(() => {
+    setLocalTiles(rotateBoard(board.tiles(), boardDirection));
+  }, [tiles]);
+
   return (
     <div
       css={(theme) => ({
@@ -128,7 +125,7 @@ const Board = () => {
       })}
     >
       {/* {tiles.map((tile, idx) => ( */}
-      {rotateBoard(tiles, boardDirection).map((tile, idx) => (
+      {localTiles.map((tile, idx) => (
         <Tile key={idx} tile={tile} />
       ))}
     </div>

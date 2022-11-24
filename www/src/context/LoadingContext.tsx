@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { ILoadingContext } from '../types/Context';
+import { SetState } from '../types/Context';
+
+export interface ILoadingContext {
+  loading: boolean;
+  setLoading: SetState<boolean>;
+}
 
 export const LoadingContext = React.createContext({} as ILoadingContext);
 

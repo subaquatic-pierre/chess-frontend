@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 
-import { Button, Modal } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 
-import { IModalContext } from '../types/Context';
 import { ModalContentProps } from '../types/Modal';
+
+export interface IModalContext {
+  setModalContent: (component: React.FC<ModalContentProps>) => void;
+}
 
 export const ModalContext = React.createContext({} as IModalContext);
 

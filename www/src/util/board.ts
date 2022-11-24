@@ -1,11 +1,11 @@
-import { BoardDirection, Tile } from 'chess-lib';
+import { PieceColor, Tile } from 'chess-lib';
 import { BorderSide } from '../types/Board';
 
 export const rotateBoard = (
   tiles: Tile[],
-  boardDirection: BoardDirection
+  boardDirection: PieceColor
 ): Tile[] => {
-  if (boardDirection === BoardDirection.White) {
+  if (boardDirection === PieceColor.White) {
     const chunks: Tile[][] = [];
     for (let i = 0; i < 8; i++) {
       const offset = i * 8;
@@ -27,7 +27,7 @@ export const rotateBoard = (
 };
 
 export const getBorderLabels = (
-  boardDirection: BoardDirection,
+  boardDirection: PieceColor,
   borderSide: BorderSide
 ) => {
   const rankLabels = ['1', '2', '3', '4', '5', '6', '7', '8'];
@@ -35,7 +35,7 @@ export const getBorderLabels = (
 
   // render rank numbers in reverse order if direction is white
   // white is default direction
-  const isReversed = boardDirection === BoardDirection.White;
+  const isReversed = boardDirection === PieceColor.White;
 
   switch (borderSide) {
     case BorderSide.Top:

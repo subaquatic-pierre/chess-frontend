@@ -1,15 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IBoardContext } from '../types/Context';
-import { Board, BoardDirection, Game, Piece, Tile, TileCoord } from 'chess-lib';
+import { SetState } from '../types/Context';
+import { Board, Game, Piece, PieceColor, Tile } from 'chess-lib';
 import useLoadingContext from '../hooks/useLoadingContext';
 import { TileToPromote } from '../types/Board';
+import useGameContext from '../hooks/useGameContext';
+
+// define context interface
+export interface IBoardContext {
+  // tiles used to render the current board state
+  board: Board;
+  tiles: Tile[];
+  setTiles: SetState<Tile[]>;
+  setBoard: SetState<Board>;
+  resetAll: () => void;
+
+  // selected tile coord, used to move and highlight tiles
+  selectedTile: Tile | null;
+  setSelectedTile: SetState<Tile | null>;
+
+  // board direction
+  boardDirection: PieceColor;
+  setBoardDirection: SetState<PieceColor>;
+
+  // promote piece state
+  promotePiece: Piece | null;
+  setPromotePiece: SetState<Piece | null>;
+  tileToPromote: TileToPromote | null;
+  setTileToPromote: SetState<TileToPromote | null>;
+}
 
 export const BoardContext = React.createContext({} as IBoardContext);
+
+const firstBoard = Board.new();
 
 const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
-  const boardRef = useRef<Board>(Board.new());
+  const [board, setBoard] = useState<Board>(firstBoard);
+  const { setGame } = useGameContext();
   const { setLoading } = useLoadingContext();
 
   // promote piece state
@@ -23,8 +51,8 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   const [tiles, setTiles] = useState<Tile[]>([]);
 
   // direction of the board
-  const [boardDirection, setBoardDirection] = useState<BoardDirection>(
-    BoardDirection.White
+  const [boardDirection, setBoardDirection] = useState<PieceColor>(
+    PieceColor.White
   );
 
   // piece coords used for moving pieces
@@ -34,13 +62,28 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     // set base board element
 
     // set tiles based on initial board state
-    setTiles(boardRef.current.tiles());
+    setTiles(board.tiles());
 
     // set board direction
-    setBoardDirection(boardRef.current.board_direction());
+    setBoardDirection(PieceColor.White);
 
     // completed loading
     setLoading(false);
+  };
+
+  const resetAll = () => {
+    // set new game
+    const newGame = Game.new();
+    setGame(newGame);
+
+    // set new board
+    const newBoard = Board.new();
+    setTiles(newBoard.tiles());
+    setBoard(newBoard);
+
+    console.log('HERERER');
+
+    // set tiles based on initial board state
   };
 
   useEffect(() => {
@@ -50,7 +93,9 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   return (
     <BoardContext.Provider
       value={{
-        board: boardRef.current,
+        resetAll,
+        setBoard,
+        board,
 
         tiles,
         setTiles,

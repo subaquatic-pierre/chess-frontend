@@ -1,9 +1,4 @@
-import {
-  BoardDirection,
-  Piece as IPiece,
-  PieceColor,
-  PieceType
-} from 'chess-lib';
+import { PieceColor, Piece as IPiece, PieceType } from 'chess-lib';
 
 export const getPieceImage = (piece: IPiece, reverse: boolean): string => {
   if (reverse) {
@@ -94,16 +89,13 @@ export const getPieceImage = (piece: IPiece, reverse: boolean): string => {
 };
 
 export const isPieceReverse = (
-  boardDirection: BoardDirection,
+  boardDirection: PieceColor,
   pieceColor: PieceColor
 ): boolean => {
-  if (
-    boardDirection === BoardDirection.White &&
-    pieceColor === PieceColor.White
-  ) {
+  if (boardDirection === PieceColor.White && pieceColor === PieceColor.White) {
     return false;
   } else if (
-    boardDirection === BoardDirection.Black &&
+    boardDirection === PieceColor.Black &&
     pieceColor === PieceColor.Black
   ) {
     return false;

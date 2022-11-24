@@ -2,8 +2,7 @@ use js_sys::Array;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use crate::console_log;
-use crate::pieces::king::{KingCastleBoardState, KingCastleValidator};
+use crate::pieces::king::KingCastleBoardState;
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
@@ -14,7 +13,6 @@ use crate::tile::{Tile, TileColor, TileCoord, TileState};
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Board {
     tiles: Vec<Tile>,
-    board_direction: BoardDirection,
     last_en_passant: Option<TileCoord>,
     king_castle_state: KingCastleBoardState,
 }
@@ -26,7 +24,6 @@ impl Board {
 
         let mut board = Self {
             tiles: vec![],
-            board_direction: BoardDirection::White,
             last_en_passant: None,
             king_castle_state: KingCastleBoardState::default(),
         };
@@ -50,14 +47,6 @@ impl Board {
     /// Used to render tiles from current board state
     pub fn tiles(&self) -> Array {
         self.tiles.clone().into_iter().map(JsValue::from).collect()
-    }
-
-    pub fn board_direction(&self) -> BoardDirection {
-        self.board_direction
-    }
-
-    pub fn set_board_direction(&mut self, direction: BoardDirection) {
-        self.board_direction = direction
     }
 
     pub fn king_castle_state(&self) -> *const KingCastleBoardState {
@@ -382,8 +371,6 @@ impl Board {
     // private methods
     // ---
 
-    fn check_king_castle_move(&self, move_handler: &MoveHandler) {}
-
     fn set_tiles(&mut self, tiles: Vec<Tile>) {
         self.tiles = tiles
     }
@@ -409,13 +396,6 @@ impl Board {
         }
         None
     }
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
-pub enum BoardDirection {
-    White,
-    Black,
 }
 
 impl Default for Board {

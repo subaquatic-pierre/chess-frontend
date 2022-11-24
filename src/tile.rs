@@ -84,7 +84,7 @@ impl Tile {
     }
 
     pub fn state(&self) -> TileState {
-        self.state.clone()
+        self.state
     }
 
     pub fn as_bytes(&self) -> Vec<u8> {
@@ -329,7 +329,7 @@ impl TileCoord {
 impl From<usize> for TileCoord {
     fn from(index: usize) -> Self {
         let col = index as u8 % 8;
-        let row = index as u8 / 8 as u8;
+        let row = index as u8 / 8_u8;
         TileCoord { row, col }
     }
 }

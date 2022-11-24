@@ -2,7 +2,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::board::Board;
-use crate::console_log;
 use crate::pieces::piece::{PieceColor, PieceType};
 use crate::pieces::rook::RookFile;
 use crate::pieces::strategy::PieceMoveStrategy;
@@ -284,39 +283,9 @@ impl Default for KingCastleState {
     }
 }
 
-pub struct KingCastleMoveResult {
-    is_possible_move: bool,
-    new_king_coord: Option<TileCoord>,
-    new_rook_coord: Option<TileCoord>,
-}
-
-pub struct KingCastleValidator {
-    new_coord: TileCoord,
-    piece_color: PieceColor,
-    king_castle_state: KingCastleState,
-}
+pub struct KingCastleValidator {}
 
 impl KingCastleValidator {
-    pub fn new(
-        new_coord: TileCoord,
-        piece_color: PieceColor,
-        king_castle_state: KingCastleState,
-    ) -> Self {
-        Self {
-            new_coord,
-            piece_color,
-            king_castle_state,
-        }
-    }
-
-    pub fn validate_king_castle_moved(&self) -> KingCastleMoveResult {
-        KingCastleMoveResult {
-            is_possible_move: false,
-            new_king_coord: None,
-            new_rook_coord: None,
-        }
-    }
-
     pub fn long_castle_coord(piece_color: PieceColor) -> TileCoord {
         match piece_color {
             PieceColor::White => TileCoord::new(0, 1),

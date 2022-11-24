@@ -2,9 +2,6 @@
 #![allow(clippy::unnecessary_unwrap)]
 #![allow(clippy::from_over_into)]
 
-use board::Board;
-use wasm_bindgen::prelude::*;
-
 mod board;
 mod game;
 mod js;

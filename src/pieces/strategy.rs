@@ -43,6 +43,38 @@ impl<'a> MoveHandler<'a> {
         }
     }
 
+    pub fn handle_king_castle_move(&mut self, piece_strategy: &dyn PieceMoveStrategy) {
+        let piece_color = piece_strategy.color();
+        let rook_row = match piece_color {
+            PieceColor::White => 0,
+            PieceColor::Black => 7,
+        };
+
+        // get new rook coords
+        // tuple with following layout
+        // (old_col, new_col)
+        let rook_col = if self.new_coord == KingCastleValidator::long_castle_coord(piece_color) {
+            Some((0_u8, 2_u8))
+        } else if self.new_coord == KingCastleValidator::short_castle_coord(piece_color) {
+            Some((7_u8, 5_u8))
+        } else {
+            None
+        };
+
+        if let Some(col) = rook_col {
+            // clear old rook coord
+            self.board
+                .set_new_tile(TileCoord::new(rook_row, col.0), None, None);
+
+            // set new rook coord
+            self.board.set_new_tile(
+                TileCoord::new(rook_row, col.1),
+                Some(PieceType::Rook),
+                Some(piece_color),
+            );
+        };
+    }
+
     // ---
     // static methods
     // ---

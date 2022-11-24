@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::console_log;
-use crate::pieces::king::KingCastleBoardState;
+use crate::pieces::king::{KingCastleBoardState, KingCastleValidator};
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
@@ -261,6 +261,10 @@ impl Board {
             move_handler.handle_pawn_move(piece_strategy.as_ref());
         }
 
+        if piece_strategy.piece_type() == PieceType::King {
+            move_handler.handle_king_castle_move(piece_strategy.as_ref())
+        }
+
         // only clear tiles if not king take, ie. cannot take king off board
         if !is_king_take {
             // clear old tile
@@ -377,6 +381,8 @@ impl Board {
     // ---
     // private methods
     // ---
+
+    fn check_king_castle_move(&self, move_handler: &MoveHandler) {}
 
     fn set_tiles(&mut self, tiles: Vec<Tile>) {
         self.tiles = tiles

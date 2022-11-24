@@ -9,8 +9,22 @@ interface Props {
 
 const Piece: React.FC<Props> = ({ piece, reverse }) => {
   return (
-    <div>
-      <img src={getPieceImage(piece, reverse)} />
+    <div
+      css={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%'
+      }}
+    >
+      <img
+        css={{
+          width: '60%',
+          height: '60%'
+        }}
+        src={getPieceImage(piece, reverse)}
+      />
     </div>
   );
 };

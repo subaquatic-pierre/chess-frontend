@@ -117,11 +117,13 @@ const Board = () => {
     <div
       css={(theme) => ({
         display: 'grid',
-        gridTemplateColumns: 'repeat(8, auto)',
+        gridTemplateColumns: 'repeat(8, minmax(10px, 1fr))',
+        gridTemplateRows: 'repeat(8, minmax(10px, 1fr))',
         backgroundColor: theme.colors.board.background,
-        padding: TILE_SPACE,
-        gap: TILE_SPACE,
-        width: '100%'
+        // padding: TILE_SPACE,
+        gap: '2px',
+        width: '100%',
+        maxWidth: '700px'
       })}
     >
       {/* {tiles.map((tile, idx) => ( */}

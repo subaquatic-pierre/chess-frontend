@@ -35,16 +35,20 @@ const BoardContainer = () => {
       <div
         ref={divEl}
         css={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3,auto)',
-          gridGap: '10px'
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+          // display: 'grid',
+          // gridTemplateColumns: 'repeat(3,auto)',
+          // gridGap: '10px'
         }}
       >
-        <VerticalBorder side={BorderSide.Top} />
-        <HorizontalBorder side={BorderSide.Left} />
+        {/* <VerticalBorder side={BorderSide.Top} /> */}
+        {/* <HorizontalBorder side={BorderSide.Left} /> */}
         <Board />
-        <HorizontalBorder side={BorderSide.Right} />
-        <VerticalBorder side={BorderSide.Bottom} />
+        {/* <HorizontalBorder side={BorderSide.Right} /> */}
+        {/* <VerticalBorder side={BorderSide.Bottom} /> */}
       </div>
     </Container>
   );

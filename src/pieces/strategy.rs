@@ -228,6 +228,10 @@ impl<'a> MoveValidator<'a> {
         let board_king_castle_state = self.board.king_castle_state();
         let piece_color = piece_strategy.color();
 
+        if self.is_king_take() {
+            return false;
+        }
+
         // SAFETY:
         // board is always valid to dereference within strategy
         // strategy is only ever used within the board

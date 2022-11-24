@@ -35,8 +35,7 @@ const Tile: React.FC<Props> = ({ tile }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: TILE_HEIGHT,
-        width: TILE_HEIGHT
+        aspectRatio: '1/ 1'
       })}
     >
       {/* {tile.render()} */}

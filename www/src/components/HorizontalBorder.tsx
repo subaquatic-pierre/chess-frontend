@@ -40,6 +40,7 @@ const HorizontalBorder: React.FC<Props> = ({ side }) => {
   return (
     <div
       css={{
+        marginLeft: side === BorderSide.Left ? 'auto' : 0,
         display: 'grid',
         gridTemplateColumns: 'repeat(1, 30px)',
         gridGap: TILE_SPACE

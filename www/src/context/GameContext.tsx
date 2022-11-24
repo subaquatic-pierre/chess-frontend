@@ -13,8 +13,9 @@ export interface IGameContext {
   players: number;
   setPlayers: SetState<number>;
 
-  playerTurn: PieceColor;
-  setPlayerTurn: SetState<PieceColor>;
+  // show coord state
+  showCoords: boolean;
+  setShowCoords: SetState<boolean>;
 }
 
 export const GameContext = React.createContext({} as IGameContext);
@@ -25,8 +26,8 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   // loading state
-  const [playerTurn, setPlayerTurn] = useState<PieceColor>(PieceColor.White);
   const [checkmate, setCheckmate] = useState<PieceColor | null>(null);
+  const [showCoords, setShowCoords] = useState(false);
   const [game, setGame] = useState<Game>(firstGame);
 
   // players
@@ -61,8 +62,9 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
         players,
         setPlayers,
 
-        playerTurn,
-        setPlayerTurn
+        // display coord state
+        showCoords,
+        setShowCoords
       }}
     >
       {children}

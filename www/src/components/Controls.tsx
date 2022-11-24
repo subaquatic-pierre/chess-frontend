@@ -4,10 +4,12 @@ import { PieceColor } from 'chess-lib';
 import { Button, Container } from 'react-bootstrap';
 import useBoardContext from '../hooks/useBoardContext';
 import useForceUpdate from '../hooks/forceUpdate';
+import useGameContext from '../hooks/useGameContext';
 
 const Controls = () => {
   const { setBoardDirection, boardDirection, resetAll, setTiles, board } =
     useBoardContext();
+  const { setShowCoords, showCoords } = useGameContext();
   const forceUpdate = useForceUpdate();
 
   const changeBoardDirection = () => {
@@ -18,6 +20,10 @@ const Controls = () => {
     }
 
     setTiles(board.tiles());
+  };
+
+  const handleShowCoords = () => {
+    setShowCoords(!showCoords);
   };
 
   const handleReset = () => {
@@ -33,6 +39,7 @@ const Controls = () => {
       >
         <Button onClick={changeBoardDirection}>Toggle Board Direction</Button>
         <Button onClick={handleReset}>Reset Game</Button>
+        <Button onClick={handleShowCoords}>Toggle Show Coords</Button>
       </div>
     </Container>
   );

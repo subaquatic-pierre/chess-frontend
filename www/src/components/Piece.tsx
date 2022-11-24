@@ -5,9 +5,10 @@ import { getPieceImage } from '../util/piece';
 interface Props {
   piece: IPiece;
   reverse: boolean;
+  modalPiece?: boolean;
 }
 
-const Piece: React.FC<Props> = ({ piece, reverse }) => {
+const Piece: React.FC<Props> = ({ modalPiece, piece, reverse }) => {
   return (
     <div
       css={{
@@ -20,8 +21,8 @@ const Piece: React.FC<Props> = ({ piece, reverse }) => {
     >
       <img
         css={{
-          width: '60%',
-          height: '60%'
+          width: modalPiece ? '100%' : '60%',
+          height: modalPiece ? '100%' : '60%'
         }}
         src={getPieceImage(piece, reverse)}
       />

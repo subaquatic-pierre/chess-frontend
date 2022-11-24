@@ -120,8 +120,8 @@ const Board = () => {
         gridTemplateColumns: 'repeat(8, minmax(10px, 1fr))',
         gridTemplateRows: 'repeat(8, minmax(10px, 1fr))',
         backgroundColor: theme.colors.board.background,
-        // padding: TILE_SPACE,
-        gap: '2px',
+        padding: TILE_SPACE,
+        gap: TILE_SPACE,
         width: '100%',
         maxWidth: '700px'
       })}

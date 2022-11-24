@@ -13,17 +13,29 @@ import { isPieceReverse } from '../util/piece';
 import { TILE_HEIGHT } from '../types/Board';
 import { parseTileColor, parseTileFilter } from '../util/tile';
 import useBoardContext from '../hooks/useBoardContext';
-import useForceUpdate from '../hooks/forceUpdate';
 
 interface Props {
   tile: ITile;
 }
 
 const Tile: React.FC<Props> = ({ tile }) => {
+  const { game } = useGameContext();
   const { boardDirection, setSelectedTile } = useBoardContext();
 
   const handleTileClick = () => {
     setSelectedTile(tile);
+  };
+
+  const curPlayerTurnAndPiece = (): boolean => {
+    if (tile.piece()) {
+      if (game.player_turn() === tile.piece()?.color()) {
+        return true;
+      }
+    }
+    if (tile.state() === TileState.Highlight) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -35,7 +47,12 @@ const Tile: React.FC<Props> = ({ tile }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        aspectRatio: '1/ 1'
+        aspectRatio: '1/1',
+        ...(curPlayerTurnAndPiece() && {
+          '&:hover': {
+            cursor: 'pointer'
+          }
+        })
       })}
     >
       {/* {tile.render()} */}

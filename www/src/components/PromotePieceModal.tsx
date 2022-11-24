@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import {
-  BoardDirection,
-  Piece as IPiece,
-  PieceColor,
-  PieceType,
-  TileCoord
-} from 'chess-lib';
+import { Piece as IPiece, PieceType, TileCoord } from 'chess-lib';
 
 import { Button, Modal, Container, Row, Col } from 'react-bootstrap';
 import useBoardContext from '../hooks/useBoardContext';
@@ -42,15 +36,17 @@ const PieceContainer: React.FC<Props> = ({ piece, handlePieceClick }) => {
       css={{
         '&:hover': { cursor: 'pointer' },
         display: 'flex',
+        width: '100%',
+        height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
+        padding: '10px',
         backgroundColor: '#716d6d9f',
         borderRadius: '1rem'
       }}
       onClick={handlePieceClick}
     >
-      <Piece piece={piece} reverse={false} />
+      <Piece modalPiece piece={piece} reverse={false} />
     </div>
   );
 };

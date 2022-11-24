@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { graphql, HeadFC } from 'gatsby';
 import { Container } from 'react-bootstrap';
 
-import Layout from '../layout';
+import Layout from '../layout/index';
 import { INavLink } from '../types/NavLink';
 
 interface ISiteMeta {

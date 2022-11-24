@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeProvider } from '@emotion/react';
 
 import '../static/scss/main.scss';
-import theme from '../theme';
+import theme from '../theme/index';
 import Header from '../components/Header';
 import GameContextProvider from '../context/GameContext';
 import LoadingContextProvider from '../context/LoadingContext';

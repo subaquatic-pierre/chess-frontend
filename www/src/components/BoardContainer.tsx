@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Container } from 'react-bootstrap';
 
-import Board from '../components/Board';
+import Board from './Board';
 import HorizontalBorder from './HorizontalBorder';
 import VerticalBorder from './VerticalBorder';
 import { BorderSide, TILE_SPACE } from '../types/Board';

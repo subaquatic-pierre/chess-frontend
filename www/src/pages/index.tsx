@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { graphql, HeadFC } from 'gatsby';
 
-import Layout from '../layout';
+import Layout from '../layout/index';
 
 import { INavLink } from '../types/NavLink';
 

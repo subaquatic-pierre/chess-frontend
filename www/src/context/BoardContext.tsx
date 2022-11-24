@@ -6,11 +6,10 @@ import { TileToPromote } from '../types/Board';
 
 export const BoardContext = React.createContext({} as IBoardContext);
 
-const board = Board.new();
-
 const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
+  const boardRef = useRef<Board>(Board.new());
   const { setLoading } = useLoadingContext();
 
   // promote piece state
@@ -35,10 +34,10 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     // set base board element
 
     // set tiles based on initial board state
-    setTiles(board.tiles());
+    setTiles(boardRef.current.tiles());
 
     // set board direction
-    setBoardDirection(board.board_direction());
+    setBoardDirection(boardRef.current.board_direction());
 
     // completed loading
     setLoading(false);
@@ -51,7 +50,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   return (
     <BoardContext.Provider
       value={{
-        board,
+        board: boardRef.current,
 
         tiles,
         setTiles,

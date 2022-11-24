@@ -12,6 +12,8 @@ use crate::pieces::pawn::PawnMoveStrategy;
 use crate::pieces::queen::QueenMoveStrategy;
 use crate::pieces::rook::RookMoveStrategy;
 
+use super::king::KingCastleValidator;
+
 pub struct MoveHandler<'a> {
     new_coord: TileCoord,
     board: &'a mut Board,
@@ -119,8 +121,16 @@ impl<'a> MoveValidator<'a> {
             return false;
         }
 
+        // pawn specific move validation
         if piece_strategy.piece_type() == PieceType::Pawn
             && !self.is_valid_pawn_move(piece_strategy)
+        {
+            return false;
+        }
+
+        // king castle move validation
+        if piece_strategy.piece_type() == PieceType::King
+            && !self.is_valid_king_castle_move(piece_strategy)
         {
             return false;
         }
@@ -140,6 +150,9 @@ impl<'a> MoveValidator<'a> {
             return false;
         }
 
+        // flag used to validate if king is in check,
+        // possible move out of check
+        // possible move into check
         if !ignore_check {
             // cant move into check
             if MoveValidator::is_possible_check(piece_strategy, self.board, self.new_coord) {
@@ -178,6 +191,36 @@ impl<'a> MoveValidator<'a> {
         false
     }
 
+    // validate king castle move
+    fn is_valid_king_castle_move(&self, piece_strategy: &dyn PieceMoveStrategy) -> bool {
+        let board_king_castle_state = self.board.king_castle_state();
+        let piece_color = piece_strategy.color();
+
+        // SAFETY:
+        // board is always valid to dereference within strategy
+        // strategy is only ever used within the board
+        // raw pointers are used only because board implements
+        // wasm_bingen which does not support ref return objects
+        let king_castle_state = match piece_color {
+            PieceColor::White => unsafe { &board_king_castle_state.as_ref().unwrap().white_king },
+            PieceColor::Black => unsafe { &board_king_castle_state.as_ref().unwrap().black_king },
+        };
+
+        if self.new_coord == KingCastleValidator::short_castle_coord(piece_color)
+            && (king_castle_state.is_king_moved || king_castle_state.h_file_rook_moved)
+        {
+            return false;
+        }
+        if self.new_coord == KingCastleValidator::long_castle_coord(piece_color)
+            && (king_castle_state.is_king_moved || king_castle_state.a_file_rook_moved)
+        {
+            return false;
+        }
+
+        true
+    }
+
+    // validate pawn move
     fn is_valid_pawn_move(&self, piece_strategy: &dyn PieceMoveStrategy) -> bool {
         let diagonal_moves =
             PawnMoveStrategy::diagonal_moves(piece_strategy.color(), piece_strategy.coord());

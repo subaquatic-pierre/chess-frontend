@@ -60,6 +60,10 @@ impl Board {
         self.board_direction = direction
     }
 
+    pub fn king_castle_state(&self) -> *const KingCastleBoardState {
+        &self.king_castle_state
+    }
+
     // tile methods
 
     pub fn set_new_tile(
@@ -158,13 +162,15 @@ impl Board {
         StrategyBuilder::new_piece_strategy(piece.piece_type(), piece.coord(), piece.color(), self)
     }
 
-    /// main public method used to move pieces
+    /// main public method used to move pieces,
+    /// updates board with new pieces
     pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) -> bool {
         // do not ignore check on main method to move pieces
+        // board is updated with new pieces after this method
         let is_piece_moved = self.handle_move_piece(old_row, old_col, new_row, new_col, false);
 
         // update king castle state after move is completed
-        // self.king_castle_state.update_state(&*self);
+        self.king_castle_state.update_state(&*self);
 
         // TODO:
         // write move to game

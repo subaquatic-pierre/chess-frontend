@@ -4,14 +4,13 @@ import { Game, GameState, PieceColor } from 'chess-lib';
 
 export const GameContext = React.createContext({} as IGameContext);
 
-const game = Game.new();
-
 const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   // loading state
   const [playerTurn, setPlayerTurn] = useState<PieceColor>(PieceColor.White);
   const [checkmate, setCheckmate] = useState<PieceColor | null>(null);
+  const gameRef = useRef<Game>(Game.new());
 
   // players
   const [players, setPlayers] = useState(0);
@@ -20,10 +19,10 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
     if (checkmate !== null) {
       if (checkmate === PieceColor.White) {
         alert(`Black Wins!, white is in checkmate`);
-        game.update_state(GameState.Ended);
+        gameRef.current.update_state(GameState.Ended);
       } else if (checkmate === PieceColor.Black) {
         alert(`White Wins!, black is in checkmate`);
-        game.update_state(GameState.Ended);
+        gameRef.current.update_state(GameState.Ended);
       }
     }
   }, [checkmate]);
@@ -31,7 +30,7 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   return (
     <GameContext.Provider
       value={{
-        game,
+        game: gameRef.current,
 
         setCheckmate,
 

@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import useGameContext from '../hooks/useGameContext';
-import { Tile as ITile, PieceColor, TileCoord, GameState } from 'chess-lib';
+import {
+  Tile as ITile,
+  PieceColor,
+  TileCoord,
+  GameState,
+  MoveResult,
+  PieceType
+} from 'chess-lib';
 import Tile from './Tile';
 import { rotateBoard } from '../util/board';
-import { TILE_SPACE } from '../types/Board';
+import { LastMove, TILE_SPACE } from '../types/Board';
 import useBoardContext from '../hooks/useBoardContext';
 
 import {
@@ -32,9 +39,19 @@ const Board = () => {
   } = useBoardContext();
   const [localTiles, setLocalTiles] = useState<ITile[]>(tiles);
   const { setModalContent } = useModalContext();
-  const { setCheckmate, game } = useGameContext();
+  const {
+    setCheckmate,
+    game,
+    setLastMoveIsPromote,
+    lastMoveIsPromote,
+    lastMove,
+    setLastMove
+  } = useGameContext();
 
   // handle move state
+  // set promotable tile if tile is promotable
+  // set last promotable move if tile is promotable
+  // set last move if no tile is promotable
   useEffect(() => {
     // check if game is over
     // return early if game is over
@@ -57,13 +74,19 @@ const Board = () => {
       if (curActiveCoord) {
         const moveResult = handleMovePiece(selectedTile, board, game);
         if (moveResult) {
-          const moveStr = handleWriteMoveToGame(moveResult, board, game);
-
-          // TODO
-          // make network request with new move notation
-
-          // TODO
-          // write game to client session
+          // write move to game only if not promote piece
+          // only write promote piece only piece is selected
+          if (moveResult.is_promote_piece) {
+            // here we set last move to promote to handle piece promotion
+            // move is only written to game after new promotable
+            // piece is selected
+            setTileToPromote(selectedTile);
+            setLastMoveIsPromote(moveResult);
+          } else {
+            // or self last move to
+            // write move to game
+            setLastMove({ moveResult });
+          }
         }
       } else {
         handleHighlightMoves(selectedTile, board);
@@ -76,15 +99,18 @@ const Board = () => {
   }, [selectedTile]);
 
   // handle piece promote sate
+  // check if tile is promotable
+  // show modal if tile to promote is set
   useEffect(() => {
     if (tileToPromote) {
       setModalContent(PromotePieceModal);
     }
   }, [tileToPromote]);
 
+  // handle promote piece state, set new piece on coord
   useEffect(() => {
     // clear promote piece after board update
-    if (promotePiece && tileToPromote) {
+    if (promotePiece && tileToPromote && lastMoveIsPromote) {
       const coord = TileCoord.new(tileToPromote.row, tileToPromote.col);
 
       // update board with new piece
@@ -93,6 +119,12 @@ const Board = () => {
         promotePiece.piece_type(),
         promotePiece.color()
       );
+
+      // write move after piece promote
+      setLastMove({
+        moveResult: lastMoveIsPromote,
+        promotePiece: promotePiece.piece_type()
+      });
 
       // clear promote piece state
       setPromotePiece(null);
@@ -103,23 +135,30 @@ const Board = () => {
     }
   }, [promotePiece]);
 
-  // handle checkmate state
+  // last move state, used to write moves to game
+  // used to check if game is over
   useEffect(() => {
-    const checkmateColor = board.is_checkmate();
+    if (lastMove) {
+      const checkmateColor = board.is_checkmate();
 
-    if (checkmateColor === PieceColor.White) {
-      setCheckmate(PieceColor.White);
-    } else if (checkmateColor === PieceColor.Black) {
-      setCheckmate(PieceColor.Black);
+      if (checkmateColor === PieceColor.White) {
+        setCheckmate(PieceColor.White);
+      } else if (checkmateColor === PieceColor.Black) {
+        setCheckmate(PieceColor.Black);
+      }
+
+      const moveStr = handleWriteMoveToGame(lastMove as LastMove, board, game);
+      console.log(moveStr);
     }
 
-    // check tile to promote
-    const promotableTile = checkTileToPromote(tiles);
-    if (promotableTile) {
-      setTileToPromote(promotableTile);
-    }
-  }, [tiles]);
+    // TODO
+    // make network request with new move notation
 
+    // TODO
+    // write game to client session
+  }, [lastMove]);
+
+  // local tiles used to keep state fresh
   useEffect(() => {
     setLocalTiles(rotateBoard(board.tiles(), boardDirection));
   }, [tiles]);

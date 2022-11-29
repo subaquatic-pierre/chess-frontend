@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SetState } from '../types/Context';
-import { Game, GameState, PieceColor } from 'chess-lib';
+import { Game, GameState, PieceColor, MoveResult, PieceType } from 'chess-lib';
+import { LastMove } from '../types/Board';
 
 export interface IGameContext {
   setGame: SetState<Game>;
@@ -16,6 +17,15 @@ export interface IGameContext {
   // show coord state
   showCoords: boolean;
   setShowCoords: SetState<boolean>;
+
+  // last move state, used to write moves to game
+  lastMove: LastMove | null;
+  setLastMove: SetState<LastMove | null>;
+
+  // last promote piece move state, used to set if
+  // is promote piece move
+  lastMoveIsPromote: MoveResult | null;
+  setLastMoveIsPromote: SetState<MoveResult | null>;
 }
 
 export const GameContext = React.createContext({} as IGameContext);
@@ -29,6 +39,10 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   const [checkmate, setCheckmate] = useState<PieceColor | null>(null);
   const [showCoords, setShowCoords] = useState(false);
   const [game, setGame] = useState<Game>(firstGame);
+  const [lastMove, setLastMove] = useState<LastMove | null>(null);
+  const [lastMoveIsPromote, setLastMoveIsPromote] = useState<MoveResult | null>(
+    null
+  );
 
   // players
   const [players, setPlayers] = useState(0);
@@ -74,7 +88,15 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
 
         // display coord state
         showCoords,
-        setShowCoords
+        setShowCoords,
+
+        // last move state for piece promotion
+        lastMoveIsPromote,
+        setLastMoveIsPromote,
+
+        // last move used to write to the game
+        lastMove,
+        setLastMove
       }}
     >
       {children}

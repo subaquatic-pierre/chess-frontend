@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -20,6 +22,19 @@ pub enum PieceType {
     Bishop,
     King,
     Queen,
+}
+
+impl Display for PieceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Pawn => write!(f, ""),
+            Self::Rook => write!(f, "R"),
+            Self::Knight => write!(f, "N"),
+            Self::Bishop => write!(f, "B"),
+            Self::King => write!(f, "K"),
+            Self::Queen => write!(f, "Q"),
+        }
+    }
 }
 
 #[wasm_bindgen]

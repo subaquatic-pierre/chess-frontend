@@ -8,7 +8,7 @@ use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
-use crate::tile::{Tile, TileColor, TileCoord, TileState};
+use crate::tile::{Tile, TileColor, TileCoord, TileRank, TileState};
 use crate::translator::MoveWriter;
 
 #[wasm_bindgen]
@@ -50,7 +50,7 @@ impl Board {
     /// the move writer is used to write moves made
     /// on frontend and return moves as chess notation string
     /// to be written to the game
-    pub fn get_move_writer(&self) -> MoveWriter {
+    pub fn move_writer(&self) -> MoveWriter {
         MoveWriter::new(self)
     }
 
@@ -301,6 +301,7 @@ impl Board {
                 is_take,
                 is_short_castle: king_castle_result == Some(KingCastleMoveResult::ShortCastle),
                 is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
+                is_promote_piece: self.is_promote_piece(),
             });
         }
 
@@ -423,6 +424,27 @@ impl Board {
         }
         None
     }
+
+    fn is_promote_piece(&self) -> bool {
+        // check last rank for pawn
+        for tile in &self.tiles {
+            if let Some(piece) = tile.piece() {
+                if piece.piece_type() == PieceType::Pawn && tile.coord().rank() == TileRank::Rank8 {
+                    return true;
+                }
+            }
+        }
+
+        // check first rank for pawn
+        for tile in &self.tiles {
+            if let Some(piece) = tile.piece() {
+                if piece.piece_type() == PieceType::Pawn && tile.coord().rank() == TileRank::Rank1 {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }
 
 impl Default for Board {
@@ -441,4 +463,5 @@ pub struct MoveResult {
     pub is_take: bool,
     pub is_short_castle: bool,
     pub is_long_castle: bool,
+    pub is_promote_piece: bool,
 }

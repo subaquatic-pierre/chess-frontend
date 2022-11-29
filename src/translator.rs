@@ -1,9 +1,14 @@
+use std::fmt::format;
+
 use regex::Regex;
 use wasm_bindgen::prelude::*;
 
 use crate::{
     board::{Board, MoveResult},
-    pieces::piece::{Piece, PieceColor, PieceType},
+    pieces::{
+        piece::{Piece, PieceColor, PieceType},
+        strategy::{MoveValidator, StrategyBuilder},
+    },
     tile::{TileCoord, TileFile, TileRank},
 };
 
@@ -18,8 +23,100 @@ impl MoveWriter {
         Self { board }
     }
 
-    pub fn write_move(&self) -> String {
-        "hello".to_string()
+    pub fn write_move(&self, move_res: MoveResult, promote_piece: Option<PieceType>) -> String {
+        // SAFETY
+        // board is always valid pointer
+        // move writer is only ever created by the board
+        let board = unsafe { self.board.as_ref().unwrap() };
+        // return early if long castle
+        if move_res.is_long_castle {
+            return "0-0-0".to_string();
+        };
+
+        // return early if short castle
+        if move_res.is_short_castle {
+            return "0-0".to_string();
+        };
+
+        // get from coord string if exists
+        let from_coord_str = match move_res.from_coord {
+            Some(coord) => {
+                let file: TileFile = coord.col().into();
+                let rank: TileRank = coord.row().into();
+                format!("{}{}", file, rank)
+            }
+            _ => "".to_string(),
+        };
+
+        // get to coord string if exists
+        let to_coord_str = match move_res.to_coord {
+            Some(coord) => {
+                let file: TileFile = coord.col().into();
+                let rank: TileRank = coord.row().into();
+                format!("{}{}", file, rank)
+            }
+            _ => "".to_string(),
+        };
+
+        // if move result is a take add 'x' to move string
+        let take_str = if move_res.is_take {
+            "x".to_string()
+        } else {
+            "".to_string()
+        };
+
+        // get piece type string
+        let piece_str = move_res.piece_type.to_string();
+
+        let move_validator: Option<MoveValidator> = move_res
+            .to_coord
+            .map(|coord| MoveValidator::new(coord, board));
+
+        // add '+' to move string if check or '#' if checkmate
+        let check_or_checkmate_str = if board.is_checkmate().is_some() {
+            "#".to_string()
+        } else if move_validator.is_some() {
+            let new_coord = move_res.to_coord.unwrap();
+
+            // get opposite piece color
+            let piece_color = if move_res.piece_color == PieceColor::White {
+                PieceColor::Black
+            } else {
+                PieceColor::White
+            };
+
+            // build new king strategy to validate king in check
+            let king_strategy = StrategyBuilder::new_piece_strategy(
+                PieceType::King,
+                new_coord,
+                piece_color,
+                self.board,
+            );
+
+            // check if king is in check
+            let is_check = MoveValidator::is_check(king_strategy.as_ref(), board);
+
+            if is_check {
+                "+".to_string()
+            } else {
+                "".to_string()
+            }
+        } else {
+            "".to_string()
+        };
+
+        // return promote piece string if promote piece
+        if let Some(promote_piece) = promote_piece {
+            return format!(
+                "{}{}{}={}",
+                from_coord_str, take_str, to_coord_str, promote_piece
+            );
+        }
+
+        format!(
+            "{}{}{}{}{}",
+            piece_str, from_coord_str, take_str, to_coord_str, check_or_checkmate_str
+        )
     }
 
     pub fn get_piece_at(&self, row: u8, col: u8) -> Option<Piece> {
@@ -62,6 +159,7 @@ impl MoveParser {
             is_short_castle: self.is_short_castle(move_str),
             is_long_castle: self.is_long_castle(move_str),
             is_take,
+            is_promote_piece: false,
         }
     }
 

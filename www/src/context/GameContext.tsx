@@ -21,11 +21,6 @@ export interface IGameContext {
   // last move state, used to write moves to game
   lastMove: LastMove | null;
   setLastMove: SetState<LastMove | null>;
-
-  // last promote piece move state, used to set if
-  // is promote piece move
-  lastMoveIsPromote: MoveResult | null;
-  setLastMoveIsPromote: SetState<MoveResult | null>;
 }
 
 export const GameContext = React.createContext({} as IGameContext);
@@ -89,10 +84,6 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
         // display coord state
         showCoords,
         setShowCoords,
-
-        // last move state for piece promotion
-        lastMoveIsPromote,
-        setLastMoveIsPromote,
 
         // last move used to write to the game
         lastMove,

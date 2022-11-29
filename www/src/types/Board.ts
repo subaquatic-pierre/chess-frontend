@@ -1,4 +1,4 @@
-import { MoveResult, PieceColor, PieceType, TileCoord } from 'chess-lib';
+import { MoveResult, PieceColor, PieceType, TileCoord, Tile } from 'chess-lib';
 
 export const TILE_SPACE: number = 2;
 export const TILE_HEIGHT: number = 30;
@@ -18,5 +18,6 @@ export enum BorderSide {
 
 export interface LastMove {
   moveResult: MoveResult;
-  promotePiece?: PieceType;
+  pieceToPromote?: PieceType;
+  promoteTile?: Tile;
 }

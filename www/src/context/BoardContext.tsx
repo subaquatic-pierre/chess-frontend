@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { SetState } from '../types/Context';
 import { Board, Game, Piece, PieceColor, Tile } from 'chess-lib';
 import useLoadingContext from '../hooks/useLoadingContext';
-import { TileToPromote } from '../types/Board';
+import { LastMove, TileToPromote } from '../types/Board';
 import useGameContext from '../hooks/useGameContext';
 
 // define context interface
@@ -25,8 +25,9 @@ export interface IBoardContext {
   // promote piece state
   promotePiece: Piece | null;
   setPromotePiece: SetState<Piece | null>;
-  tileToPromote: TileToPromote | null;
-  setTileToPromote: SetState<TileToPromote | null>;
+
+  tileToPromote: LastMove | null;
+  setTileToPromote: SetState<LastMove | null>;
 }
 
 export const BoardContext = React.createContext({} as IBoardContext);
@@ -41,9 +42,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   const { setLoading } = useLoadingContext();
 
   // promote piece state
-  const [tileToPromote, setTileToPromote] = useState<TileToPromote | null>(
-    null
-  );
+  const [tileToPromote, setTileToPromote] = useState<LastMove | null>(null);
   const [promotePiece, setPromotePiece] = useState<Piece | null>(null);
   // loading state
 
@@ -111,6 +110,8 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
         // promote piece state
         promotePiece,
         setPromotePiece,
+
+        // last move result if tile to promote
         tileToPromote,
         setTileToPromote
       }}

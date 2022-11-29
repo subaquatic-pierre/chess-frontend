@@ -39,14 +39,7 @@ const Board = () => {
   } = useBoardContext();
   const [localTiles, setLocalTiles] = useState<ITile[]>(tiles);
   const { setModalContent } = useModalContext();
-  const {
-    setCheckmate,
-    game,
-    setLastMoveIsPromote,
-    lastMoveIsPromote,
-    lastMove,
-    setLastMove
-  } = useGameContext();
+  const { setCheckmate, game, lastMove, setLastMove } = useGameContext();
 
   // handle move state
   // set promotable tile if tile is promotable
@@ -80,8 +73,7 @@ const Board = () => {
             // here we set last move to promote to handle piece promotion
             // move is only written to game after new promotable
             // piece is selected
-            setTileToPromote(selectedTile);
-            setLastMoveIsPromote(moveResult);
+            setTileToPromote({ moveResult, promoteTile: selectedTile });
           } else {
             // or self last move to
             // write move to game
@@ -110,8 +102,11 @@ const Board = () => {
   // handle promote piece state, set new piece on coord
   useEffect(() => {
     // clear promote piece after board update
-    if (promotePiece && tileToPromote && lastMoveIsPromote) {
-      const coord = TileCoord.new(tileToPromote.row, tileToPromote.col);
+    if (promotePiece && tileToPromote && tileToPromote.promoteTile) {
+      const coord = TileCoord.new(
+        tileToPromote.promoteTile.coord().row(),
+        tileToPromote.promoteTile.coord().col()
+      );
 
       // update board with new piece
       board.set_new_tile(
@@ -122,8 +117,8 @@ const Board = () => {
 
       // write move after piece promote
       setLastMove({
-        moveResult: lastMoveIsPromote,
-        promotePiece: promotePiece.piece_type()
+        moveResult: tileToPromote.moveResult,
+        pieceToPromote: promotePiece.piece_type()
       });
 
       // clear promote piece state
@@ -149,13 +144,13 @@ const Board = () => {
 
       const moveStr = handleWriteMoveToGame(lastMove as LastMove, board, game);
       console.log(moveStr);
+
+      // TODO
+      // make network request with new move notation
+
+      // TODO
+      // write game to client session
     }
-
-    // TODO
-    // make network request with new move notation
-
-    // TODO
-    // write game to client session
   }, [lastMove]);
 
   // local tiles used to keep state fresh

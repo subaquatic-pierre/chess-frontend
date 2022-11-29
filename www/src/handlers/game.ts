@@ -2,15 +2,15 @@ import { Board, Game, Tile, MoveResult, PieceType } from 'chess-lib';
 import { LastMove } from '../types/Board';
 
 export const handleWriteMoveToGame = (
-  moveResult: LastMove,
+  lastMove: LastMove,
   board: Board,
   game: Game,
   promote_piece_type?: PieceType
 ): string => {
   const moveWriter = board.move_writer();
   const moveStr = moveWriter.write_move(
-    moveResult.moveResult,
-    moveResult.promotePiece
+    lastMove.moveResult,
+    lastMove.pieceToPromote
   );
 
   // TODO

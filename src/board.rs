@@ -2,12 +2,14 @@ use js_sys::Array;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use crate::pieces::king::KingCastleBoardState;
+use crate::console_log;
+use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 // use crate::console_log;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
 use crate::tile::{Tile, TileColor, TileCoord, TileState};
+use crate::translator::MoveWriter;
 
 #[wasm_bindgen]
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -43,12 +45,39 @@ impl Board {
         board
     }
 
+    /// return a new move writer
+    /// with reference to current board state
+    /// the move writer is used to write moves made
+    /// on frontend and return moves as chess notation string
+    /// to be written to the game
+    pub fn get_move_writer(&self) -> MoveWriter {
+        MoveWriter::new(self)
+    }
+
+    // JS methods
+
     /// Returns JS array cloned copy of current tiles
     /// Used to render tiles from current board state
     pub fn tiles(&self) -> Array {
         self.tiles.clone().into_iter().map(JsValue::from).collect()
     }
 
+    /// return JS type of the piece
+    /// mainly used for debugging purpose
+    pub fn get_js_piece(&self, coord: &TileCoord) -> JsValue {
+        let tile = self.get_tile(coord);
+        match tile {
+            Some(tile) => match tile.piece() {
+                Some(piece) => piece.to_json(),
+                None => false.into(),
+            },
+            None => false.into(),
+        }
+    }
+
+    /// used to get current state of king castle moves
+    /// used in move_piece method to check if valid
+    /// king castle move can be made
     pub fn king_castle_state(&self) -> *const KingCastleBoardState {
         &self.king_castle_state
     }
@@ -153,23 +182,21 @@ impl Board {
 
     /// main public method used to move pieces,
     /// updates board with new pieces
-    pub fn move_piece(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) -> bool {
+    pub fn move_piece(
+        &mut self,
+        old_row: u8,
+        old_col: u8,
+        new_row: u8,
+        new_col: u8,
+    ) -> Option<MoveResult> {
         // do not ignore check on main method to move pieces
         // board is updated with new pieces after this method
-        let is_piece_moved = self.handle_move_piece(old_row, old_col, new_row, new_col, false);
+        let result = self.handle_move_piece(old_row, old_col, new_row, new_col, false);
 
         // update king castle state after move is completed
         self.king_castle_state.update_state(&*self);
 
-        // TODO:
-        // write move to game
-        // ...
-
-        // TODO:
-        // update players pieces
-        // ...
-
-        is_piece_moved
+        result
     }
 
     /// method used to move piece ignoring if king is in check
@@ -191,22 +218,22 @@ impl Board {
         new_row: u8,
         new_col: u8,
         ignore_check: bool,
-    ) -> bool {
+    ) -> Option<MoveResult> {
         let old_coord: TileCoord = TileCoord::new(old_row, old_col);
         let new_coord: TileCoord = TileCoord::new(new_row, new_col);
         // get old tile
         let tile = self.get_tile(&old_coord);
 
         // handle empty tile case
-        if tile.is_none() {
-            return false;
-        };
+        // will return none if doesn't exist
+        tile?;
 
         // handle empty piece case
+        // will return none if doesn't exist
+        // SAFETY:
+        // can unwrap tile, empty case covered above
         let piece = tile.unwrap().piece();
-        if piece.is_none() {
-            return false;
-        }
+        piece.as_ref()?;
 
         // SAFETY:
         // can safely unwrap piece
@@ -225,11 +252,12 @@ impl Board {
         let move_validator = MoveValidator::new(new_coord, self);
 
         // check if king take
+        let is_take = move_validator.is_take();
         let is_king_take = move_validator.is_king_take();
 
         // only continue if move is valid
         if !move_validator.is_valid_move(piece_strategy.as_ref(), ignore_check) {
-            return false;
+            return None;
         }
 
         // if en passant take clear en passant coord
@@ -250,8 +278,10 @@ impl Board {
             move_handler.handle_pawn_move(piece_strategy.as_ref());
         }
 
+        let mut king_castle_result: Option<KingCastleMoveResult> = None;
+
         if piece_strategy.piece_type() == PieceType::King {
-            move_handler.handle_king_castle_move(piece_strategy.as_ref())
+            king_castle_result = move_handler.handle_king_castle_move(piece_strategy.as_ref());
         }
 
         // only clear tiles if not king take, ie. cannot take king off board
@@ -263,23 +293,20 @@ impl Board {
             self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
 
             // return true as piece is move
-            return true;
+            return Some(MoveResult {
+                piece_type: piece_strategy.piece_type(),
+                piece_color: piece_strategy.color(),
+                from_coord: Some(old_coord),
+                to_coord: Some(new_coord),
+                is_take,
+                is_short_castle: king_castle_result == Some(KingCastleMoveResult::ShortCastle),
+                is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
+            });
         }
 
         // if no piece if moved
         // return false
-        false
-    }
-
-    pub fn get_js_piece(&mut self, coord: &TileCoord) -> JsValue {
-        let tile = self.get_tile(coord);
-        match tile {
-            Some(tile) => match tile.piece() {
-                Some(piece) => piece.to_json(),
-                None => false.into(),
-            },
-            None => false.into(),
-        }
+        None
     }
 
     pub fn get_piece(&self, coord: &TileCoord) -> Option<Piece> {
@@ -402,4 +429,16 @@ impl Default for Board {
     fn default() -> Self {
         Self::new()
     }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct MoveResult {
+    pub piece_type: PieceType,
+    pub piece_color: PieceColor,
+    pub from_coord: Option<TileCoord>,
+    pub to_coord: Option<TileCoord>,
+    pub is_take: bool,
+    pub is_short_castle: bool,
+    pub is_long_castle: bool,
 }

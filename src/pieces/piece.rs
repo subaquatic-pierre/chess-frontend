@@ -92,3 +92,16 @@ pub enum PieceState {
     Selected,
     Unselected,
 }
+
+impl From<char> for PieceType {
+    fn from(string: char) -> Self {
+        match string {
+            'K' => PieceType::King,
+            'Q' => PieceType::Queen,
+            'R' => PieceType::Rook,
+            'B' => PieceType::Bishop,
+            'N' => PieceType::Knight,
+            _ => PieceType::Pawn,
+        }
+    }
+}

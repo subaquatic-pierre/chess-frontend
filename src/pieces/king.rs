@@ -260,6 +260,12 @@ impl KingCastleBoardState {
     }
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub enum KingCastleMoveResult {
+    ShortCastle,
+    LongCastle,
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct KingCastleState {
     pub is_king_moved: bool,

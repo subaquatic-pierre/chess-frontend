@@ -32,6 +32,9 @@ impl Game {
         self.state = new_state
     }
 
+    /// used to set new player turn once move is complete
+    /// called automatically from the frontend in handleMovePiece
+    /// in handlers/board
     pub fn set_player_turn(&mut self, player_color: PieceColor) {
         self.player_turn = player_color
     }

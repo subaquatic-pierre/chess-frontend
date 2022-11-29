@@ -59,7 +59,9 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
 
   const initBoard = () => {
-    // set base board element
+    // TODO
+    // get board from session if exists
+    // use session board to set state
 
     // set tiles based on initial board state
     setTiles(board.tiles());
@@ -72,6 +74,9 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   };
 
   const resetAll = () => {
+    // TODO
+    // clear session state
+
     // set new game
     const newGame = Game.new();
     setGame(newGame);
@@ -79,11 +84,8 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     // set new board
     const newBoard = Board.new();
     setTiles(newBoard.tiles());
+
     setBoard(newBoard);
-
-    console.log('HERERER');
-
-    // set tiles based on initial board state
   };
 
   useEffect(() => {

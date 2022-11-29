@@ -12,7 +12,7 @@ use crate::pieces::pawn::PawnMoveStrategy;
 use crate::pieces::queen::QueenMoveStrategy;
 use crate::pieces::rook::RookMoveStrategy;
 
-use super::king::KingCastleValidator;
+use super::king::{KingCastleMoveResult, KingCastleValidator};
 
 pub struct MoveHandler<'a> {
     new_coord: TileCoord,
@@ -43,7 +43,10 @@ impl<'a> MoveHandler<'a> {
         }
     }
 
-    pub fn handle_king_castle_move(&mut self, piece_strategy: &dyn PieceMoveStrategy) {
+    pub fn handle_king_castle_move(
+        &mut self,
+        piece_strategy: &dyn PieceMoveStrategy,
+    ) -> Option<KingCastleMoveResult> {
         let piece_color = piece_strategy.color();
         let rook_row = match piece_color {
             PieceColor::White => 0,
@@ -72,7 +75,19 @@ impl<'a> MoveHandler<'a> {
                 Some(PieceType::Rook),
                 Some(piece_color),
             );
+
+            // return whether it is a long castle or short castle
+            if self.new_coord == KingCastleValidator::long_castle_coord(piece_color) {
+                return Some(KingCastleMoveResult::LongCastle);
+            }
+
+            if self.new_coord == KingCastleValidator::short_castle_coord(piece_color) {
+                return Some(KingCastleMoveResult::ShortCastle);
+            }
         };
+
+        // return no castling occurred
+        None
     }
 
     // ---
@@ -145,6 +160,11 @@ impl<'a> MoveValidator<'a> {
         piece_strategy: &dyn PieceMoveStrategy,
         ignore_check: bool,
     ) -> bool {
+        // if new coord not in bounds
+        // is invalid move
+        if !self.new_coord.in_bounds() {
+            return false;
+        }
         // get possible piece moves based on piece_strategy
         let possible_moves = piece_strategy.moves();
 
@@ -421,7 +441,7 @@ impl<'a> MoveValidator<'a> {
             // tile has piece, confirmed in above loop
             let piece = board.peek_tile(&coord).unwrap();
 
-            // build enemy piece strategy
+            // // build enemy piece strategy
             let own_piece_strategy = StrategyBuilder::new_piece_strategy(
                 piece.piece_type(),
                 coord,

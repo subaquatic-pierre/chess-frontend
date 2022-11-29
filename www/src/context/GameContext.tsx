@@ -42,6 +42,9 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
         alert(`White Wins!, black is in checkmate`);
         game.update_state(GameState.Ended);
       }
+
+      // TODO
+      // clear game state from session
     }
   }, [checkmate]);
 
@@ -50,6 +53,13 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
       setCheckmate(null);
     }
   }, [game]);
+
+  // TODO
+  // load game from session if exists
+  // useEffect(()=>{
+  //   // get game from session
+  //   // set game from session
+  // },[])
 
   return (
     <GameContext.Provider

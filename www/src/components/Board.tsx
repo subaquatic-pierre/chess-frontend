@@ -9,9 +9,11 @@ import useBoardContext from '../hooks/useBoardContext';
 import {
   handleMovePiece,
   handleHighlightMoves,
-  checkTileToPromote,
-  isPlayerTurn
+  checkTileToPromote
 } from '../handlers/board';
+
+import { handleWriteMoveToGame } from '../handlers/game';
+
 import useModalContext from '../hooks/useModalContext';
 import PromotePieceModal from './PromotePieceModal';
 
@@ -48,12 +50,21 @@ const Board = () => {
 
       // TODO
       // uncomment to enable player turn capabilities
-      if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
-        return;
-      }
+      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+      //   return;
+      // }
 
       if (curActiveCoord) {
-        handleMovePiece(selectedTile, board, game);
+        const moveResult = handleMovePiece(selectedTile, board, game);
+        if (moveResult) {
+          const moveStr = handleWriteMoveToGame(moveResult, board, game);
+
+          // TODO
+          // make network request with new move notation
+
+          // TODO
+          // write game to client session
+        }
       } else {
         handleHighlightMoves(selectedTile, board);
       }
@@ -92,7 +103,7 @@ const Board = () => {
     }
   }, [promotePiece]);
 
-  // handle checkmate sate
+  // handle checkmate state
   useEffect(() => {
     const checkmateColor = board.is_checkmate();
 

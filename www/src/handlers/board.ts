@@ -5,7 +5,8 @@ import {
   PieceType,
   Tile,
   TileCoord,
-  TileState
+  TileState,
+  MoveResult
 } from 'chess-lib';
 import { TileToPromote } from '../types/Board';
 
@@ -29,7 +30,7 @@ const movePiece = (
   oldCoord: TileCoord,
   newCoord: TileCoord,
   board: Board
-): boolean => {
+): MoveResult | false => {
   const oldRow = oldCoord.row();
   const oldCol = oldCoord.col();
   const newRow = newCoord.row();
@@ -38,22 +39,26 @@ const movePiece = (
   const piece = board.get_piece(oldCoord);
 
   if (piece) {
-    const isPieceMoved = board.move_piece(oldRow, oldCol, newRow, newCol);
-    return isPieceMoved;
+    const moveResult = board.move_piece(oldRow, oldCol, newRow, newCol);
+    return moveResult;
   }
   return false;
 };
 
-export const handleMovePiece = (newTile: Tile, board: Board, game: Game) => {
+export const handleMovePiece = (
+  newTile: Tile,
+  board: Board,
+  game: Game
+): MoveResult | false => {
   // check if current player turn
   const oldTile = board.get_selected_piece_coord();
   if (oldTile) {
     const curPlayerPiece = board.get_piece(oldTile);
 
-    const pieceMoved = movePiece(oldTile, newTile.coord(), board);
+    const moveResult = movePiece(oldTile, newTile.coord(), board);
 
     // change player turn if piece moved
-    if (pieceMoved) {
+    if (moveResult) {
       // get current player move color
       // change current player turn if piece moved
 
@@ -65,7 +70,7 @@ export const handleMovePiece = (newTile: Tile, board: Board, game: Game) => {
     }
 
     board.clear_active_tiles();
-    return pieceMoved;
+    return moveResult;
   }
 };
 

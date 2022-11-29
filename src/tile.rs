@@ -213,6 +213,22 @@ impl Display for TileRank {
     }
 }
 
+impl From<char> for TileFile {
+    fn from(file_str: char) -> Self {
+        match file_str {
+            'a' => TileFile::FileA,
+            'b' => TileFile::FileB,
+            'c' => TileFile::FileC,
+            'd' => TileFile::FileD,
+            'e' => TileFile::FileE,
+            'f' => TileFile::FileF,
+            'g' => TileFile::FileG,
+            'h' => TileFile::FileH,
+            _ => TileFile::Unknown,
+        }
+    }
+}
+
 impl From<u8> for TileFile {
     fn from(num: u8) -> Self {
         match num {
@@ -245,6 +261,21 @@ impl Into<u8> for TileFile {
     }
 }
 
+impl From<char> for TileRank {
+    fn from(rank_str: char) -> Self {
+        match rank_str {
+            '0' => Self::Rank1,
+            '1' => Self::Rank2,
+            '2' => Self::Rank3,
+            '3' => Self::Rank4,
+            '4' => Self::Rank5,
+            '5' => Self::Rank6,
+            '6' => Self::Rank7,
+            '7' => Self::Rank8,
+            _ => Self::Unknown,
+        }
+    }
+}
 impl From<u8> for TileRank {
     fn from(num: u8) -> Self {
         match num {
@@ -307,16 +338,9 @@ impl TileCoord {
     }
 
     pub fn in_bounds(&self) -> bool {
-        if (self.row as i8) < 0 || self.row > 7 {
-            return false;
-        }
-
-        if (self.col as i8) < 0 || self.col > 7 {
-            return false;
-        }
-
-        true
+        (self.row <= 7) && (self.col <= 7)
     }
+
     pub fn to_json(self) -> JsValue {
         serde_wasm_bindgen::to_value(&self).unwrap()
     }

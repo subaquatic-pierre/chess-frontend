@@ -16,15 +16,17 @@ pub struct MoveWriter {
     board: *const Board,
 }
 
-#[wasm_bindgen]
 impl MoveWriter {
     /// NOTE
     /// Move writer should only be instantiated from
     /// within the Board.move_writer() method
-    pub fn new(board: *const Board) -> Self {
+    pub fn new(board: &Board) -> Self {
         Self { board }
     }
+}
 
+#[wasm_bindgen]
+impl MoveWriter {
     /// main method used to write a move to string from a move result
     /// it is the opposite of parse_move method
     pub fn write_move(&self, move_res: MoveResult, promote_piece: Option<PieceType>) -> String {

@@ -125,8 +125,8 @@ impl Display for Move {
     }
 }
 
-#[wasm_bindgen]
 #[derive(Clone)]
+#[wasm_bindgen]
 pub struct Moves {
     white_moves: Vec<Move>,
     black_moves: Vec<Move>,
@@ -176,6 +176,16 @@ impl Moves {
         }
 
         arr
+    }
+}
+
+impl Moves {
+    pub fn white_moves(&self) -> Vec<Move> {
+        self.white_moves.clone()
+    }
+
+    pub fn black_moves(&self) -> Vec<Move> {
+        self.black_moves.clone()
     }
 }
 

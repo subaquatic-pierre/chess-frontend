@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { graphql, HeadFC } from 'gatsby';
 
-import Layout from '../layout/index';
+import '../static/js/main.ts';
 
 import { INavLink } from '../types/NavLink';
 
+import Layout from '../layout/index';
 import BoardContainer from '../components/BoardContainer';
-import '../static/js/main.ts';
 import Controls from '../components/Controls';
 import useGameContext from '../hooks/useGameContext';
-import GameWrapper from '../components/GameWrapper';
+import GameContainer from '../components/GameContainer';
 import MovesContainer from '../components/MovesContainer';
 
 interface ISiteMeta {
@@ -28,11 +28,11 @@ interface Props {
 const IndexPage: React.FC = () => {
   return (
     <Layout>
-      <GameWrapper>
+      <GameContainer>
         <Controls />
         <BoardContainer />
         <MovesContainer />
-      </GameWrapper>
+      </GameContainer>
     </Layout>
   );
 };

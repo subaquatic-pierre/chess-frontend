@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { SetState } from '../types/Context';
-import { Game, GameState, PieceColor, MoveResult, PieceType } from 'chess-lib';
+import { Game, PieceColor } from 'chess-lib';
 import { LastMove } from '../types/Board';
 
 export interface IGameContext {
   setGame: SetState<Game>;
   game: Game;
-
-  // checkmate state
-  setCheckmate: SetState<PieceColor | null>;
 
   // player state, used to determine who moves next
   players: number;
@@ -44,41 +41,11 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   // players
   const [players, setPlayers] = useState(0);
 
-  useEffect(() => {
-    if (checkmate !== null) {
-      if (checkmate === PieceColor.White) {
-        alert(`Black Wins!, white is in checkmate`);
-        game.update_state(GameState.Ended);
-      } else if (checkmate === PieceColor.Black) {
-        alert(`White Wins!, black is in checkmate`);
-        game.update_state(GameState.Ended);
-      }
-
-      // TODO
-      // clear game state from session
-    }
-  }, [checkmate]);
-
-  useEffect(() => {
-    if (game.state() !== GameState.Ended) {
-      setCheckmate(null);
-    }
-  }, [game]);
-
-  // TODO
-  // load game from session if exists
-  // useEffect(()=>{
-  //   // get game from session
-  //   // set game from session
-  // },[])
-
   return (
     <GameContext.Provider
       value={{
         setGame,
         game,
-
-        setCheckmate,
 
         players,
         setPlayers,

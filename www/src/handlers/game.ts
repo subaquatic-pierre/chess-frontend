@@ -1,11 +1,4 @@
-import {
-  Board,
-  Game,
-  Tile,
-  MoveResult,
-  PieceType,
-  PieceColor
-} from 'chess-lib';
+import { Board, Game, GameState, PieceType, PieceColor } from 'chess-lib';
 import { LastMove } from '../types/Board';
 
 export const handleWriteMoveToGame = (
@@ -34,4 +27,15 @@ export const handleWriteMoveToGame = (
   // write move to game
 
   return moveStr;
+};
+
+export const handleCheckmate = (game: Game) => {
+  if (game.state() === GameState.Ended) {
+    if (game.get_winner() === PieceColor.White) {
+      alert(`Black Wins!, white is in checkmate`);
+    } else if (game.get_winner() === PieceColor.Black) {
+      alert(`White Wins!, black is in checkmate`);
+      game.update_state(GameState.Ended);
+    }
+  }
 };

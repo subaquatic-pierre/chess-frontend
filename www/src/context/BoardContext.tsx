@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SetState } from '../types/Context';
 import { Board, Game, Piece, PieceColor, Tile } from 'chess-lib';
-import useLoadingContext from '../hooks/useLoadingContext';
-import { LastMove, TileToPromote } from '../types/Board';
+
+import { SetState } from '../types/Context';
+import { LastMove } from '../types/Board';
 import useGameContext from '../hooks/useGameContext';
 
 // define context interface
@@ -22,10 +22,15 @@ export interface IBoardContext {
   boardDirection: PieceColor;
   setBoardDirection: SetState<PieceColor>;
 
-  // promote piece state
+  // promote piece state, used when user clicks in
+  // select piece to promote modal
   promotePiece: Piece | null;
   setPromotePiece: SetState<Piece | null>;
 
+  // set promote tile as last move when pawn reaches
+  // promotable tile, used to control whether to
+  // write move directly after move or wait until
+  // user selects promotable piece
   tileToPromote: LastMove | null;
   setTileToPromote: SetState<LastMove | null>;
 }
@@ -38,13 +43,11 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   const [board, setBoard] = useState<Board>(firstBoard);
-  const { setGame } = useGameContext();
-  const { setLoading } = useLoadingContext();
+  const { setGame, updateGame, setUpdateGame } = useGameContext();
 
   // promote piece state
   const [tileToPromote, setTileToPromote] = useState<LastMove | null>(null);
   const [promotePiece, setPromotePiece] = useState<Piece | null>(null);
-  // loading state
 
   // tile state
   const [tiles, setTiles] = useState<Tile[]>([]);
@@ -58,18 +61,11 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
 
   const initBoard = () => {
-    // TODO
-    // get board from session if exists
-    // use session board to set state
-
     // set tiles based on initial board state
     setTiles(board.tiles());
 
     // set board direction
     setBoardDirection(PieceColor.White);
-
-    // completed loading
-    setLoading(false);
   };
 
   const resetAll = () => {
@@ -85,6 +81,10 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     setTiles(newBoard.tiles());
 
     setBoard(newBoard);
+
+    // TODO
+    // call update game
+    // setGameUpdate(!gameUpdate)
   };
 
   useEffect(() => {

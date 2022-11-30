@@ -1,5 +1,6 @@
 use std::fmt::{format, Display};
 
+use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
 use crate::{console_log, pieces::piece::PieceColor};
@@ -16,6 +17,7 @@ pub struct Game {
     state: GameState,
     player_turn: PieceColor,
     moves: Moves,
+    winner: Option<PieceColor>,
 }
 
 #[wasm_bindgen]
@@ -25,6 +27,7 @@ impl Game {
             state: GameState::Started,
             player_turn: PieceColor::White,
             moves: Moves::default(),
+            winner: None,
         }
     }
 
@@ -34,6 +37,15 @@ impl Game {
 
     pub fn update_state(&mut self, new_state: GameState) {
         self.state = new_state
+    }
+
+    pub fn set_winner(&mut self, piece_color: PieceColor) {
+        self.winner = Some(piece_color);
+        self.update_state(GameState::Ended)
+    }
+
+    pub fn get_winner(&self) -> Option<PieceColor> {
+        self.winner
     }
 
     /// used to set new player turn once move is complete
@@ -67,6 +79,28 @@ impl Game {
         }
 
         moves_str
+    }
+
+    pub fn moves_js_array(&self) -> Array {
+        let Moves {
+            white_moves,
+            black_moves,
+        } = self.moves.moves();
+
+        let arr = Array::new_with_length(white_moves.len() as u32);
+
+        for (i, _) in white_moves.iter().enumerate() {
+            let white_move = &white_moves[i];
+            let mut move_line_str = format!("{i}.{}", white_move.str);
+
+            if let Some(black_move) = black_moves.get(i) {
+                move_line_str.push_str(&format!(" {}", black_move.str));
+            }
+
+            arr.set(i as u32, JsValue::from_str(&move_line_str))
+        }
+
+        arr
     }
 
     pub fn add_move(&mut self, move_str: String, piece_color: PieceColor) {

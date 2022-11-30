@@ -831,8 +831,6 @@ impl StrategyBuilder {
         piece_color: PieceColor,
         board: *const Board,
     ) -> Box<dyn PieceMoveStrategy> {
-        // TODO:
-        // check is king is in check
         match piece_type {
             PieceType::Pawn => Box::new(PawnMoveStrategy {
                 color: piece_color,

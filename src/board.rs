@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 use crate::console_log;
 use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 // use crate::console_log;
-use crate::parser::MoveParser;
+use crate::parser::MoveWriter;
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
@@ -50,8 +50,8 @@ impl Board {
     /// the move writer is used to write moves made
     /// on frontend and return moves as chess notation string
     /// to be written to the game
-    pub fn move_parser(&self) -> MoveParser {
-        MoveParser::new(self)
+    pub fn move_writer(&self) -> MoveWriter {
+        MoveWriter::new(self)
     }
 
     // JS methods

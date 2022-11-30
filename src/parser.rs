@@ -1,25 +1,26 @@
-use std::fmt::format;
-
 use regex::Regex;
 use wasm_bindgen::prelude::*;
 
 use crate::{
     board::{Board, MoveResult},
-    game::{Move, Moves},
+    game::Moves,
     pieces::{
-        piece::{Piece, PieceColor, PieceType},
+        piece::{PieceColor, PieceType},
         strategy::{MoveValidator, StrategyBuilder},
     },
     tile::{TileCoord, TileFile, TileRank},
 };
 
 #[wasm_bindgen]
-pub struct MoveParser {
+pub struct MoveWriter {
     board: *const Board,
 }
 
 #[wasm_bindgen]
-impl MoveParser {
+impl MoveWriter {
+    /// NOTE
+    /// Move writer should only be instantiated from
+    /// within the Board.move_writer() method
     pub fn new(board: *const Board) -> Self {
         Self { board }
     }
@@ -121,7 +122,15 @@ impl MoveParser {
             piece_str, from_coord_str, take_str, to_coord_str, check_or_checkmate_str
         )
     }
+}
 
+#[wasm_bindgen]
+pub struct MoveReader {}
+
+impl MoveReader {
+    pub fn new() -> Self {
+        Self {}
+    }
     /// main method to parse move string into move a result
     /// it is the opposite of write_move method
     pub fn parse_move(&self, move_str: &str) -> MoveResult {
@@ -313,5 +322,11 @@ impl MoveParser {
     fn is_checkmate(&self, move_str: &str) -> bool {
         // is checkmate
         move_str.ends_with('#')
+    }
+}
+
+impl Default for MoveReader {
+    fn default() -> Self {
+        Self::new()
     }
 }

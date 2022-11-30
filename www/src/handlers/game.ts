@@ -4,11 +4,10 @@ import { LastMove } from '../types/Board';
 export const handleWriteMoveToGame = (
   lastMove: LastMove,
   board: Board,
-  game: Game,
-  promote_piece_type?: PieceType
+  game: Game
 ): string => {
-  const moveParser = board.move_parser();
-  const moveStr = moveParser.write_move(
+  const moveWriter = board.move_writer();
+  const moveStr = moveWriter.write_move(
     lastMove.moveResult,
     lastMove.pieceToPromote
   );
@@ -22,9 +21,6 @@ export const handleWriteMoveToGame = (
   }
 
   game.add_move(moveStr, playerTurn);
-
-  // TODO
-  // write move to game
 
   return moveStr;
 };

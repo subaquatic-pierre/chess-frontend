@@ -15,7 +15,6 @@ const GameContainer: React.FC<Props> = ({ children }) => {
   // updated each time board is updated
   useEffect(() => {
     handleCheckmate(game);
-    console.log(game.moves_js_array());
 
     // TODO
     // write moves to session

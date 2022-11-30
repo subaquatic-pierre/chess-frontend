@@ -9,7 +9,7 @@ const MovesContainer = () => {
   const [moves, setMoves] = useState<string[]>([]);
 
   useEffect(() => {
-    setMoves(game.moves_js_array());
+    setMoves(game.moves().str_array());
   }, [updateGame]);
 
   return (

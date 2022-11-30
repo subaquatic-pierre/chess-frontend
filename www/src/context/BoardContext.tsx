@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Board, Game, Piece, PieceColor, Tile } from 'chess-lib';
 
 import { SetState } from '../types/Context';
@@ -9,9 +9,12 @@ import useGameContext from '../hooks/useGameContext';
 export interface IBoardContext {
   // tiles used to render the current board state
   board: Board;
+  setBoard: SetState<Board>;
+
   tiles: Tile[];
   setTiles: SetState<Tile[]>;
-  setBoard: SetState<Board>;
+
+  // used to reset entire game and board state
   resetAll: () => void;
 
   // selected tile coord, used to move and highlight tiles
@@ -68,6 +71,11 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     setBoardDirection(PieceColor.White);
   };
 
+  // used to reset entire game
+  // needs to be in the lowest Context component
+  // to access all game and board state
+  // ie. board and setBoard is not available in GameContext
+  // as GameContext is the parent of BoardContext
   const resetAll = () => {
     // TODO
     // clear session state

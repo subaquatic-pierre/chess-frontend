@@ -19,7 +19,8 @@ export interface IGameContext {
   lastMove: LastMove | null;
   setLastMove: SetState<LastMove | null>;
 
-  // update game state toggle
+  // update game state toggle,
+  // used as global toggle to update game state
   updateGame: boolean;
   setUpdateGame: SetState<boolean>;
 }
@@ -32,7 +33,6 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   // loading state
-  const [checkmate, setCheckmate] = useState<PieceColor | null>(null);
   const [showCoords, setShowCoords] = useState(false);
   const [game, setGame] = useState<Game>(firstGame);
   const [lastMove, setLastMove] = useState<LastMove | null>(null);

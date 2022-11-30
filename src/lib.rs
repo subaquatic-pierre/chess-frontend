@@ -6,7 +6,7 @@ mod board;
 mod game;
 mod js;
 mod macros;
+mod parser;
 mod pieces;
 mod player;
 mod tile;
-mod translator;

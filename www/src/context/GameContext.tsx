@@ -21,6 +21,10 @@ export interface IGameContext {
   // last move state, used to write moves to game
   lastMove: LastMove | null;
   setLastMove: SetState<LastMove | null>;
+
+  // update game state toggle
+  updateGame: boolean;
+  setUpdateGame: SetState<boolean>;
 }
 
 export const GameContext = React.createContext({} as IGameContext);
@@ -35,9 +39,7 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   const [showCoords, setShowCoords] = useState(false);
   const [game, setGame] = useState<Game>(firstGame);
   const [lastMove, setLastMove] = useState<LastMove | null>(null);
-  const [lastMoveIsPromote, setLastMoveIsPromote] = useState<MoveResult | null>(
-    null
-  );
+  const [updateGame, setUpdateGame] = useState(false);
 
   // players
   const [players, setPlayers] = useState(0);
@@ -87,7 +89,10 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
 
         // last move used to write to the game
         lastMove,
-        setLastMove
+        setLastMove,
+
+        updateGame,
+        setUpdateGame
       }}
     >
       {children}

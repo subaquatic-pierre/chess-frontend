@@ -31,14 +31,6 @@ const Controls = () => {
     forceUpdate();
   };
 
-  const checkShowPiece = () => {
-    const moveWriter = board.get_move_writer();
-    const jsPiece = moveWriter.get_js_piece(4, 4);
-    if (jsPiece) {
-      console.log(jsPiece);
-    }
-  };
-
   return (
     <Container>
       <div
@@ -48,7 +40,6 @@ const Controls = () => {
         <Button onClick={changeBoardDirection}>Toggle Board Direction</Button>
         <Button onClick={handleReset}>Reset Game</Button>
         <Button onClick={handleShowCoords}>Toggle Show Coords</Button>
-        <Button onClick={checkShowPiece}>Show Piece</Button>
       </div>
     </Container>
   );

@@ -30,7 +30,7 @@ const movePiece = (
   oldCoord: TileCoord,
   newCoord: TileCoord,
   board: Board
-): MoveResult | false => {
+): MoveResult | undefined => {
   const oldRow = oldCoord.row();
   const oldCol = oldCoord.col();
   const newRow = newCoord.row();
@@ -42,14 +42,14 @@ const movePiece = (
     const moveResult = board.move_piece(oldRow, oldCol, newRow, newCol);
     return moveResult;
   }
-  return false;
+  return undefined;
 };
 
 export const handleMovePiece = (
   newTile: Tile,
   board: Board,
   game: Game
-): MoveResult | false => {
+): MoveResult | undefined => {
   // check if current player turn
   const oldTile = board.get_selected_piece_coord();
   if (oldTile) {
@@ -72,6 +72,7 @@ export const handleMovePiece = (
     board.clear_active_tiles();
     return moveResult;
   }
+  return undefined;
 };
 
 export const isPlayerTurn = (tile: Tile, game: Game): boolean => {
@@ -84,37 +85,4 @@ export const isPlayerTurn = (tile: Tile, game: Game): boolean => {
   }
 
   return true;
-};
-
-export const checkTileToPromote = (tiles: Tile[]): false | TileToPromote => {
-  // check 1st rank
-  for (let i = 0; i < 8; i++) {
-    const tile = tiles[i];
-
-    const piece = tile.piece();
-
-    if (piece && piece.piece_type() === PieceType.Pawn) {
-      return {
-        row: tile.coord().row(),
-        col: tile.coord().col(),
-        pieceColor: piece.color()
-      };
-    }
-  }
-
-  // check 8th rank
-  for (let i = 56; i < 64; i++) {
-    const tile = tiles[i];
-
-    const piece = tile.piece();
-
-    if (piece && piece.piece_type() === PieceType.Pawn) {
-      return {
-        row: tile.coord().row(),
-        col: tile.coord().col(),
-        pieceColor: piece.color()
-      };
-    }
-  }
-  return false;
 };

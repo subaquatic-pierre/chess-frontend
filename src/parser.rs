@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{
     board::{Board, MoveResult},
+    game::{Move, Moves},
     pieces::{
         piece::{Piece, PieceColor, PieceType},
         strategy::{MoveValidator, StrategyBuilder},
@@ -13,16 +14,18 @@ use crate::{
 };
 
 #[wasm_bindgen]
-pub struct MoveWriter {
+pub struct MoveParser {
     board: *const Board,
 }
 
 #[wasm_bindgen]
-impl MoveWriter {
+impl MoveParser {
     pub fn new(board: *const Board) -> Self {
         Self { board }
     }
 
+    /// main method used to write a move to string from a move result
+    /// it is the opposite of parse_move method
     pub fn write_move(&self, move_res: MoveResult, promote_piece: Option<PieceType>) -> String {
         // SAFETY
         // board is always valid pointer
@@ -119,34 +122,8 @@ impl MoveWriter {
         )
     }
 
-    pub fn get_piece_at(&self, row: u8, col: u8) -> Option<Piece> {
-        let board = unsafe { self.board.as_ref().unwrap() };
-
-        board.peek_tile(&TileCoord::new(row, col))
-    }
-    pub fn get_js_piece(&self, row: u8, col: u8) -> JsValue {
-        let board = unsafe { self.board.as_ref().unwrap() };
-
-        board.get_js_piece(&TileCoord::new(row, col))
-    }
-}
-
-#[wasm_bindgen]
-impl MoveResult {
-    pub fn to_json(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self).unwrap()
-    }
-}
-
-#[wasm_bindgen]
-pub struct MoveParser {}
-
-#[wasm_bindgen]
-impl MoveParser {
-    pub fn new() -> Self {
-        Self {}
-    }
-
+    /// main method to parse move string into move a result
+    /// it is the opposite of write_move method
     pub fn parse_move(&self, move_str: &str) -> MoveResult {
         // check if is take
         let is_take = move_str.contains('x');
@@ -163,6 +140,58 @@ impl MoveParser {
         }
     }
 
+    pub fn parse_moves(&self, all_moves_str: String) -> Moves {
+        let mut moves = Moves::default();
+
+        // get each pair of moves
+        let move_pair: Vec<&str> = all_moves_str.split(',').collect();
+
+        // get white and black moves from pair
+        move_pair.iter().for_each(|&pair| {
+            let move_split: Vec<&str> = pair.split(' ').collect();
+            let white_move_str = move_split
+                .first()
+                .unwrap()
+                .to_owned()
+                .split('.')
+                .collect::<Vec<&str>>()
+                .get(1)
+                .unwrap()
+                .to_owned();
+
+            moves.insert(white_move_str.to_string(), PieceColor::White);
+
+            let black_move_str = move_split
+                .get(1)
+                .unwrap()
+                .to_owned()
+                .split('.')
+                .collect::<Vec<&str>>()
+                .get(1)
+                .unwrap()
+                .to_owned();
+
+            moves.insert(black_move_str.to_string(), PieceColor::White);
+
+            if move_split.len() == 2 {
+            } else {
+                let white_move_str = move_split
+                    .first()
+                    .unwrap()
+                    .to_owned()
+                    .split('.')
+                    .collect::<Vec<&str>>()
+                    .get(1)
+                    .unwrap()
+                    .to_owned();
+
+                moves.insert(white_move_str.to_string(), PieceColor::White);
+            }
+        });
+
+        moves
+    }
+
     fn get_to_coord(&self, move_str: &str) -> Option<TileCoord> {
         // return none if castle move
         if self.is_long_castle(move_str) || self.is_short_castle(move_str) {
@@ -171,7 +200,6 @@ impl MoveParser {
 
         // remove last char if check or checkmate
         let mut str_copy = move_str.to_string();
-
         if self.is_check(move_str) || self.is_checkmate(move_str) {
             str_copy.pop();
         }
@@ -204,11 +232,12 @@ impl MoveParser {
 
         // remove last char if check or checkmate
         let mut str_copy = move_str.to_string();
-
         if self.is_check(move_str) || self.is_checkmate(move_str) {
             str_copy.pop();
         }
 
+        // get starting index based on piece type
+        // if piece type is pawn then starting index is 0 otherwise it is 1
         let start_index = if self.get_piece_type(move_str) == PieceType::Pawn {
             0_usize
         } else {
@@ -284,11 +313,5 @@ impl MoveParser {
     fn is_checkmate(&self, move_str: &str) -> bool {
         // is checkmate
         move_str.ends_with('#')
-    }
-}
-
-impl Default for MoveParser {
-    fn default() -> Self {
-        Self::new()
     }
 }

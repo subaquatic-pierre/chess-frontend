@@ -10,6 +10,7 @@ import '../static/js/main.ts';
 import Controls from '../components/Controls';
 import useGameContext from '../hooks/useGameContext';
 import GameWrapper from '../components/GameWrapper';
+import MovesContainer from '../components/MovesContainer';
 
 interface ISiteMeta {
   site: {
@@ -30,6 +31,7 @@ const IndexPage: React.FC = () => {
       <GameWrapper>
         <Controls />
         <BoardContainer />
+        <MovesContainer />
       </GameWrapper>
     </Layout>
   );

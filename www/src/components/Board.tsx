@@ -16,7 +16,7 @@ import useBoardContext from '../hooks/useBoardContext';
 import {
   handleMovePiece,
   handleHighlightMoves,
-  checkTileToPromote
+  isPlayerTurn
 } from '../handlers/board';
 
 import { handleWriteMoveToGame } from '../handlers/game';
@@ -39,7 +39,14 @@ const Board = () => {
   } = useBoardContext();
   const [localTiles, setLocalTiles] = useState<ITile[]>(tiles);
   const { setModalContent } = useModalContext();
-  const { setCheckmate, game, lastMove, setLastMove } = useGameContext();
+  const {
+    setCheckmate,
+    game,
+    lastMove,
+    setLastMove,
+    setUpdateGame,
+    updateGame
+  } = useGameContext();
 
   // handle move state
   // set promotable tile if tile is promotable
@@ -60,9 +67,9 @@ const Board = () => {
 
       // TODO
       // uncomment to enable player turn capabilities
-      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
-      //   return;
-      // }
+      if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+        return;
+      }
 
       if (curActiveCoord) {
         const moveResult = handleMovePiece(selectedTile, board, game);
@@ -143,7 +150,8 @@ const Board = () => {
       }
 
       const moveStr = handleWriteMoveToGame(lastMove as LastMove, board, game);
-      console.log(moveStr);
+
+      setUpdateGame(!updateGame);
 
       // TODO
       // make network request with new move notation

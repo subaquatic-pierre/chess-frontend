@@ -6,14 +6,14 @@ import { Button, Modal, Container, Row, Col } from 'react-bootstrap';
 import useBoardContext from '../hooks/useBoardContext';
 import { ModalContentProps } from '../types/Modal';
 import Piece from './Piece';
-import { TileToPromote } from '../types/Board';
+import { LastMove, TileToPromote } from '../types/Board';
 
 interface Props {
   piece: IPiece;
   handlePieceClick: () => void;
 }
 
-const getPieces = (tileToPromote: TileToPromote): IPiece[] => {
+const getPieces = (tileToPromote: LastMove): IPiece[] => {
   const pieces: IPiece[] = [];
   const pieceTypes = [
     PieceType.Rook,
@@ -23,8 +23,15 @@ const getPieces = (tileToPromote: TileToPromote): IPiece[] => {
   ];
 
   pieceTypes.forEach((pieceType) => {
-    const coord = TileCoord.new(tileToPromote.row, tileToPromote.col);
-    const newPiece = IPiece.new(pieceType, tileToPromote.pieceColor, coord);
+    const coord = TileCoord.new(
+      tileToPromote.moveResult.to_coord?.row() as number,
+      tileToPromote.moveResult.to_coord?.col() as number
+    );
+    const newPiece = IPiece.new(
+      pieceType,
+      tileToPromote.moveResult.piece_color,
+      coord
+    );
     pieces.push(newPiece);
   });
   return pieces;

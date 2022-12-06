@@ -1,4 +1,4 @@
-import { PieceColor, Tile } from 'chess-lib';
+import { PieceColor, Tile, Game } from 'chess-lib';
 import { BorderSide } from '../types/Board';
 
 export const rotateBoard = (
@@ -68,4 +68,16 @@ export const getBorderLabels = (
     default:
       return [''];
   }
+};
+
+export const isPlayerTurn = (tile: Tile, game: Game): boolean => {
+  const curPlayerTurn = game.player_turn();
+
+  if (tile && tile.piece()) {
+    if (curPlayerTurn !== tile.piece()?.color()) {
+      return false;
+    }
+  }
+
+  return true;
 };

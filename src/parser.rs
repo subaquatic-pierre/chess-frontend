@@ -1,9 +1,10 @@
+use js_sys::Array;
 use regex::Regex;
 use wasm_bindgen::prelude::*;
 
 use crate::{
     board::{Board, MoveResult},
-    game::Moves,
+    game::MovesStr,
     pieces::{
         piece::{PieceColor, PieceType},
         strategy::{MoveValidator, StrategyBuilder},
@@ -127,21 +128,35 @@ impl MoveWriter {
 }
 
 #[wasm_bindgen]
-pub struct MoveReader {}
+pub struct MoveReader {
+    board: *const Board,
+}
 
 impl MoveReader {
-    pub fn new() -> Self {
-        Self {}
+    /// NOTE
+    /// Move reader should only be instantiated from
+    /// within the Board.move_reader() method
+    pub fn new(board: &Board) -> Self {
+        Self { board }
     }
+}
+
+#[wasm_bindgen]
+impl MoveReader {
     /// main method to parse move string into move a result
     /// it is the opposite of write_move method
-    pub fn parse_move(&self, move_str: &str) -> MoveResult {
+    pub fn parse_move(&self, move_str: &str, piece_color: Option<PieceColor>) -> MoveResult {
         // check if is take
         let is_take = move_str.contains('x');
 
+        let piece_color = match piece_color {
+            Some(color) => color,
+            _ => self.get_piece_color(move_str),
+        };
+
         MoveResult {
             piece_type: self.get_piece_type(move_str),
-            piece_color: PieceColor::White,
+            piece_color,
             from_coord: self.get_from_coord(move_str),
             to_coord: self.get_to_coord(move_str),
             is_short_castle: self.is_short_castle(move_str),
@@ -151,56 +166,82 @@ impl MoveReader {
         }
     }
 
-    pub fn parse_moves(&self, all_moves_str: String) -> Moves {
-        let mut moves = Moves::default();
+    pub fn parse_moves_to_js_arr(&self, all_moves_str: String) -> Array {
+        // let moves_str = self.parse_moves_to_str(all_moves_str);
+
+        // let white_moves = moves_str.white_moves();
+        // let black_moves = moves_str.black_moves();
+
+        // let mut all_moves = vec![];
+
+        // for (i, move_str) in white_moves.iter().enumerate() {
+        //     // add result to array
+        //     all_moves.push(self.parse_move(&move_str.str, Some(PieceColor::White)));
+
+        //     // check if there is a corresponding black move to add
+        //     if let Some(black_move_str) = black_moves.get(i) {
+        //         all_moves.push(self.parse_move(&black_move_str.str, Some(PieceColor::Black)))
+        //     }
+        //     // if let Some(str) = black_move_str.as_string() {};
+        // }
+
+        let all_moves = self.parse_moves(all_moves_str);
+
+        let arr = Array::new_with_length(all_moves.len() as u32);
+
+        for (i, _) in all_moves.iter().enumerate() {
+            let move_res = &all_moves[i];
+            arr.set(i as u32, move_res.to_json());
+        }
+
+        arr
+    }
+
+    pub fn parse_moves_to_str(&self, all_moves_str: String) -> MovesStr {
+        let mut moves = MovesStr::default();
 
         // get each pair of moves
-        let move_pair: Vec<&str> = all_moves_str.split(',').collect();
+        let move_pairs: Vec<&str> = all_moves_str.split(',').collect();
 
-        // get white and black moves from pair
-        move_pair.iter().for_each(|&pair| {
-            let move_split: Vec<&str> = pair.split(' ').collect();
-            let white_move_str = move_split
-                .first()
-                .unwrap()
-                .to_owned()
-                .split('.')
-                .collect::<Vec<&str>>()
-                .get(1)
-                .unwrap()
-                .to_owned();
+        for move_pair in move_pairs.iter() {
+            // split pair by space
+            let pair_split: Vec<&str> = move_pair.split(' ').collect();
 
-            moves.insert(white_move_str.to_string(), PieceColor::White);
+            // remove number from beginning of string
+            if let Some(&white_move_str_with_num) = pair_split.first() {
+                let move_num_split: Vec<&str> = white_move_str_with_num.split('.').collect();
 
-            let black_move_str = move_split
-                .get(1)
-                .unwrap()
-                .to_owned()
-                .split('.')
-                .collect::<Vec<&str>>()
-                .get(1)
-                .unwrap()
-                .to_owned();
-
-            moves.insert(black_move_str.to_string(), PieceColor::White);
-
-            if move_split.len() == 2 {
-            } else {
-                let white_move_str = move_split
-                    .first()
-                    .unwrap()
-                    .to_owned()
-                    .split('.')
-                    .collect::<Vec<&str>>()
-                    .get(1)
-                    .unwrap()
-                    .to_owned();
-
-                moves.insert(white_move_str.to_string(), PieceColor::White);
+                // insert white move
+                if let Some(&white_move_str) = move_num_split.get(1) {
+                    moves.insert(white_move_str.to_string(), PieceColor::White);
+                }
             }
-        });
+
+            // check if black move exists
+            if let Some(&black_move_str) = pair_split.get(1) {
+                // insert black move
+                moves.insert(black_move_str.to_string(), PieceColor::Black);
+            }
+        }
 
         moves
+    }
+
+    // ---
+    // private methods
+    // ---
+
+    fn get_piece_color(&self, move_str: &str) -> PieceColor {
+        if let Some(from_coord) = self.get_from_coord(move_str) {
+            let board = unsafe { self.board.as_ref().unwrap() };
+            if let Some(piece) = board.peek_tile(&from_coord) {
+                piece.color()
+            } else {
+                PieceColor::White
+            }
+        } else {
+            PieceColor::White
+        }
     }
 
     fn get_to_coord(&self, move_str: &str) -> Option<TileCoord> {
@@ -327,8 +368,25 @@ impl MoveReader {
     }
 }
 
-impl Default for MoveReader {
-    fn default() -> Self {
-        Self::new()
+impl MoveReader {
+    fn parse_moves(&self, all_moves_str: String) -> Vec<MoveResult> {
+        let moves_str = self.parse_moves_to_str(all_moves_str);
+
+        let white_moves = moves_str.white_moves();
+        let black_moves = moves_str.black_moves();
+
+        let mut move_results = vec![];
+
+        for (i, move_str) in white_moves.iter().enumerate() {
+            // add result to array
+            move_results.push(self.parse_move(&move_str.str, Some(PieceColor::White)));
+
+            // check if there is a corresponding black move to add
+            if let Some(black_move_str) = black_moves.get(i) {
+                move_results.push(self.parse_move(&black_move_str.str, Some(PieceColor::Black)));
+            }
+        }
+
+        move_results
     }
 }

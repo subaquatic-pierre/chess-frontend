@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 use crate::console_log;
 use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 // use crate::console_log;
-use crate::parser::MoveWriter;
+use crate::parser::{MoveReader, MoveWriter};
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
@@ -52,6 +52,10 @@ impl Board {
     /// to be written to the game
     pub fn move_writer(&self) -> MoveWriter {
         MoveWriter::new(self)
+    }
+
+    pub fn move_reader(&self) -> MoveReader {
+        MoveReader::new(self)
     }
 
     // JS methods
@@ -464,4 +468,28 @@ pub struct MoveResult {
     pub is_short_castle: bool,
     pub is_long_castle: bool,
     pub is_promote_piece: bool,
+}
+
+#[wasm_bindgen]
+impl MoveResult {
+    pub fn to_json(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+
+    pub fn from_json(json: JsValue) -> Tile {
+        serde_wasm_bindgen::from_value(json).unwrap()
+    }
+}
+
+pub trait Json
+where
+    Self: Serialize,
+{
+    fn to_json(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+
+    fn from_json(json: JsValue) -> Tile {
+        serde_wasm_bindgen::from_value(json).unwrap()
+    }
 }

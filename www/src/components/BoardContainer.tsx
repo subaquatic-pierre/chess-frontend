@@ -15,8 +15,9 @@ import useGameContext from '../hooks/useGameContext';
 import {
   handleMovePiece,
   handleHighlightMoves,
-  isPlayerTurn
+  handlePromotePiece
 } from '../handlers/board';
+import { isPlayerTurn } from '../util/board';
 import { handleWriteMoveToGame } from '../handlers/game';
 
 const BoardContainer = () => {
@@ -60,19 +61,29 @@ const BoardContainer = () => {
       }
 
       if (curActiveCoord) {
-        const moveResult = handleMovePiece(selectedTile, board, game);
-        if (moveResult) {
-          // write move to game only if not promote piece
-          // only write promote piece only piece is selected
-          if (moveResult.is_promote_piece) {
-            // here we set last move to promote to handle piece promotion
-            // move is only written to game after new promotable
-            // piece is selected
-            setTileToPromote({ moveResult, promoteTile: selectedTile });
-          } else {
-            // or self last move to
-            // write move to game
-            setLastMove({ moveResult });
+        const fromCoord = board.get_selected_piece_coord();
+
+        if (fromCoord) {
+          const moveResult = handleMovePiece(
+            fromCoord,
+            selectedTile.coord(),
+            board,
+            game
+          );
+
+          if (moveResult) {
+            // write move to game only if not promote piece
+            // only write promote piece only piece is selected
+            if (moveResult.is_promote_piece) {
+              // here we set last move to promote to handle piece promotion
+              // move is only written to game after new promotable
+              // piece is selected
+              setTileToPromote({ moveResult, promoteTile: selectedTile });
+            } else {
+              // or self last move to
+              // write move to game
+              setLastMove({ moveResult });
+            }
           }
         }
       } else {
@@ -104,11 +115,7 @@ const BoardContainer = () => {
       );
 
       // update board with new piece
-      board.set_new_tile(
-        coord,
-        promotePiece.piece_type(),
-        promotePiece.color()
-      );
+      handlePromotePiece(coord, promotePiece, board);
 
       // write move after piece promote
       setLastMove({

@@ -264,14 +264,14 @@ impl Into<u8> for TileFile {
 impl From<char> for TileRank {
     fn from(rank_str: char) -> Self {
         match rank_str {
-            '0' => Self::Rank1,
-            '1' => Self::Rank2,
-            '2' => Self::Rank3,
-            '3' => Self::Rank4,
-            '4' => Self::Rank5,
-            '5' => Self::Rank6,
-            '6' => Self::Rank7,
-            '7' => Self::Rank8,
+            '1' => Self::Rank1,
+            '2' => Self::Rank2,
+            '3' => Self::Rank3,
+            '4' => Self::Rank4,
+            '5' => Self::Rank5,
+            '6' => Self::Rank6,
+            '7' => Self::Rank7,
+            '8' => Self::Rank8,
             _ => Self::Unknown,
         }
     }

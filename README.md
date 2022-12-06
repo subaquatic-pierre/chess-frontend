@@ -76,3 +76,19 @@ npm run watch
 
 - note: Rust struct can be serialized and deserialized with `serde`
   an example usage is withing the `car.rs` module.
+
+## Moves
+
+0.e2e4 f7f5
+1.Nb1c3 c7c5
+2.Bf1b5 c5c4
+3.b2b3 c4xb3
+4.Bb5xd7+ Bc8xd7
+5.g2g4 f5xg4
+6.Nc3d5 g4g3
+7.Qd1f3 a7a6
+8.c2c4 b3b2
+9.a2a3 b2b1=Q
+10.e4e5 a6a5
+11.Qb1f5 g7g6
+12.Qf5f7#

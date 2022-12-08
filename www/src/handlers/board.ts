@@ -9,7 +9,8 @@ import {
   MoveResult,
   Piece
 } from 'chess-lib';
-import { TileToPromote } from '../types/Board';
+import { LastMove, TileToPromote } from '../types/Board';
+import { handleWriteMoveToGame } from './game';
 
 export const handleHighlightMoves = (tile: Tile, board: Board) => {
   // clear all current active tiles
@@ -80,4 +81,6 @@ export const handlePromotePiece = (
 ) => {
   // update board with new piece
   board.set_new_tile(coord, promotePiece.piece_type(), promotePiece.color());
+
+  // handleWriteMoveToGame(lastMove, board, game);
 };

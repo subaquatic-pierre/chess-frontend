@@ -4,6 +4,7 @@ import { Board, Game, Piece, PieceColor, Tile } from 'chess-lib';
 import { SetState } from '../types/Context';
 import { LastMove } from '../types/Board';
 import useGameContext from '../hooks/useGameContext';
+import { clearMovesFromSession } from '../util/game';
 
 // define context interface
 export interface IBoardContext {
@@ -46,7 +47,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   const [board, setBoard] = useState<Board>(firstBoard);
-  const { setGame, updateGame, setUpdateGame } = useGameContext();
+  const { setGame, updateGame, setUpdateGame, game } = useGameContext();
 
   // promote piece state
   const [tileToPromote, setTileToPromote] = useState<LastMove | null>(null);
@@ -79,6 +80,8 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   const resetAll = () => {
     // TODO
     // clear session state
+    game.reset_moves();
+    clearMovesFromSession();
 
     // set new game
     const newGame = Game.new();
@@ -92,7 +95,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
 
     // TODO
     // call update game
-    // setGameUpdate(!gameUpdate)
+    setUpdateGame(!updateGame);
   };
 
   useEffect(() => {

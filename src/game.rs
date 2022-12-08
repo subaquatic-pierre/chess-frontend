@@ -68,6 +68,10 @@ impl Game {
         self.player_turn
     }
 
+    pub fn reset_moves(&mut self) {
+        self.moves = MovesStr::default()
+    }
+
     /// returns continuous string of moves
     /// separated by ','
     pub fn print_moves(&self) -> String {

@@ -476,7 +476,7 @@ impl MoveResult {
         serde_wasm_bindgen::to_value(&self).unwrap()
     }
 
-    pub fn from_json(json: JsValue) -> Tile {
+    pub fn from_json(json: JsValue) -> Self {
         serde_wasm_bindgen::from_value(json).unwrap()
     }
 }

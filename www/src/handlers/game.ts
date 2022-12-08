@@ -1,4 +1,12 @@
-import { Board, Game, GameState, PieceType, PieceColor } from 'chess-lib';
+import {
+  Board,
+  Game,
+  GameState,
+  PieceType,
+  PieceColor,
+  MoveResult
+} from 'chess-lib';
+
 import { LastMove } from '../types/Board';
 
 export const handleWriteMoveToGame = (

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { PieceColor, TileCoord, GameState } from 'chess-lib';
+import { PieceColor, TileCoord, GameState, MoveResult } from 'chess-lib';
 
 import { Container } from 'react-bootstrap';
 
@@ -82,7 +82,7 @@ const BoardContainer = () => {
             } else {
               // or self last move to
               // write move to game
-              setLastMove({ moveResult });
+              setLastMove(new LastMove(moveResult));
             }
           }
         }
@@ -114,14 +114,18 @@ const BoardContainer = () => {
         tileToPromote.promoteTile.coord().col()
       );
 
+      const moveResult = tileToPromote.moveResult.to_json();
+
+      const lastMove = new LastMove(
+        MoveResult.from_json(moveResult),
+        promotePiece.piece_type()
+      );
+
       // update board with new piece
       handlePromotePiece(coord, promotePiece, board);
 
       // write move after piece promote
-      setLastMove({
-        moveResult: tileToPromote.moveResult,
-        pieceToPromote: promotePiece.piece_type()
-      });
+      setLastMove(lastMove);
 
       // clear promote piece state
       setPromotePiece(null);
@@ -146,7 +150,7 @@ const BoardContainer = () => {
       }
 
       // write moves to game wasm object
-      handleWriteMoveToGame(lastMove as LastMove, board, game);
+      handleWriteMoveToGame(lastMove, board, game);
 
       // update game state for any listeners to updateGame
       setUpdateGame(!updateGame);

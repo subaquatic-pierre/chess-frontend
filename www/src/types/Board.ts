@@ -16,8 +16,18 @@ export enum BorderSide {
   Bottom
 }
 
-export interface LastMove {
+export class LastMove {
   moveResult: MoveResult;
   pieceToPromote?: PieceType;
   promoteTile?: Tile;
+
+  constructor(
+    moveResult: MoveResult,
+    pieceToPromote?: PieceType,
+    promoteTile?: Tile
+  ) {
+    this.moveResult = moveResult;
+    this.pieceToPromote = pieceToPromote;
+    this.promoteTile = promoteTile;
+  }
 }

@@ -96,10 +96,7 @@ impl<'a> MoveHandler<'a> {
 
     /// get coords all all enemy pieces
     /// of current strategy color
-    pub fn enemy_piece_coords(
-        piece_strategy: &dyn PieceMoveStrategy,
-        board: &Board,
-    ) -> Vec<TileCoord> {
+    pub fn enemy_piece_coords(piece_color: PieceColor, board: &Board) -> Vec<TileCoord> {
         let mut enemy_piece_tile = vec![];
         // loop over all pieces
         for i in 0..board.num_tiles() {
@@ -108,7 +105,7 @@ impl<'a> MoveHandler<'a> {
             // ensure tile has piece
             if let Some(piece) = board.peek_tile(&coord) {
                 // only get enemy piece coords
-                if piece.color() != piece_strategy.color() {
+                if piece.color() != piece_color {
                     enemy_piece_tile.push(coord);
                 }
             }
@@ -180,7 +177,7 @@ impl<'a> MoveValidator<'a> {
             return false;
         }
 
-        // king castle move validation
+        // // king castle move validation
         if piece_strategy.piece_type() == PieceType::King
             && !self.is_valid_king_castle_move(piece_strategy)
         {
@@ -248,10 +245,6 @@ impl<'a> MoveValidator<'a> {
         let board_king_castle_state = self.board.king_castle_state();
         let piece_color = piece_strategy.color();
 
-        if self.is_king_take() {
-            return false;
-        }
-
         // SAFETY:
         // board is always valid to dereference within strategy
         // strategy is only ever used within the board
@@ -263,12 +256,16 @@ impl<'a> MoveValidator<'a> {
         };
 
         if self.new_coord == KingCastleValidator::short_castle_coord(piece_color)
-            && (king_castle_state.is_king_moved || king_castle_state.h_file_rook_moved)
+            && (king_castle_state.is_king_moved
+                || king_castle_state.h_file_rook_moved
+                || king_castle_state.is_in_check)
         {
             return false;
         }
         if self.new_coord == KingCastleValidator::long_castle_coord(piece_color)
-            && (king_castle_state.is_king_moved || king_castle_state.a_file_rook_moved)
+            && (king_castle_state.is_king_moved
+                || king_castle_state.a_file_rook_moved
+                || king_castle_state.is_in_check)
         {
             return false;
         }
@@ -366,7 +363,7 @@ impl<'a> MoveValidator<'a> {
 
     /// main method to validate whether king is in check
     pub fn is_check(piece_strategy: &dyn PieceMoveStrategy, board: &Board) -> bool {
-        let enemy_piece_tile = MoveHandler::enemy_piece_coords(piece_strategy, board);
+        let enemy_piece_tile = MoveHandler::enemy_piece_coords(piece_strategy.color(), board);
 
         for coord in enemy_piece_tile {
             // SAFETY:

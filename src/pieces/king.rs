@@ -1,10 +1,11 @@
 // use crate::console_log;
+use crate::console_log;
 use serde::{Deserialize, Serialize};
 
 use crate::board::Board;
 use crate::pieces::piece::{PieceColor, PieceType};
 use crate::pieces::rook::RookFile;
-use crate::pieces::strategy::PieceMoveStrategy;
+use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::tile::TileCoord;
 
 pub struct KingMoveStrategy {
@@ -172,6 +173,12 @@ impl KingCastleBoardState {
         if self.is_rook_moved(RookFile::HFile, PieceColor::White, board) {
             self.white_king.h_file_rook_moved = true
         }
+
+        if self.is_king_check(PieceColor::White, board) {
+            self.white_king.is_in_check = true
+        } else {
+            self.white_king.is_in_check = false
+        }
     }
 
     fn handle_black_king_state(&mut self, board: &Board) {
@@ -188,6 +195,13 @@ impl KingCastleBoardState {
         // check h rook
         if self.is_rook_moved(RookFile::HFile, PieceColor::Black, board) {
             self.black_king.h_file_rook_moved = true
+        }
+
+        if self.is_king_check(PieceColor::Black, board) {
+            console_log!("White king is in check");
+            self.black_king.is_in_check = true
+        } else {
+            self.black_king.is_in_check = false
         }
     }
 
@@ -258,6 +272,23 @@ impl KingCastleBoardState {
         // return rook not moved if none of above cases
         false
     }
+
+    fn is_king_check(&self, piece_color: PieceColor, board: &Board) -> bool {
+        let king_coord = if piece_color == PieceColor::White {
+            TileCoord::new(0, 4)
+        } else {
+            TileCoord::new(7, 4)
+        };
+
+        let strategy =
+            StrategyBuilder::new_piece_strategy(PieceType::King, king_coord, piece_color, board);
+
+        if MoveValidator::is_check(strategy.as_ref(), board) {
+            return true;
+        }
+
+        false
+    }
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
@@ -269,6 +300,7 @@ pub enum KingCastleMoveResult {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct KingCastleState {
     pub is_king_moved: bool,
+    pub is_in_check: bool,
     pub a_file_rook_moved: bool,
     pub h_file_rook_moved: bool,
 }
@@ -276,6 +308,7 @@ pub struct KingCastleState {
 impl KingCastleState {
     pub fn new() -> Self {
         Self {
+            is_in_check: false,
             is_king_moved: false,
             a_file_rook_moved: false,
             h_file_rook_moved: false,

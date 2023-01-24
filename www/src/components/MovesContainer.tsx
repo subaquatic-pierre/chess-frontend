@@ -64,7 +64,15 @@ const MovesContainer = () => {
   };
 
   const playSavedMoves = () => {
-    savedMoves.forEach((moveResult) => {
+    const moveReader: MoveReader = board.move_reader();
+
+    const gameMovesStr: string | null = sessionStorage.getItem('gameMoves');
+
+    const moveResults: MoveResult[] = moveReader.parse_moves_to_js_arr(
+      gameMovesStr ? gameMovesStr : ''
+    );
+
+    moveResults.forEach((moveResult: MoveResult) => {
       if (moveResult && moveResult.to_coord && moveResult.from_coord) {
         const toCoord = TileCoord.from_json(moveResult.to_coord);
         const fromCoord = TileCoord.from_json(moveResult.from_coord);
@@ -74,9 +82,9 @@ const MovesContainer = () => {
     });
   };
 
-  useEffect(() => {
-    setMoves(game.moves().str_array());
-  }, [updateGame]);
+  // useEffect(() => {
+  //   setMoves(game.moves().str_array());
+  // }, [updateGame]);
 
   return (
     <Container css={{ marginBottom: 50 }}>

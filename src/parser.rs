@@ -30,7 +30,7 @@ impl MoveWriter {
 impl MoveWriter {
     /// main method used to write a move to string from a move result
     /// it is the opposite of parse_move method
-    pub fn write_move(&self, move_res: MoveResult, promote_piece: Option<PieceType>) -> String {
+    pub fn write_move(&self, move_res: MoveResult) -> String {
         // SAFETY
         // board is always valid pointer
         // move writer is only ever created by the board
@@ -113,7 +113,7 @@ impl MoveWriter {
         };
 
         // return promote piece string if promote piece
-        if let Some(promote_piece) = promote_piece {
+        if let Some(promote_piece) = move_res.promote_piece_type {
             return format!(
                 "{}{}{}={}",
                 from_coord_str, take_str, to_coord_str, promote_piece
@@ -154,16 +154,20 @@ impl MoveReader {
             _ => self.get_piece_color(move_str),
         };
 
-        MoveResult {
-            piece_type: self.get_piece_type(move_str),
+        let board = unsafe { self.board.as_ref().unwrap().clone() };
+
+        MoveResult::new(
+            self.get_piece_type(move_str),
             piece_color,
-            from_coord: self.get_from_coord(move_str),
-            to_coord: self.get_to_coord(move_str),
-            is_short_castle: self.is_short_castle(move_str),
-            is_long_castle: self.is_long_castle(move_str),
+            self.get_from_coord(move_str),
+            self.get_to_coord(move_str),
+            self.get_promote_piece_type(move_str),
+            self.get_promote_piece_type(move_str).is_some(),
+            self.is_short_castle(move_str),
+            self.is_long_castle(move_str),
             is_take,
-            is_promote_piece: false,
-        }
+            board,
+        )
     }
 
     pub fn parse_moves_to_js_arr(&self, all_moves_str: String) -> Array {
@@ -290,11 +294,7 @@ impl MoveReader {
 
         // get starting index based on piece type
         // if piece type is pawn then starting index is 0 otherwise it is 1
-        let start_index = if self.get_piece_type(move_str) == PieceType::Pawn {
-            0_usize
-        } else {
-            1_usize
-        };
+        let start_index = usize::from(self.get_piece_type(move_str) != PieceType::Pawn);
 
         // get from coord
         let from_file = if let Some(file_char) = move_str.chars().nth(start_index) {
@@ -331,7 +331,7 @@ impl MoveReader {
         piece_type
     }
 
-    pub fn get_piece_promote(&self, move_str: &str) -> Option<PieceType> {
+    pub fn get_promote_piece_type(&self, move_str: &str) -> Option<PieceType> {
         if move_str.contains('=') {
             if self.is_check(move_str) || self.is_checkmate(move_str) {
                 // remove last char if check or checkmate

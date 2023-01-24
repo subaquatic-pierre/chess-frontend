@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::console_log;
+use crate::game::MoveStr;
 use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 // use crate::console_log;
 use crate::parser::{MoveReader, MoveWriter};
@@ -255,8 +256,11 @@ impl Board {
         // move validator
         let move_validator = MoveValidator::new(new_coord, self);
 
+        // check if piece take
+        let is_take = move_validator.is_take()
+            | move_validator.is_en_passant_take(&piece_strategy.moves(), piece_strategy.as_ref());
+
         // check if king take
-        let is_take = move_validator.is_take();
         let is_king_take = move_validator.is_king_take();
 
         // only continue if move is valid
@@ -295,18 +299,22 @@ impl Board {
 
             // set new tile
             self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
+            let is_promote_piece =
+                self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
 
             // return true as piece is move
-            return Some(MoveResult {
-                piece_type: piece_strategy.piece_type(),
-                piece_color: piece_strategy.color(),
-                from_coord: Some(old_coord),
-                to_coord: Some(new_coord),
+            return Some(MoveResult::new(
+                piece_strategy.piece_type(),
+                piece_strategy.color(),
+                Some(old_coord),
+                Some(new_coord),
+                None,
+                is_promote_piece,
                 is_take,
-                is_short_castle: king_castle_result == Some(KingCastleMoveResult::ShortCastle),
-                is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
-                is_promote_piece: self.is_promote_piece(),
-            });
+                king_castle_result == Some(KingCastleMoveResult::ShortCastle),
+                king_castle_result == Some(KingCastleMoveResult::LongCastle),
+                self.clone(),
+            ));
         }
 
         // if no piece if moved
@@ -429,24 +437,28 @@ impl Board {
         None
     }
 
-    fn is_promote_piece(&self) -> bool {
-        // check last rank for pawn
-        for tile in &self.tiles {
-            if let Some(piece) = tile.piece() {
-                if piece.piece_type() == PieceType::Pawn && tile.coord().rank() == TileRank::Rank8 {
-                    return true;
-                }
-            }
+    fn is_promote_piece(
+        &self,
+        new_coord: TileCoord,
+        piece_type: PieceType,
+        piece_color: PieceColor,
+    ) -> bool {
+        // check white pawn promote
+        if piece_type == PieceType::Pawn
+            && piece_color == PieceColor::White
+            && new_coord.rank() == TileRank::Rank8
+        {
+            return true;
         }
 
-        // check first rank for pawn
-        for tile in &self.tiles {
-            if let Some(piece) = tile.piece() {
-                if piece.piece_type() == PieceType::Pawn && tile.coord().rank() == TileRank::Rank1 {
-                    return true;
-                }
-            }
+        // check black pawn promote
+        if piece_type == PieceType::Pawn
+            && piece_color == PieceColor::Black
+            && new_coord.rank() == TileRank::Rank1
+        {
+            return true;
         }
+
         false
     }
 }
@@ -464,32 +476,66 @@ pub struct MoveResult {
     pub piece_color: PieceColor,
     pub from_coord: Option<TileCoord>,
     pub to_coord: Option<TileCoord>,
+    pub promote_piece_type: Option<PieceType>,
+    pub is_promote_piece: bool,
     pub is_take: bool,
     pub is_short_castle: bool,
     pub is_long_castle: bool,
-    pub is_promote_piece: bool,
+    board: Board,
 }
 
 #[wasm_bindgen]
 impl MoveResult {
+    pub fn new(
+        piece_type: PieceType,
+        piece_color: PieceColor,
+        from_coord: Option<TileCoord>,
+        to_coord: Option<TileCoord>,
+        promote_piece_type: Option<PieceType>,
+        is_promote_piece: bool,
+        is_take: bool,
+        is_short_castle: bool,
+        is_long_castle: bool,
+        board: Board,
+    ) -> Self {
+        Self {
+            piece_type,
+            piece_color,
+            from_coord,
+            to_coord,
+            is_take,
+            is_short_castle,
+            is_long_castle,
+            promote_piece_type,
+            is_promote_piece,
+            board,
+        }
+    }
+
     pub fn to_json(&self) -> JsValue {
         serde_wasm_bindgen::to_value(&self).unwrap()
     }
 
-    pub fn from_json(json: JsValue) -> Tile {
+    pub fn from_json(json: JsValue) -> Self {
         serde_wasm_bindgen::from_value(json).unwrap()
     }
-}
 
-pub trait Json
-where
-    Self: Serialize,
-{
-    fn to_json(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self).unwrap()
+    pub fn move_str(&self) -> String {
+        let move_writer = self.board.move_writer();
+
+        move_writer.write_move(self.clone())
     }
 
-    fn from_json(json: JsValue) -> Tile {
-        serde_wasm_bindgen::from_value(json).unwrap()
+    pub fn set_new_tile(
+        &mut self,
+        coord: TileCoord,
+        piece_type: Option<PieceType>,
+        piece_color: Option<PieceColor>,
+    ) {
+        self.board.set_new_tile(coord, piece_type, piece_color)
+    }
+
+    pub fn set_promote_piece(&mut self, piece_type: PieceType) {
+        self.promote_piece_type = Some(piece_type)
     }
 }

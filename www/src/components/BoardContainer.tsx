@@ -12,11 +12,7 @@ import useModalContext from '../hooks/useModalContext';
 import { BorderSide, TILE_SPACE, LastMove } from '../types/Board';
 import useBoardContext from '../hooks/useBoardContext';
 import useGameContext from '../hooks/useGameContext';
-import {
-  handleMovePiece,
-  handleHighlightMoves,
-  handlePromotePiece
-} from '../handlers/board';
+import { handleMovePiece, handleHighlightMoves } from '../handlers/board';
 import { isPlayerTurn } from '../util/board';
 
 const BoardContainer = () => {
@@ -81,7 +77,7 @@ const BoardContainer = () => {
             } else {
               // or self last move to
               // write move to game
-              setLastMove({ moveResult });
+              setLastMove(moveResult);
             }
           }
         }
@@ -114,13 +110,27 @@ const BoardContainer = () => {
       );
 
       // update board with new piece
-      handlePromotePiece(coord, promotePiece, board);
+      board.set_new_tile(
+        coord,
+        promotePiece.piece_type(),
+        promotePiece.color()
+      );
+
+      // update move result board with new tile
+      tileToPromote.moveResult.set_new_tile(
+        TileCoord.new(
+          tileToPromote.promoteTile.coord().row(),
+          tileToPromote.promoteTile.coord().col()
+        ),
+        promotePiece.piece_type(),
+        promotePiece.color()
+      );
+
+      // update move result board with new tile
+      tileToPromote.moveResult.set_promote_piece(promotePiece.piece_type());
 
       // write move after piece promote
-      setLastMove({
-        moveResult: tileToPromote.moveResult,
-        pieceToPromote: promotePiece.piece_type()
-      });
+      setLastMove(tileToPromote.moveResult);
 
       // clear promote piece state
       setPromotePiece(null);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SetState } from '../types/Context';
-import { Game, PieceColor } from 'chess-lib';
+import { Game, MoveResult, PieceColor } from 'chess-lib';
 import { LastMove } from '../types/Board';
 
 export interface IGameContext {
@@ -16,8 +16,8 @@ export interface IGameContext {
   setShowCoords: SetState<boolean>;
 
   // last move state, used to write moves to game
-  lastMove: LastMove | null;
-  setLastMove: SetState<LastMove | null>;
+  lastMove: MoveResult | null;
+  setLastMove: SetState<MoveResult | null>;
 
   // update game state toggle,
   // used as global toggle to update game state
@@ -35,7 +35,7 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   // loading state
   const [showCoords, setShowCoords] = useState(false);
   const [game, setGame] = useState<Game>(firstGame);
-  const [lastMove, setLastMove] = useState<LastMove | null>(null);
+  const [lastMove, setLastMove] = useState<MoveResult | null>(null);
   const [updateGame, setUpdateGame] = useState(false);
 
   // players

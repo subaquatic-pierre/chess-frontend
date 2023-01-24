@@ -1,26 +1,29 @@
-import { Board, Game, GameState, PieceType, PieceColor } from 'chess-lib';
-import { LastMove } from '../types/Board';
+import {
+  Board,
+  Game,
+  GameState,
+  PieceType,
+  PieceColor,
+  MoveResult
+} from 'chess-lib';
 
 export const handleWriteMoveToGame = (
-  lastMove: LastMove,
+  lastMove: MoveResult,
   board: Board,
   game: Game
 ): string => {
   const moveWriter = board.move_writer();
-  const moveStr = moveWriter.write_move(
-    lastMove.moveResult,
-    lastMove.pieceToPromote
-  );
+  const moveStr = moveWriter.write_move(lastMove);
 
-  let playerTurn = PieceColor.White;
+  // let playerTurn = PieceColor.White;
 
-  if (game.player_turn() == PieceColor.White) {
-    playerTurn = PieceColor.Black;
-  } else {
-    playerTurn = PieceColor.White;
-  }
+  // if (game.player_turn() == PieceColor.White) {
+  //   playerTurn = PieceColor.Black;
+  // } else {
+  //   playerTurn = PieceColor.White;
+  // }
 
-  game.add_move(moveStr, playerTurn);
+  // game.add_move(moveStr, playerTurn);
 
   return moveStr;
 };

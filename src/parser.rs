@@ -145,50 +145,42 @@ impl MoveReader {
 impl MoveReader {
     /// main method to parse move string into move a result
     /// it is the opposite of write_move method
-    pub fn parse_move(&self, move_str: &str, piece_color: Option<PieceColor>) -> MoveResult {
+    pub fn parse_move(&self, move_str: &str) -> MoveResult {
         // check if is take
         let is_take = move_str.contains('x');
 
-        let piece_color = match piece_color {
-            Some(color) => color,
-            _ => self.get_piece_color(move_str),
-        };
-
+        // SAFETY:
+        // A valid board is always passed to constructor
         let board = unsafe { self.board.as_ref().unwrap().clone() };
+
+        // new method signature:
+
+        // piece_type: PieceType,
+        // piece_color: PieceColor,
+        // from_coord: Option<TileCoord>,
+        // to_coord: Option<TileCoord>,
+        // promote_piece_type: Option<PieceType>,
+        // is_promote_piece: bool,
+        // is_take: bool,
+        // is_short_castle: bool,
+        // is_long_castle: bool,
+        // board: Board,
 
         MoveResult::new(
             self.get_piece_type(move_str),
-            piece_color,
+            self.get_piece_color(move_str),
             self.get_from_coord(move_str),
             self.get_to_coord(move_str),
             self.get_promote_piece_type(move_str),
             self.get_promote_piece_type(move_str).is_some(),
+            is_take,
             self.is_short_castle(move_str),
             self.is_long_castle(move_str),
-            is_take,
             board,
         )
     }
 
     pub fn parse_moves_to_js_arr(&self, all_moves_str: String) -> Array {
-        // let moves_str = self.parse_moves_to_str(all_moves_str);
-
-        // let white_moves = moves_str.white_moves();
-        // let black_moves = moves_str.black_moves();
-
-        // let mut all_moves = vec![];
-
-        // for (i, move_str) in white_moves.iter().enumerate() {
-        //     // add result to array
-        //     all_moves.push(self.parse_move(&move_str.str, Some(PieceColor::White)));
-
-        //     // check if there is a corresponding black move to add
-        //     if let Some(black_move_str) = black_moves.get(i) {
-        //         all_moves.push(self.parse_move(&black_move_str.str, Some(PieceColor::Black)))
-        //     }
-        //     // if let Some(str) = black_move_str.as_string() {};
-        // }
-
         let all_moves = self.parse_moves(all_moves_str);
 
         let arr = Array::new_with_length(all_moves.len() as u32);
@@ -379,11 +371,11 @@ impl MoveReader {
 
         for (i, move_str) in white_moves.iter().enumerate() {
             // add result to array
-            move_results.push(self.parse_move(&move_str.str, Some(PieceColor::White)));
+            move_results.push(self.parse_move(&move_str.str));
 
             // check if there is a corresponding black move to add
             if let Some(black_move_str) = black_moves.get(i) {
-                move_results.push(self.parse_move(&black_move_str.str, Some(PieceColor::Black)));
+                move_results.push(self.parse_move(&black_move_str.str));
             }
         }
 

@@ -23,14 +23,17 @@ const GameContainer: React.FC<Props> = ({ children }) => {
     handleCheckmate(game);
 
     if (lastMove) {
-      console.log('lastMove.moveResult.to_json(): ', lastMove.to_json());
-
       // write moves to game wasm object
       // handleWriteMoveToGame(lastMove as LastMove, board, game);
       // saveMoves(game);
 
       const moveStr = handleWriteMoveToGame(lastMove, board, game);
       console.log('moveStr: ', moveStr);
+
+      console.log('parsing move str ...');
+      const moveRes = parseMoveStr(moveStr);
+
+      console.log('moveRes.to_json(): ', moveRes.to_json());
     }
 
     // TODO
@@ -62,6 +65,12 @@ const GameContainer: React.FC<Props> = ({ children }) => {
     );
 
     return moveResults;
+  };
+
+  const parseMoveStr = (moveStr: string): MoveResult => {
+    const moveReader = board.move_reader();
+    const moveResult = moveReader.parse_move(moveStr);
+    return moveResult;
   };
 
   const playMove = (moveResult: MoveResult) => {

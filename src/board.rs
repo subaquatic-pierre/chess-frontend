@@ -303,6 +303,18 @@ impl Board {
                 self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
 
             // return true as piece is move
+            // new method signature:
+
+            // piece_type: PieceType,
+            // piece_color: PieceColor,
+            // from_coord: Option<TileCoord>,
+            // to_coord: Option<TileCoord>,
+            // promote_piece_type: Option<PieceType>,
+            // is_promote_piece: bool,
+            // is_take: bool,
+            // is_short_castle: bool,
+            // is_long_castle: bool,
+            // board: Board,
             return Some(MoveResult::new(
                 piece_strategy.piece_type(),
                 piece_strategy.color(),

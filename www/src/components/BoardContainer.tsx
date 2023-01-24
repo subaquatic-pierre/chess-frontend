@@ -18,7 +18,6 @@ import {
   handlePromotePiece
 } from '../handlers/board';
 import { isPlayerTurn } from '../util/board';
-import { handleWriteMoveToGame } from '../handlers/game';
 
 const BoardContainer = () => {
   const { showCoords } = useGameContext();
@@ -144,9 +143,6 @@ const BoardContainer = () => {
       } else if (checkmateColor === PieceColor.Black) {
         game.set_winner(PieceColor.Black);
       }
-
-      // write moves to game wasm object
-      handleWriteMoveToGame(lastMove as LastMove, board, game);
 
       // update game state for any listeners to updateGame
       setUpdateGame(!updateGame);

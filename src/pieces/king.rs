@@ -148,64 +148,42 @@ impl KingCastleBoardState {
         // this struct is only ever used from within the board
         // struct, the board is always valid withing itself
         // the board always has 68 valid tiles from which to reference
-        unsafe {
-            self.handle_white_king_state(board.as_ref().unwrap());
-            self.handle_black_king_state(board.as_ref().unwrap());
+        let board = unsafe { board.as_ref().unwrap() };
+
+        for color in [PieceColor::White, PieceColor::Black] {
+            let mut king = if color == PieceColor::White {
+                &mut self.white_king
+            } else {
+                &mut self.black_king
+            };
+
+            if KingCastleBoardState::is_king_moved(color, board) {
+                king.is_king_moved = true
+            }
+
+            // check a rook
+            if KingCastleBoardState::is_rook_moved(RookFile::AFile, color, board) {
+                king.a_file_rook_moved = true
+            }
+
+            // check h rook
+            if KingCastleBoardState::is_rook_moved(RookFile::HFile, color, board) {
+                king.h_file_rook_moved = true
+            }
+
+            if KingCastleBoardState::is_king_check(color, board) {
+                king.is_in_check = true
+            } else {
+                king.is_in_check = false
+            }
         }
     }
 
     // ---
-    // private methods
+    // Static Methods
     // ---
 
-    fn handle_white_king_state(&mut self, board: &Board) {
-        // check king move
-        if self.is_king_moved(PieceColor::White, board) {
-            self.white_king.is_king_moved = true
-        }
-
-        // check a rook
-        if self.is_rook_moved(RookFile::AFile, PieceColor::White, board) {
-            self.white_king.a_file_rook_moved = true
-        }
-
-        // check h rook
-        if self.is_rook_moved(RookFile::HFile, PieceColor::White, board) {
-            self.white_king.h_file_rook_moved = true
-        }
-
-        if self.is_king_check(PieceColor::White, board) {
-            self.white_king.is_in_check = true
-        } else {
-            self.white_king.is_in_check = false
-        }
-    }
-
-    fn handle_black_king_state(&mut self, board: &Board) {
-        // check king move
-        if self.is_king_moved(PieceColor::Black, board) {
-            self.black_king.is_king_moved = true
-        }
-
-        // check a rook
-        if self.is_rook_moved(RookFile::AFile, PieceColor::Black, board) {
-            self.black_king.a_file_rook_moved = true
-        }
-
-        // check h rook
-        if self.is_rook_moved(RookFile::HFile, PieceColor::Black, board) {
-            self.black_king.h_file_rook_moved = true
-        }
-
-        if self.is_king_check(PieceColor::Black, board) {
-            console_log!("White king is in check");
-            self.black_king.is_in_check = true
-        } else {
-            self.black_king.is_in_check = false
-        }
-    }
-
-    fn is_king_moved(&self, piece_color: PieceColor, board: &Board) -> bool {
+    fn is_king_moved(piece_color: PieceColor, board: &Board) -> bool {
         match piece_color {
             // check white king coord
             PieceColor::White => {
@@ -226,7 +204,7 @@ impl KingCastleBoardState {
         false
     }
 
-    fn is_rook_moved(&self, rook_file: RookFile, piece_color: PieceColor, board: &Board) -> bool {
+    fn is_rook_moved(rook_file: RookFile, piece_color: PieceColor, board: &Board) -> bool {
         match piece_color {
             PieceColor::White => {
                 // get rook coord
@@ -273,7 +251,7 @@ impl KingCastleBoardState {
         false
     }
 
-    fn is_king_check(&self, piece_color: PieceColor, board: &Board) -> bool {
+    fn is_king_check(piece_color: PieceColor, board: &Board) -> bool {
         let king_coord = if piece_color == PieceColor::White {
             TileCoord::new(0, 4)
         } else {

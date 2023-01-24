@@ -3,18 +3,27 @@ import React, { useEffect, useState } from 'react';
 import useLoadingContext from '../hooks/useLoadingContext';
 import useGameContext from '../hooks/useGameContext';
 import useBoardContext from '../hooks/useBoardContext';
-import { handleCheckmate } from '../handlers/game';
+import { handleCheckmate, handleWriteMoveToGame } from '../handlers/game';
+import { LastMove } from '../types/Board';
 
 interface Props extends React.PropsWithChildren {}
 
 const GameContainer: React.FC<Props> = ({ children }) => {
   const { loading, setLoading } = useLoadingContext();
-  const { game, updateGame } = useGameContext();
+  const { board } = useBoardContext();
+  const { game, updateGame, lastMove } = useGameContext();
 
   // used as global effect to game change
   // updated each time board is updated
   useEffect(() => {
     handleCheckmate(game);
+
+    console.log('lastMove', lastMove);
+
+    if (lastMove) {
+      // write moves to game wasm object
+      handleWriteMoveToGame(lastMove as LastMove, board, game);
+    }
 
     // TODO
     // write moves to session

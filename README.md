@@ -92,3 +92,8 @@ npm run watch
 10.e4e5 a6a5
 11.Qb1f5 g7g6
 12.Qf5f7#
+
+## TODO:
+
+1. Fix short castle on MoveResult when long castle string passed to MoveParser (showing true, should be false)
+2. Fix to_coord on MoveResult on piece promote when string passed to MoveParser (showing undefined)

@@ -1,9 +1,10 @@
 use js_sys::Array;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::{
-    board::{Board, MoveResult},
+    board::Board,
     game::MovesStr,
     pieces::{
         piece::{PieceColor, PieceType},
@@ -11,6 +12,77 @@ use crate::{
     },
     tile::{TileCoord, TileFile, TileRank},
 };
+
+#[wasm_bindgen]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct MoveResult {
+    pub piece_type: PieceType,
+    pub piece_color: PieceColor,
+    pub from_coord: Option<TileCoord>,
+    pub to_coord: Option<TileCoord>,
+    pub promote_piece_type: Option<PieceType>,
+    pub is_promote_piece: bool,
+    pub is_take: bool,
+    pub is_short_castle: bool,
+    pub is_long_castle: bool,
+    board: Board,
+}
+
+#[wasm_bindgen]
+impl MoveResult {
+    pub fn new(
+        piece_type: PieceType,
+        piece_color: PieceColor,
+        from_coord: Option<TileCoord>,
+        to_coord: Option<TileCoord>,
+        promote_piece_type: Option<PieceType>,
+        is_promote_piece: bool,
+        is_take: bool,
+        is_short_castle: bool,
+        is_long_castle: bool,
+        board: Board,
+    ) -> Self {
+        Self {
+            piece_type,
+            piece_color,
+            from_coord,
+            to_coord,
+            is_take,
+            is_short_castle,
+            is_long_castle,
+            promote_piece_type,
+            is_promote_piece,
+            board,
+        }
+    }
+
+    pub fn to_json(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+
+    pub fn from_json(json: JsValue) -> Self {
+        serde_wasm_bindgen::from_value(json).unwrap()
+    }
+
+    pub fn move_str(&self, board: Board) -> String {
+        let move_writer = board.move_writer();
+
+        move_writer.write_move(self.clone())
+    }
+
+    pub fn set_new_tile(
+        &mut self,
+        coord: TileCoord,
+        piece_type: Option<PieceType>,
+        piece_color: Option<PieceColor>,
+    ) {
+        self.board.set_new_tile(coord, piece_type, piece_color)
+    }
+
+    pub fn set_promote_piece(&mut self, piece_type: PieceType) {
+        self.promote_piece_type = Some(piece_type)
+    }
+}
 
 #[wasm_bindgen]
 pub struct MoveWriter {
@@ -146,6 +218,7 @@ impl MoveReader {
     /// main method to parse move string into move a result
     /// it is the opposite of write_move method
     pub fn parse_move(&self, move_str: &str) -> MoveResult {
+        // pub fn parse_move(&self, move_str: &str, piece_color: PieceColor, board: Board) -> MoveResult {
         // check if is take
         let is_take = move_str.contains('x');
 
@@ -345,6 +418,9 @@ impl MoveReader {
 
     fn is_short_castle(&self, move_str: &str) -> bool {
         // is short castle
+        if move_str.split('-').count() > 2 {
+            return false;
+        }
         let re = Regex::new(r"0-0").unwrap();
         re.is_match(move_str)
     }
@@ -381,4 +457,38 @@ impl MoveReader {
 
         move_results
     }
+    // fn parse_moves(&self, all_moves_str: String) -> Vec<MoveResult> {
+    //     let moves_str = self.parse_moves_to_str(all_moves_str);
+
+    //     let white_moves = moves_str.white_moves();
+    //     let black_moves = moves_str.black_moves();
+
+    //     let mut move_results = vec![];
+
+    //     let board = Board::default();
+
+    //     for (i, move_str) in white_moves.iter().enumerate() {
+    //         // add result to array
+    //         let white_move = self.parse_move(&move_str.str, PieceColor::White, board.clone());
+
+    //         // make white move
+    //         // board.move_piece(white_move.from_coord.row(), old_col, new_row, new_col)
+    //         // TODO
+    //         // update board after move
+    //         // update move result with new tiles after move
+
+    //         move_results.push(white_move);
+
+    //         // check if there is a corresponding black move to add
+    //         if let Some(black_move_str) = black_moves.get(i) {
+    //             move_results.push(self.parse_move(
+    //                 &black_move_str.str,
+    //                 PieceColor::Black,
+    //                 board.clone(),
+    //             ));
+    //         }
+    //     }
+
+    //     move_results
+    // }
 }

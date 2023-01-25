@@ -6,7 +6,7 @@ use crate::console_log;
 use crate::game::MoveStr;
 use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 // use crate::console_log;
-use crate::parser::{MoveReader, MoveWriter};
+use crate::parser::{MoveReader, MoveResult, MoveWriter};
 use crate::pieces::piece::{Piece, PieceColor, PieceState, PieceType};
 use crate::pieces::strategy::{MoveHandler, MoveValidator, PieceMoveStrategy, StrategyBuilder};
 use crate::pieces::util::get_piece_default;
@@ -478,76 +478,5 @@ impl Board {
 impl Default for Board {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct MoveResult {
-    pub piece_type: PieceType,
-    pub piece_color: PieceColor,
-    pub from_coord: Option<TileCoord>,
-    pub to_coord: Option<TileCoord>,
-    pub promote_piece_type: Option<PieceType>,
-    pub is_promote_piece: bool,
-    pub is_take: bool,
-    pub is_short_castle: bool,
-    pub is_long_castle: bool,
-    board: Board,
-}
-
-#[wasm_bindgen]
-impl MoveResult {
-    pub fn new(
-        piece_type: PieceType,
-        piece_color: PieceColor,
-        from_coord: Option<TileCoord>,
-        to_coord: Option<TileCoord>,
-        promote_piece_type: Option<PieceType>,
-        is_promote_piece: bool,
-        is_take: bool,
-        is_short_castle: bool,
-        is_long_castle: bool,
-        board: Board,
-    ) -> Self {
-        Self {
-            piece_type,
-            piece_color,
-            from_coord,
-            to_coord,
-            is_take,
-            is_short_castle,
-            is_long_castle,
-            promote_piece_type,
-            is_promote_piece,
-            board,
-        }
-    }
-
-    pub fn to_json(&self) -> JsValue {
-        serde_wasm_bindgen::to_value(&self).unwrap()
-    }
-
-    pub fn from_json(json: JsValue) -> Self {
-        serde_wasm_bindgen::from_value(json).unwrap()
-    }
-
-    pub fn move_str(&self) -> String {
-        let move_writer = self.board.move_writer();
-
-        move_writer.write_move(self.clone())
-    }
-
-    pub fn set_new_tile(
-        &mut self,
-        coord: TileCoord,
-        piece_type: Option<PieceType>,
-        piece_color: Option<PieceColor>,
-    ) {
-        self.board.set_new_tile(coord, piece_type, piece_color)
-    }
-
-    pub fn set_promote_piece(&mut self, piece_type: PieceType) {
-        self.promote_piece_type = Some(piece_type)
     }
 }

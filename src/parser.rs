@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[wasm_bindgen]
-/// A Wrapper struct to read and write MoveResults
+/// A wrapper struct to read and write MoveResults
 /// it creates a default instance of each MoveReader or
 /// MoveWriter struct when using either of the 2 main
 /// static methods
@@ -28,7 +28,7 @@ impl MoveParser {
         Self {}
     }
 
-    pub fn move_result_to_str(move_result: MoveResult, board: &Board) -> String {
+    pub fn move_result_to_str(move_result: &MoveResult, board: &Board) -> String {
         let move_writer = MoveWriter::default();
         move_writer.write_move(move_result, board)
     }
@@ -36,6 +36,26 @@ impl MoveParser {
     pub fn str_to_move_result(move_str: &str, piece_color: PieceColor) -> MoveResult {
         let move_reader = MoveReader::default();
         move_reader.parse_move(move_str, piece_color)
+    }
+
+    pub fn split_all_moves(all_moves_str: String) -> Array {
+        let move_reader = MoveReader::default();
+        let (white_moves, black_moves) = move_reader.split_white_black_moves(all_moves_str);
+
+        let moves_arr = Array::new_with_length(white_moves.len() as u32);
+
+        for (i, white_move) in white_moves.iter().enumerate() {
+            let move_arr = Array::new_with_length(2_u32);
+            move_arr.set(0, white_move.into());
+
+            if let Some(black_move) = black_moves.get(i) {
+                move_arr.set(1, black_move.into());
+            }
+
+            moves_arr.set(i.try_into().unwrap(), move_arr.into());
+        }
+
+        moves_arr
     }
 }
 
@@ -90,6 +110,38 @@ impl MoveResult {
     pub fn set_promote_piece(&mut self, piece_type: PieceType) {
         self.promote_piece_type = Some(piece_type)
     }
+
+    // ---
+    // Accessor methods
+    // ---
+
+    // pub fn piece_color(&self) -> PieceColor {
+    //     self.piece_color
+    // }
+    // pub fn piece_type(&self) -> PieceType {
+    //     self.piece_type
+    // }
+    // pub fn from_coord(&self) -> TileCoord {
+    //     self.from_coord
+    // }
+    // pub fn to_coord(&self) -> TileCoord {
+    //     self.to_coord
+    // }
+    // pub fn promote_piece_type(&self) -> Option<PieceType> {
+    //     self.promote_piece_type
+    // }
+    // pub fn is_promote_piece(&self) -> bool {
+    //     self.is_promote_piece
+    // }
+    // pub fn is_take(&self) -> bool {
+    //     self.is_take
+    // }
+    // pub fn is_short_castle(&self) -> bool {
+    //     self.is_short_castle
+    // }
+    // pub fn is_long_castle(&self) -> bool {
+    //     self.is_long_castle
+    // }
 }
 
 #[wasm_bindgen]
@@ -103,7 +155,7 @@ impl MoveWriter {
     }
     /// main method used to write a move to string from a move result
     /// it is the opposite of parse_move method
-    pub fn write_move(&self, move_res: MoveResult, board: &Board) -> String {
+    pub fn write_move(&self, move_res: &MoveResult, board: &Board) -> String {
         // SAFETY
         // board is always valid pointer
         // move writer is only ever created by the board
@@ -147,7 +199,7 @@ impl MoveWriter {
         let check_or_checkmate_str = if board.is_checkmate().is_some() {
             "#".to_string()
         } else {
-            self.get_check_string(&move_res, board)
+            self.get_check_string(move_res, board)
         };
 
         // return promote piece string if promote piece
@@ -179,7 +231,7 @@ impl MoveWriter {
             StrategyBuilder::new_piece_strategy(PieceType::King, new_coord, piece_color, board);
 
         // check if king is in check
-        let is_check = MoveValidator::is_check(king_strategy.as_ref(), &board);
+        let is_check = MoveValidator::is_check(king_strategy.as_ref(), board);
 
         if is_check {
             "+".to_string()
@@ -219,19 +271,6 @@ impl MoveReader {
         }
     }
 
-    pub fn parse_moves_to_js_arr(&self, all_moves_str: String) -> Array {
-        let all_moves = self.parse_moves(all_moves_str);
-
-        let arr = Array::new_with_length(all_moves.len() as u32);
-
-        for (i, _) in all_moves.iter().enumerate() {
-            let move_res = &all_moves[i];
-            arr.set(i as u32, move_res.to_json());
-        }
-
-        arr
-    }
-
     fn get_to_coord(&self, move_str: &str, piece_color: PieceColor) -> TileCoord {
         // king castle possible
         // return king coord move position if castle move
@@ -243,15 +282,16 @@ impl MoveReader {
             return KingCastleValidator::short_castle_coord(piece_color);
         }
 
-        if self.is_long_castle(move_str) && piece_color == PieceColor::Black {
-            return TileCoord::new(7, 1);
-        }
-
         // remove last char if check or checkmate
         let mut str_copy = move_str.to_string();
         if self.is_check(move_str) || self.is_checkmate(move_str) {
             str_copy.pop();
         }
+
+        // check if string contains promote piece on end
+        // remove if exists
+        let str_split = str_copy.split('=').collect::<Vec<&str>>();
+        let str_copy = str_split[0];
 
         // get to_coord
         let to_rank: TileRank = if let Some(rank_char) = str_copy.chars().rev().next() {
@@ -299,13 +339,6 @@ impl MoveReader {
         };
 
         TileCoord::new(from_rank.into(), from_file.into())
-
-        // return None if coord is unknown
-        // if from_file != TileFile::Unknown && from_rank != TileRank::Unknown {
-        //     Some(TileCoord::new(from_rank.into(), from_file.into()))
-        // } else {
-        //     None
-        // }
     }
 
     fn get_piece_type(&self, move_str: &str) -> PieceType {
@@ -323,7 +356,7 @@ impl MoveReader {
         piece_type
     }
 
-    pub fn get_promote_piece_type(&self, move_str: &str) -> Option<PieceType> {
+    fn get_promote_piece_type(&self, move_str: &str) -> Option<PieceType> {
         if move_str.contains('=') {
             if self.is_check(move_str) || self.is_checkmate(move_str) {
                 // remove last char if check or checkmate

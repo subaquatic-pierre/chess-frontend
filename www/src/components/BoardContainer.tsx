@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { PieceColor, TileCoord, GameState } from 'chess-lib';
+import { PieceColor, TileCoord, GameState, MoveParser } from 'chess-lib';
 
 import { Container } from 'react-bootstrap';
 
@@ -12,7 +12,7 @@ import useModalContext from '../hooks/useModalContext';
 import { BorderSide, TILE_SPACE, LastMove } from '../types/Board';
 import useBoardContext from '../hooks/useBoardContext';
 import useGameContext from '../hooks/useGameContext';
-import { handleMovePiece, handleHighlightMoves } from '../handlers/board';
+import { handleBoardPieceMove, handleHighlightMoves } from '../handlers/board';
 import { isPlayerTurn } from '../util/board';
 
 const BoardContainer = () => {
@@ -51,15 +51,15 @@ const BoardContainer = () => {
 
       // TODO
       // uncomment to enable player turn capabilities
-      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
-      //   return;
-      // }
+      if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+        return;
+      }
 
       if (curActiveCoord) {
         const fromCoord = board.get_selected_piece_coord();
 
         if (fromCoord) {
-          const moveResult = handleMovePiece(
+          const moveResult = handleBoardPieceMove(
             fromCoord,
             selectedTile.coord(),
             board,

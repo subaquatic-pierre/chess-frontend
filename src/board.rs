@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use crate::console_log;
-use crate::game::MoveStr;
+use crate::game::GameMove;
 use crate::pieces::king::{KingCastleBoardState, KingCastleMoveResult};
 // use crate::console_log;
 use crate::parser::{MoveReader, MoveResult, MoveWriter};

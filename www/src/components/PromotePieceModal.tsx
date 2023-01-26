@@ -24,8 +24,8 @@ const getPieces = (tileToPromote: LastMove): IPiece[] => {
 
   pieceTypes.forEach((pieceType) => {
     const coord = TileCoord.new(
-      tileToPromote.moveResult.to_coord?.row() as number,
-      tileToPromote.moveResult.to_coord?.col() as number
+      tileToPromote.moveResult.to_coord.row() as number,
+      tileToPromote.moveResult.to_coord.col() as number
     );
     const newPiece = IPiece.new(
       pieceType,

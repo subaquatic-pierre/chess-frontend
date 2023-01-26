@@ -16,7 +16,7 @@ pub enum GameState {
 pub struct Game {
     state: GameState,
     player_turn: PieceColor,
-    moves: MovesStr,
+    moves: GameMoves,
     winner: Option<PieceColor>,
 }
 
@@ -26,7 +26,7 @@ impl Game {
         Self {
             state: GameState::Started,
             player_turn: PieceColor::White,
-            moves: MovesStr::default(),
+            moves: GameMoves::default(),
             winner: None,
         }
     }
@@ -57,7 +57,7 @@ impl Game {
     }
 
     /// used to set new player turn once move is complete
-    /// called automatically from the frontend in handleMovePiece
+    /// called automatically from the frontend in handleBoardPieceMove
     /// in handlers/board
     pub fn set_player_turn(&mut self, player_color: PieceColor) {
         self.player_turn = player_color
@@ -71,7 +71,7 @@ impl Game {
     /// returns continuous string of moves
     /// separated by ','
     pub fn print_moves(&self) -> String {
-        let MovesStr {
+        let GameMoves {
             white_moves,
             black_moves,
         } = self.moves.moves();
@@ -80,10 +80,10 @@ impl Game {
 
         for (i, _) in white_moves.iter().enumerate() {
             let white_move = &white_moves[i];
-            let mut move_line_str = format!("{i}.{}", white_move.str);
+            let mut move_line_str = format!("{i}.{}", white_move.str());
 
             if let Some(black_move) = black_moves.get(i) {
-                move_line_str.push_str(&format!(" {},", black_move.str));
+                move_line_str.push_str(&format!(" {},", black_move.str()));
             }
 
             moves_str.push_str(&move_line_str)
@@ -92,12 +92,31 @@ impl Game {
         moves_str
     }
 
-    pub fn moves(&self) -> MovesStr {
+    pub fn moves(&self) -> GameMoves {
         self.moves.moves()
     }
 
     pub fn add_move(&mut self, move_str: String, piece_color: PieceColor) {
         self.moves.insert(move_str, piece_color)
+    }
+
+    pub fn moves_len(&self) -> usize {
+        self.moves.white_moves.len()
+    }
+
+    pub fn set_move(&mut self, index: usize, piece_color: PieceColor, new_move_str: &str) {
+        let new_move = GameMove::new(index, new_move_str);
+        match piece_color {
+            PieceColor::White => self.moves.white_moves[index] = new_move,
+            PieceColor::Black => self.moves.black_moves[index] = new_move,
+        }
+    }
+
+    pub fn get_move(&mut self, index: usize, piece_color: PieceColor) -> GameMove {
+        match piece_color {
+            PieceColor::White => self.moves.white_moves[index].clone(),
+            PieceColor::Black => self.moves.black_moves[index].clone(),
+        }
     }
 }
 
@@ -108,32 +127,44 @@ impl Default for Game {
 }
 
 #[derive(Clone)]
-pub struct MoveStr {
+#[wasm_bindgen]
+pub struct GameMove {
     pub num: usize,
-    pub str: String,
+    _str: String,
 }
 
-impl MoveStr {
+#[wasm_bindgen]
+impl GameMove {
+    pub fn new(num: usize, move_str: &str) -> Self {
+        Self {
+            num,
+            _str: move_str.to_string(),
+        }
+    }
     pub fn print(&self) -> String {
-        self.str.to_string()
+        self._str.to_string()
+    }
+
+    pub fn str(&self) -> String {
+        self._str.clone()
     }
 }
 
-impl Display for MoveStr {
+impl Display for GameMove {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.num, self.str)
+        write!(f, "{}.{}", self.num, self._str)
     }
 }
 
 #[derive(Clone)]
 #[wasm_bindgen]
-pub struct MovesStr {
-    white_moves: Vec<MoveStr>,
-    black_moves: Vec<MoveStr>,
+pub struct GameMoves {
+    white_moves: Vec<GameMove>,
+    black_moves: Vec<GameMove>,
 }
 
 #[wasm_bindgen]
-impl MovesStr {
+impl GameMoves {
     pub fn new() -> Self {
         Self {
             white_moves: vec![],
@@ -144,14 +175,14 @@ impl MovesStr {
     pub fn insert(&mut self, move_str: String, piece_color: PieceColor) {
         if piece_color == PieceColor::White {
             let num = self.white_moves.len();
-            self.white_moves.push(MoveStr { num, str: move_str })
+            self.white_moves.push(GameMove::new(num, &move_str))
         } else {
             let num = self.black_moves.len();
-            self.black_moves.push(MoveStr { num, str: move_str })
+            self.black_moves.push(GameMove::new(num, &move_str))
         }
     }
 
-    pub fn moves(&self) -> MovesStr {
+    pub fn moves(&self) -> GameMoves {
         self.clone()
     }
 
@@ -166,10 +197,10 @@ impl MovesStr {
 
         for (i, _) in white_moves.iter().enumerate() {
             let white_move = &white_moves[i];
-            let mut move_line_str = format!("{i}.{}", white_move.str);
+            let mut move_line_str = format!("{i}.{}", white_move.str());
 
             if let Some(black_move) = black_moves.get(i) {
-                move_line_str.push_str(&format!(" {}", black_move.str));
+                move_line_str.push_str(&format!(" {}", black_move.str()));
             }
 
             arr.set(i as u32, JsValue::from_str(&move_line_str))
@@ -180,7 +211,7 @@ impl MovesStr {
 }
 
 #[wasm_bindgen]
-impl MovesStr {
+impl GameMoves {
     pub fn white_moves_js(&self) -> Array {
         self.js_array(PieceColor::White)
     }
@@ -199,24 +230,24 @@ impl MovesStr {
 
         for (i, _) in moves.iter().enumerate() {
             let move_str = &moves[i];
-            arr.set(i as u32, JsValue::from_str(&move_str.str));
+            arr.set(i as u32, JsValue::from_str(&move_str.str()));
         }
 
         arr
     }
 }
 
-impl MovesStr {
-    pub fn white_moves(&self) -> Vec<MoveStr> {
+impl GameMoves {
+    pub fn white_moves(&self) -> Vec<GameMove> {
         self.white_moves.clone()
     }
 
-    pub fn black_moves(&self) -> Vec<MoveStr> {
+    pub fn black_moves(&self) -> Vec<GameMove> {
         self.black_moves.clone()
     }
 }
 
-impl Default for MovesStr {
+impl Default for GameMoves {
     fn default() -> Self {
         Self::new()
     }

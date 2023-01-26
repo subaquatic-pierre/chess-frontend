@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { MoveParser, MoveReader, MoveResult, TileCoord } from 'chess-lib';
+import {
+  Board,
+  MoveParser,
+  Game,
+  MoveResult,
+  PieceColor,
+  TileCoord
+} from 'chess-lib';
 
 import {
   Button,
@@ -11,17 +18,18 @@ import {
   ListGroupItem,
   Row
 } from 'react-bootstrap';
-import { handleMovePiece } from '../handlers/board';
-import useBoardContext from '../hooks/useBoardContext';
+import { handleBoardPieceMove } from '../handlers/board';
+import { handleGameStringMove } from '../handlers/game';
 
+import { getSavedGameMoves, saveGameMoves } from '../util/game';
+
+import useBoardContext from '../hooks/useBoardContext';
 import useGameContext from '../hooks/useGameContext';
 
 const MovesContainer = () => {
-  const { game, updateGame } = useGameContext();
-  const { board, setTiles } = useBoardContext();
-  const [moves, setMoves] = useState<string[]>([]);
+  const { game, updateGame, moves, setMoves } = useGameContext();
+  const { board, setTiles, resetAll } = useBoardContext();
   const [moveStr, setMoveStr] = useState('');
-  const [savedMoves, setSavedMoves] = useState<MoveResult[]>([]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMoveStr(event.target.value);
@@ -29,52 +37,30 @@ const MovesContainer = () => {
 
   const handleMakeMoveClick = () => {};
 
-  const saveMoves = () => {
-    const moves = game.moves().str_array();
-
-    // write moves to session storage
-    sessionStorage.setItem('gameMoves', game.print_moves());
-
-    console.log('Moves saved ...');
-  };
-
-  const getSavedMoves = () => {
-    const gameMovesStr = sessionStorage.getItem('gameMoves');
-    if (gameMovesStr) {
-      console.log(gameMovesStr);
-      // get moves from session storage
-      const moveReader: MoveReader = new MoveReader();
-
-      const moveResults = moveReader.parse_moves_to_js_arr(gameMovesStr);
-
-      console.log(moveResults);
-
-      setSavedMoves(moveResults);
-    }
+  const logSavedMoves = () => {
+    const moves = getSavedGameMoves();
+    console.log(moves);
   };
 
   const playSavedMoves = () => {
-    const moveReader: MoveReader = new MoveReader();
+    const savedGameMoves = getSavedGameMoves();
 
-    const gameMovesStr: string | null = sessionStorage.getItem('gameMoves');
+    const movesSplit = MoveParser.split_all_moves(savedGameMoves);
 
-    const moveResults: MoveResult[] = moveReader.parse_moves_to_js_arr(
-      gameMovesStr ? gameMovesStr : ''
-    );
+    for (const moveStrSet of movesSplit) {
+      const whiteMoveStr: string = moveStrSet[0];
+      const blackMoveStr: string | undefined = moveStrSet[1];
 
-    moveResults.forEach((moveResult: MoveResult) => {
-      if (moveResult && moveResult.to_coord && moveResult.from_coord) {
-        const toCoord = TileCoord.from_json(moveResult.to_coord);
-        const fromCoord = TileCoord.from_json(moveResult.from_coord);
-        console.log(moveResult);
-        handleMovePiece(fromCoord, toCoord, board, game);
+      handleGameStringMove(whiteMoveStr, PieceColor.White, board, game);
+
+      if (blackMoveStr) {
+        handleGameStringMove(blackMoveStr, PieceColor.Black, board, game);
       }
-    });
-  };
+    }
 
-  // useEffect(() => {
-  //   setMoves(game.moves().str_array());
-  // }, [updateGame]);
+    // update move UI
+    setMoves(game.moves().str_array());
+  };
 
   return (
     <Container css={{ marginBottom: 50 }}>
@@ -98,10 +84,10 @@ const MovesContainer = () => {
                 <Button onClick={handleMakeMoveClick}>Make Move</Button>
               </ListGroupItem>
               <ListGroupItem>
-                <Button onClick={saveMoves}>Save Moves</Button>
+                <Button onClick={() => saveGameMoves(game)}>Save Moves</Button>
               </ListGroupItem>
               <ListGroupItem>
-                <Button onClick={getSavedMoves}>Get Saved Moves</Button>
+                <Button onClick={logSavedMoves}>Log Saved Moves</Button>
               </ListGroupItem>
               <ListGroupItem>
                 <Button onClick={playSavedMoves}>Play Saved Moves</Button>

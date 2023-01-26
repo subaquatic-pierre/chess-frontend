@@ -46,7 +46,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   const [board, setBoard] = useState<Board>(firstBoard);
-  const { setGame, updateGame, setUpdateGame } = useGameContext();
+  const { setGame, setMoves, setUpdateGame } = useGameContext();
 
   // promote piece state
   const [tileToPromote, setTileToPromote] = useState<LastMove | null>(null);
@@ -89,6 +89,8 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     setTiles(newBoard.tiles());
 
     setBoard(newBoard);
+
+    setMoves([]);
 
     // TODO
     // call update game

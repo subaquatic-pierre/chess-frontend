@@ -2,31 +2,12 @@ import {
   Board,
   Game,
   GameState,
-  PieceType,
+  TileCoord,
   PieceColor,
   MoveResult,
   MoveParser
 } from 'chess-lib';
-
-export const handleWriteMoveToGame = (
-  lastMove: MoveResult,
-  board: Board,
-  game: Game
-): string => {
-  const moveStr = MoveParser.move_result_to_str(lastMove, board);
-
-  // let playerTurn = PieceColor.White;
-
-  // if (game.player_turn() == PieceColor.White) {
-  //   playerTurn = PieceColor.Black;
-  // } else {
-  //   playerTurn = PieceColor.White;
-  // }
-
-  // game.add_move(moveStr, playerTurn);
-
-  return moveStr;
-};
+import { handleBoardPieceMove } from './board';
 
 export const handleCheckmate = (game: Game) => {
   if (game.state() === GameState.Ended) {
@@ -36,5 +17,32 @@ export const handleCheckmate = (game: Game) => {
       alert(`White Wins!, black is in checkmate`);
       game.update_state(GameState.Ended);
     }
+  }
+};
+
+export const handleGameStringMove = (
+  moveStr: string,
+  pieceColor: PieceColor,
+  board: Board,
+  game: Game
+) => {
+  const moveResult: MoveResult = MoveParser.str_to_move_result(
+    moveStr,
+    pieceColor
+  );
+  // make board move for white
+  handleBoardPieceMove(moveResult.from_coord, moveResult.to_coord, board, game);
+
+  // write move to game
+  game.add_move(moveStr, pieceColor);
+
+  // update board if promote piece
+  if (moveResult.is_promote_piece && moveResult.promote_piece_type) {
+    const coord = TileCoord.from_json(moveResult.to_coord.to_json());
+    board.set_new_tile(
+      coord,
+      moveResult.promote_piece_type,
+      moveResult.piece_color
+    );
   }
 };

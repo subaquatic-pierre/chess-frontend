@@ -45,7 +45,7 @@ const movePiece = (
   return undefined;
 };
 
-export const handleMovePiece = (
+export const handleBoardPieceMove = (
   fromCoord: TileCoord,
   toCoord: TileCoord,
   board: Board,

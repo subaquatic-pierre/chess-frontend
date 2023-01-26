@@ -7,6 +7,9 @@ export interface IGameContext {
   setGame: SetState<Game>;
   game: Game;
 
+  moves: string[];
+  setMoves: SetState<string[]>;
+
   // player state, used to determine who moves next
   players: number;
   setPlayers: SetState<number>;
@@ -37,6 +40,7 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   const [game, setGame] = useState<Game>(firstGame);
   const [lastMove, setLastMove] = useState<MoveResult | null>(null);
   const [updateGame, setUpdateGame] = useState(false);
+  const [moves, setMoves] = useState<string[]>([]);
 
   // players
   const [players, setPlayers] = useState(0);
@@ -49,6 +53,10 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
 
         players,
         setPlayers,
+
+        // used to display moves played
+        moves,
+        setMoves,
 
         // display coord state
         showCoords,

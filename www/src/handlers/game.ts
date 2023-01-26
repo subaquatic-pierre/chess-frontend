@@ -4,7 +4,8 @@ import {
   GameState,
   PieceType,
   PieceColor,
-  MoveResult
+  MoveResult,
+  MoveParser
 } from 'chess-lib';
 
 export const handleWriteMoveToGame = (
@@ -12,8 +13,7 @@ export const handleWriteMoveToGame = (
   board: Board,
   game: Game
 ): string => {
-  const moveWriter = board.move_writer();
-  const moveStr = moveWriter.write_move(lastMove);
+  const moveStr = MoveParser.move_result_to_str(lastMove, board);
 
   // let playerTurn = PieceColor.White;
 

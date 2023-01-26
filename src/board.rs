@@ -46,19 +46,6 @@ impl Board {
         board
     }
 
-    /// return a new move writer
-    /// with reference to current board state
-    /// the move writer is used to write moves made
-    /// on frontend and return moves as chess notation string
-    /// to be written to the game
-    pub fn move_writer(&self) -> MoveWriter {
-        MoveWriter::new(self)
-    }
-
-    pub fn move_reader(&self) -> MoveReader {
-        MoveReader::new(self)
-    }
-
     // JS methods
 
     /// Returns JS array cloned copy of current tiles
@@ -302,31 +289,17 @@ impl Board {
             let is_promote_piece =
                 self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
 
-            // return true as piece is move
-            // new method signature:
-
-            // piece_type: PieceType,
-            // piece_color: PieceColor,
-            // from_coord: Option<TileCoord>,
-            // to_coord: Option<TileCoord>,
-            // promote_piece_type: Option<PieceType>,
-            // is_promote_piece: bool,
-            // is_take: bool,
-            // is_short_castle: bool,
-            // is_long_castle: bool,
-            // board: Board,
-            return Some(MoveResult::new(
-                piece_strategy.piece_type(),
-                piece_strategy.color(),
-                Some(old_coord),
-                Some(new_coord),
-                None,
+            return Some(MoveResult {
+                piece_type: piece_strategy.piece_type(),
+                piece_color: piece_strategy.color(),
+                from_coord: old_coord,
+                to_coord: new_coord,
+                promote_piece_type: None,
                 is_promote_piece,
                 is_take,
-                king_castle_result == Some(KingCastleMoveResult::ShortCastle),
-                king_castle_result == Some(KingCastleMoveResult::LongCastle),
-                self.clone(),
-            ));
+                is_short_castle: king_castle_result == Some(KingCastleMoveResult::ShortCastle),
+                is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
+            });
         }
 
         // if no piece if moved

@@ -92,19 +92,13 @@ impl PieceMoveStrategy for KingMoveStrategy {
         }
 
         // add king castle moves
-        match self.color {
-            PieceColor::White => {
-                if self.coord.row() == 0 && self.coord.col() == 4 {
-                    moves_vec.push(TileCoord::new(0, 1));
-                    moves_vec.push(TileCoord::new(0, 6));
-                }
-            }
-            PieceColor::Black => {
-                if self.coord.row() == 7 && self.coord.col() == 4 {
-                    moves_vec.push(TileCoord::new(7, 1));
-                    moves_vec.push(TileCoord::new(7, 6));
-                }
-            }
+        let king_start_coord = KingCastleValidator::king_start_coord(self.color);
+
+        // check if king is at starting position
+        if self.coord.row() == king_start_coord.row() && self.coord.col() == king_start_coord.col()
+        {
+            moves_vec.push(KingCastleValidator::long_castle_coord(self.color));
+            moves_vec.push(KingCastleValidator::short_castle_coord(self.color));
         }
 
         moves_vec
@@ -305,8 +299,8 @@ pub struct KingCastleValidator {}
 impl KingCastleValidator {
     pub fn long_castle_coord(piece_color: PieceColor) -> TileCoord {
         match piece_color {
-            PieceColor::White => TileCoord::new(0, 1),
-            PieceColor::Black => TileCoord::new(7, 1),
+            PieceColor::White => TileCoord::new(0, 2),
+            PieceColor::Black => TileCoord::new(7, 2),
         }
     }
 
@@ -316,4 +310,41 @@ impl KingCastleValidator {
             PieceColor::Black => TileCoord::new(7, 6),
         }
     }
+
+    pub fn king_start_coord(piece_color: PieceColor) -> TileCoord {
+        match piece_color {
+            PieceColor::White => TileCoord::new(0, 4),
+            PieceColor::Black => TileCoord::new(7, 4),
+        }
+    }
 }
+
+// enum KingCastleType {
+// ShortCastle,
+// LongCaste
+// }
+
+// fn get_castle_coord(castle_type:KingCastleType, piece_color:PieceColor)-> TileCoord {
+//     match castle_type {
+//         KingCastleType::ShortCastle => {
+//             match piece_color {
+//                 PieceColor::White => {
+
+//                 },
+//                 PieceColor::Black => {
+
+//                 }
+//             }
+//         },
+//         KingCastleType::LongCaste => {
+//             match piece_color {
+//                 PieceColor::White => {
+
+//                 },
+//                 PieceColor::Black => {
+
+//                 }
+//             }
+//         }
+//     }
+// }

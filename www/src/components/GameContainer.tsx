@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { MoveReader, MoveResult, TileCoord, Game } from 'chess-lib';
+import {
+  MoveReader,
+  MoveResult,
+  TileCoord,
+  Game,
+  MoveParser,
+  PieceColor
+} from 'chess-lib';
 
 import useLoadingContext from '../hooks/useLoadingContext';
 import useGameContext from '../hooks/useGameContext';
@@ -24,16 +31,26 @@ const GameContainer: React.FC<Props> = ({ children }) => {
 
     if (lastMove) {
       // write moves to game wasm object
-      // handleWriteMoveToGame(lastMove as LastMove, board, game);
       // saveMoves(game);
+      // // const moveStr = handleWriteMoveToGame(lastMove, board, game);
+      // console.log('moveStr: ', moveStr);
+      // console.log('parsing move str ...');
+      // const moveRes = parseMoveStr(moveStr, lastMove.piece_color);
+      // console.log('moveRes.to_json(): ', moveRes.to_json());
 
-      const moveStr = handleWriteMoveToGame(lastMove, board, game);
+      const pieceColor = lastMove.piece_color;
+
+      // board will have been updated with new tile positions
+      // after move is made ie. lastMove is the result returned from the
+      // updated board
+
+      const moveStr = MoveParser.move_result_to_str(lastMove, board);
+
       console.log('moveStr: ', moveStr);
 
-      console.log('parsing move str ...');
-      const moveRes = parseMoveStr(moveStr);
+      const moveResult = MoveParser.str_to_move_result(moveStr, pieceColor);
 
-      console.log('moveRes.to_json(): ', moveRes.to_json());
+      console.log('moveResult: ', moveResult.to_json());
     }
 
     // TODO
@@ -56,7 +73,7 @@ const GameContainer: React.FC<Props> = ({ children }) => {
   };
 
   const getSavedMoves = (): MoveResult[] => {
-    const moveReader = board.move_reader();
+    const moveReader = new MoveReader();
 
     const gameMovesStr: string | null = sessionStorage.getItem('gameMoves');
 
@@ -67,9 +84,11 @@ const GameContainer: React.FC<Props> = ({ children }) => {
     return moveResults;
   };
 
-  const parseMoveStr = (moveStr: string): MoveResult => {
-    const moveReader = board.move_reader();
-    const moveResult = moveReader.parse_move(moveStr);
+  const parseMoveStr = (
+    moveStr: string,
+    pieceColor: PieceColor
+  ): MoveResult => {
+    const moveResult = MoveParser.str_to_move_result(moveStr, pieceColor);
     return moveResult;
   };
 
@@ -101,7 +120,7 @@ const GameContainer: React.FC<Props> = ({ children }) => {
   // update board and game state from session
   // only set loading false after game is initialized
   const initGame = () => {
-    const moveWriter = board.move_writer();
+    // const moveWriter = board.move_writer();
     // const savedMoves = getSavedMoves();
 
     // console.log(savedMoves);

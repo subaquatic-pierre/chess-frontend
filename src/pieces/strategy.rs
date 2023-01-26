@@ -57,7 +57,7 @@ impl<'a> MoveHandler<'a> {
         // tuple with following layout
         // (old_col, new_col)
         let rook_col = if self.new_coord == KingCastleValidator::long_castle_coord(piece_color) {
-            Some((0_u8, 2_u8))
+            Some((0_u8, 3_u8))
         } else if self.new_coord == KingCastleValidator::short_castle_coord(piece_color) {
             Some((7_u8, 5_u8))
         } else {

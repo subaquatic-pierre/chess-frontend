@@ -51,9 +51,9 @@ const BoardContainer = () => {
 
       // TODO
       // uncomment to enable player turn capabilities
-      if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
-        return;
-      }
+      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+      //   return;
+      // }
 
       if (curActiveCoord) {
         const fromCoord = board.get_selected_piece_coord();
@@ -112,16 +112,6 @@ const BoardContainer = () => {
       // update board with new piece
       board.set_new_tile(
         coord,
-        promotePiece.piece_type(),
-        promotePiece.color()
-      );
-
-      // update move result board with new tile
-      tileToPromote.moveResult.set_new_tile(
-        TileCoord.new(
-          tileToPromote.promoteTile.coord().row(),
-          tileToPromote.promoteTile.coord().col()
-        ),
         promotePiece.piece_type(),
         promotePiece.color()
       );

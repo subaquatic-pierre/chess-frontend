@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MoveReader, MoveResult, TileCoord } from 'chess-lib';
+import { MoveParser, MoveReader, MoveResult, TileCoord } from 'chess-lib';
 
 import {
   Button,
@@ -27,17 +27,7 @@ const MovesContainer = () => {
     setMoveStr(event.target.value);
   };
 
-  const handleMakeMoveClick = () => {
-    const moveReader = board.move_reader();
-    const moveResult = moveReader.parse_move(moveStr);
-
-    console.log(moveResult.to_json());
-    if (moveResult && moveResult?.to_coord && moveResult?.from_coord) {
-      handleMovePiece(moveResult.from_coord, moveResult.to_coord, board, game);
-    }
-    // clear input
-    setTiles(board.tiles());
-  };
+  const handleMakeMoveClick = () => {};
 
   const saveMoves = () => {
     const moves = game.moves().str_array();
@@ -53,7 +43,7 @@ const MovesContainer = () => {
     if (gameMovesStr) {
       console.log(gameMovesStr);
       // get moves from session storage
-      const moveReader = board.move_reader();
+      const moveReader: MoveReader = new MoveReader();
 
       const moveResults = moveReader.parse_moves_to_js_arr(gameMovesStr);
 
@@ -64,7 +54,7 @@ const MovesContainer = () => {
   };
 
   const playSavedMoves = () => {
-    const moveReader: MoveReader = board.move_reader();
+    const moveReader: MoveReader = new MoveReader();
 
     const gameMovesStr: string | null = sessionStorage.getItem('gameMoves');
 

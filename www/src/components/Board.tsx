@@ -15,7 +15,7 @@ const Board = () => {
 
   // local tiles used to keep state fresh
   useEffect(() => {
-    setLocalTiles(rotateBoard(board.tiles(), boardDirection));
+    setLocalTiles(rotateBoard(board.js_tiles(), boardDirection));
   }, [tiles]);
 
   // remove selected tile if not click on the board
@@ -26,7 +26,7 @@ const Board = () => {
       if (!divEl.current.contains(e.target as HTMLDivElement)) {
         setSelectedTile(null);
         board.clear_active_tiles();
-        setTiles(board.tiles());
+        setTiles(board.js_tiles());
       }
     }
   };

@@ -67,11 +67,11 @@ impl<'a> MoveHandler<'a> {
         if let Some(col) = rook_col {
             // clear old rook coord
             self.board
-                .set_new_tile(TileCoord::new(rook_row, col.0), None, None);
+                .set_new_tile(&TileCoord::new(rook_row, col.0), None, None);
 
             // set new rook coord
             self.board.set_new_tile(
-                TileCoord::new(rook_row, col.1),
+                &TileCoord::new(rook_row, col.1),
                 Some(PieceType::Rook),
                 Some(piece_color),
             );
@@ -116,10 +116,7 @@ impl<'a> MoveHandler<'a> {
 
     /// get the coords of all pieces
     /// of current strategy color
-    pub fn own_piece_coords(
-        piece_strategy: &dyn PieceMoveStrategy,
-        board: &Board,
-    ) -> Vec<TileCoord> {
+    pub fn own_piece_coords(piece_color: PieceColor, board: &Board) -> Vec<TileCoord> {
         let mut own_pieces = vec![];
         // loop over all pieces
         for i in 0..board.num_tiles() {
@@ -128,7 +125,7 @@ impl<'a> MoveHandler<'a> {
             // ensure tile has piece
             if let Some(piece) = board.peek_tile(&coord) {
                 // only get enemy piece coords
-                if piece.color() == piece_strategy.color() {
+                if piece.color() == piece_color {
                     own_pieces.push(coord);
                 }
             }
@@ -209,13 +206,13 @@ impl<'a> MoveValidator<'a> {
             }
 
             // check if currently in check and possible move out of check
-            if MoveValidator::is_check(piece_strategy, self.board)
+            if MoveValidator::is_check(piece_strategy.color(), self.board)
                 && !MoveValidator::is_possible_check(piece_strategy, self.board, self.new_coord)
             {
                 return true;
             }
 
-            if MoveValidator::is_check(piece_strategy, self.board) {
+            if MoveValidator::is_check(piece_strategy.color(), self.board) {
                 return false;
             }
         }
@@ -242,17 +239,13 @@ impl<'a> MoveValidator<'a> {
 
     // validate king castle move
     fn is_valid_king_castle_move(&self, piece_strategy: &dyn PieceMoveStrategy) -> bool {
+        // `board.king_castle_state()` method returns clone of current state
         let board_king_castle_state = self.board.king_castle_state();
         let piece_color = piece_strategy.color();
 
-        // SAFETY:
-        // board is always valid to dereference within strategy
-        // strategy is only ever used within the board
-        // raw pointers are used only because board implements
-        // wasm_bingen which does not support ref return objects
         let king_castle_state = match piece_color {
-            PieceColor::White => unsafe { &board_king_castle_state.as_ref().unwrap().white_king },
-            PieceColor::Black => unsafe { &board_king_castle_state.as_ref().unwrap().black_king },
+            PieceColor::White => &board_king_castle_state.white_king,
+            PieceColor::Black => &board_king_castle_state.black_king,
         };
 
         if self.new_coord == KingCastleValidator::short_castle_coord(piece_color)
@@ -362,10 +355,10 @@ impl<'a> MoveValidator<'a> {
     // ---
 
     /// main method to validate whether king is in check
-    pub fn is_check(piece_strategy: &dyn PieceMoveStrategy, board: &Board) -> bool {
-        let enemy_piece_tile = MoveHandler::enemy_piece_coords(piece_strategy.color(), board);
+    pub fn is_check(piece_color: PieceColor, board: &Board) -> bool {
+        let enemy_piece_tiles = MoveHandler::enemy_piece_coords(piece_color, board);
 
-        for coord in enemy_piece_tile {
+        for coord in enemy_piece_tiles {
             // SAFETY:
             // tile has piece, confirmed in above loop
             let piece = board.peek_tile(&coord).unwrap();
@@ -414,14 +407,14 @@ impl<'a> MoveValidator<'a> {
 
         // ensure move is valid, ignoring king check
         if validator.is_valid_move(piece_strategy, true) {
-            let (old_row, old_col) = piece_strategy.row_col();
-            let (new_row, new_col) = (new_coord.row(), new_coord.col());
+            let (old_row, old_col) = piece_strategy.coord().row_col();
+            let (new_row, new_col) = new_coord.row_col();
 
             // move piece ignoring check
             board_copy.move_piece_ignore_check(old_row, old_col, new_row, new_col);
 
             // check if king in check
-            if MoveValidator::is_check(piece_strategy, &board_copy) {
+            if MoveValidator::is_check(piece_strategy.color(), &board_copy) {
                 return true;
             }
         }
@@ -429,8 +422,8 @@ impl<'a> MoveValidator<'a> {
     }
 
     /// possibility of checkmate
-    pub fn is_checkmate(piece_strategy: &dyn PieceMoveStrategy, board: &Board) -> bool {
-        let own_pieces = MoveHandler::own_piece_coords(piece_strategy, board);
+    pub fn is_checkmate(piece_color: PieceColor, board: &Board) -> bool {
+        let own_pieces = MoveHandler::own_piece_coords(piece_color, board);
         // create new validator based on current board
 
         for coord in own_pieces {
@@ -481,13 +474,9 @@ pub trait PieceMoveStrategy {
         self.tiles_between(new_coord).len() + 1
     }
 
-    fn row_col(&self) -> (u8, u8) {
-        (self.coord().row(), self.coord().col())
-    }
-
     fn move_direction(&self, new_coord: TileCoord) -> MoveDirection {
-        let (cur_row, cur_col) = self.row_col();
-        let (new_row, new_col) = (new_coord.row(), new_coord.col());
+        let (cur_row, cur_col) = self.coord().row_col();
+        let (new_row, new_col) = new_coord.row_col();
 
         if new_row > cur_row {
             return MoveDirection::Up;

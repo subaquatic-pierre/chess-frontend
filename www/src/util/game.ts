@@ -7,6 +7,10 @@ export const saveGameMoves = (game: Game) => {
   console.log('Moves saved.');
 };
 
+export const clearSavedGameMoves = () => {
+  sessionStorage.removeItem('gameMoves');
+};
+
 export const getSavedGameMoves = (): string => {
   const gameMovesStr = sessionStorage.getItem('gameMoves');
   if (gameMovesStr) {

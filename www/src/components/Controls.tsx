@@ -19,7 +19,7 @@ const Controls = () => {
       setBoardDirection(PieceColor.White);
     }
 
-    setTiles(board.tiles());
+    setTiles(board.js_tiles());
   };
 
   const handleShowCoords = () => {

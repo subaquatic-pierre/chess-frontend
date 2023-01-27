@@ -3,7 +3,12 @@ use std::fmt::Display;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
-use crate::{console_log, pieces::piece::PieceColor};
+use crate::{
+    board::Board,
+    console_log,
+    parser::{MoveParser, MoveReader},
+    pieces::piece::PieceColor,
+};
 
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
@@ -17,6 +22,7 @@ pub struct Game {
     state: GameState,
     player_turn: PieceColor,
     moves: GameMoves,
+    board: Board,
     winner: Option<PieceColor>,
 }
 
@@ -28,6 +34,7 @@ impl Game {
             player_turn: PieceColor::White,
             moves: GameMoves::default(),
             winner: None,
+            board: Board::default(),
         }
     }
 
@@ -118,6 +125,80 @@ impl Game {
             PieceColor::Black => self.moves.black_moves[index].clone(),
         }
     }
+
+    // ---
+    // static methods
+    // ---
+
+    pub fn from_string(all_moves_str: &str, move_index: usize) -> Game {
+        let mut board = Board::default();
+
+        let (white_moves, black_moves) =
+            MoveReader::split_white_black_moves(all_moves_str.to_string());
+
+        for (i, white_move) in white_moves.iter().enumerate() {
+            // make white move
+            let move_res = MoveParser::str_to_move_result(white_move, PieceColor::White);
+
+            board.move_piece(move_res.from_coord, move_res.to_coord);
+
+            // update board with promoted piece if is promote piece
+            if move_res.is_promote_piece {
+                board.set_new_tile(
+                    &move_res.to_coord,
+                    move_res.promote_piece_type,
+                    Some(move_res.piece_color),
+                )
+            }
+
+            // make black move if exists
+        }
+
+        Self {
+            state: GameState::Started,
+            player_turn: PieceColor::White,
+            moves: GameMoves::default(),
+            winner: None,
+            board: Board::default(),
+        }
+    }
+
+    // ---
+    // board proxy methods
+    // ---
+
+    pub fn board() -> Board {
+        !todo!()
+    }
+
+    pub fn js_tiles() -> Array {
+        !todo!()
+    }
+
+    // pub fn board_state(&self, all_move_str: &str, move_index: usize) -> Board {
+    //     let board = Board::default();
+
+    //     let (white_moves, black_moves) = (self.moves.white_moves, self.moves.black_moves);
+
+    //     for (i, white_move) in white_moves.iter().enumerate() {
+    //         // make white move
+    //         let move_res = MoveParser::str_to_move_result(&white_move.str(), PieceColor::White);
+    //         board.move_piece(move_res.from_coord, move_res.to_coord);
+
+    //         // update board with promoted piece if is promote piece
+    //         if move_res.is_promote_piece {
+    //             board.set_new_tile(
+    //                 &move_res.to_coord,
+    //                 move_res.promote_piece_type,
+    //                 Some(move_res.piece_color),
+    //             )
+    //         }
+
+    //         // make black move if exists
+    //     }
+
+    //     board
+    // }
 }
 
 impl Default for Game {

@@ -13,6 +13,16 @@ pub enum PieceColor {
     Black,
 }
 
+impl PieceColor {
+    pub fn opposite_color(piece_color: PieceColor) -> PieceColor {
+        if piece_color == Self::White {
+            Self::Black
+        } else {
+            Self::White
+        }
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Ord, Eq, Copy)]
 pub enum PieceType {

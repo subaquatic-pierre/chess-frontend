@@ -7,7 +7,9 @@ import {
   MoveResult,
   MoveParser
 } from 'chess-lib';
+
 import { handleBoardPieceMove } from './board';
+import { getSavedGameMoves } from '../util/game';
 
 export const handleCheckmate = (game: Game) => {
   if (game.state() === GameState.Ended) {
@@ -30,6 +32,9 @@ export const handleGameStringMove = (
     moveStr,
     pieceColor
   );
+
+  console.log('moveRes in HandleGameStringMove: ', moveResult.to_json());
+
   // make board move for white
   handleBoardPieceMove(moveResult.from_coord, moveResult.to_coord, board, game);
 
@@ -44,5 +49,22 @@ export const handleGameStringMove = (
       moveResult.promote_piece_type,
       moveResult.piece_color
     );
+  }
+};
+
+export const handlePlaySavedMoves = (board: Board, game: Game) => {
+  const savedGameMoves = getSavedGameMoves();
+
+  const movesSplit = MoveParser.js_split_all_moves(savedGameMoves);
+
+  for (const moveStrSet of movesSplit) {
+    const whiteMoveStr: string = moveStrSet[0];
+    const blackMoveStr: string | undefined = moveStrSet[1];
+
+    handleGameStringMove(whiteMoveStr, PieceColor.White, board, game);
+
+    if (blackMoveStr) {
+      handleGameStringMove(blackMoveStr, PieceColor.Black, board, game);
+    }
   }
 };

@@ -87,7 +87,7 @@ const BoardContainer = () => {
 
       // clear selected tile from coord
       setSelectedTile(null);
-      setTiles(board.tiles());
+      setTiles(board.js_tiles());
     }
   }, [selectedTile]);
 
@@ -127,7 +127,7 @@ const BoardContainer = () => {
       setTileToPromote(null);
 
       // update board ui
-      setTiles(board.tiles());
+      setTiles(board.js_tiles());
     }
   }, [promotePiece]);
 

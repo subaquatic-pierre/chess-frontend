@@ -4,6 +4,7 @@ import { Board, Game, Piece, PieceColor, Tile } from 'chess-lib';
 import { SetState } from '../types/Context';
 import { LastMove } from '../types/Board';
 import useGameContext from '../hooks/useGameContext';
+import { clearSavedGameMoves } from '../util/game';
 
 // define context interface
 export interface IBoardContext {
@@ -65,7 +66,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
 
   const initBoard = () => {
     // set tiles based on initial board state
-    setTiles(board.tiles());
+    setTiles(board.js_tiles());
 
     // set board direction
     setBoardDirection(PieceColor.White);
@@ -79,6 +80,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   const resetAll = () => {
     // TODO
     // clear session state
+    clearSavedGameMoves();
 
     // set new game
     const newGame = Game.new();

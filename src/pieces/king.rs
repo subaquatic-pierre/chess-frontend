@@ -1,3 +1,4 @@
+use wasm_bindgen::prelude::*;
 // use crate::console_log;
 use crate::console_log;
 use serde::{Deserialize, Serialize};
@@ -54,7 +55,7 @@ impl PieceMoveStrategy for KingMoveStrategy {
 
     fn moves(&self) -> Vec<TileCoord> {
         let mut moves_vec = vec![];
-        let (row, col) = self.row_col();
+        let (row, col) = self.coord().row_col();
 
         let move_1 = TileCoord::new(row - 1, col);
         let move_2 = TileCoord::new(row + 1, col);
@@ -117,6 +118,7 @@ impl PieceMoveStrategy for KingMoveStrategy {
     }
 }
 
+#[wasm_bindgen]
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct KingCastleBoardState {
     pub white_king: KingCastleState,
@@ -255,7 +257,7 @@ impl KingCastleBoardState {
         let strategy =
             StrategyBuilder::new_piece_strategy(PieceType::King, king_coord, piece_color, board);
 
-        if MoveValidator::is_check(strategy.as_ref(), board) {
+        if MoveValidator::is_check(strategy.color(), board) {
             return true;
         }
 
@@ -268,8 +270,8 @@ pub enum KingCastleMoveResult {
     ShortCastle,
     LongCastle,
 }
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[wasm_bindgen]
+#[derive(Clone, Serialize, Deserialize, Debug, Copy)]
 pub struct KingCastleState {
     pub is_king_moved: bool,
     pub is_in_check: bool,

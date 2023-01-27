@@ -31,15 +31,10 @@ const movePiece = (
   newCoord: TileCoord,
   board: Board
 ): MoveResult | undefined => {
-  const oldRow = oldCoord.row();
-  const oldCol = oldCoord.col();
-  const newRow = newCoord.row();
-  const newCol = newCoord.col();
-
   const piece = board.get_piece(oldCoord);
 
   if (piece) {
-    const moveResult = board.move_piece(oldRow, oldCol, newRow, newCol);
+    const moveResult = board.move_piece(oldCoord, newCoord);
     return moveResult;
   }
   return undefined;

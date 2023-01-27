@@ -19,7 +19,7 @@ import {
   Row
 } from 'react-bootstrap';
 import { handleBoardPieceMove } from '../handlers/board';
-import { handleGameStringMove } from '../handlers/game';
+import { handleGameStringMove, handlePlaySavedMoves } from '../handlers/game';
 
 import { getSavedGameMoves, saveGameMoves } from '../util/game';
 
@@ -43,20 +43,7 @@ const MovesContainer = () => {
   };
 
   const playSavedMoves = () => {
-    const savedGameMoves = getSavedGameMoves();
-
-    const movesSplit = MoveParser.split_all_moves(savedGameMoves);
-
-    for (const moveStrSet of movesSplit) {
-      const whiteMoveStr: string = moveStrSet[0];
-      const blackMoveStr: string | undefined = moveStrSet[1];
-
-      handleGameStringMove(whiteMoveStr, PieceColor.White, board, game);
-
-      if (blackMoveStr) {
-        handleGameStringMove(blackMoveStr, PieceColor.Black, board, game);
-      }
-    }
+    handlePlaySavedMoves(board, game);
 
     // update move UI
     setMoves(game.moves().str_array());

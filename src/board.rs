@@ -50,13 +50,13 @@ impl Board {
 
     /// Returns JS array cloned copy of current tiles
     /// Used to render tiles from current board state
-    pub fn tiles(&self) -> Array {
+    pub fn js_tiles(&self) -> Array {
         self.tiles.clone().into_iter().map(JsValue::from).collect()
     }
 
     /// return JS type of the piece
     /// mainly used for debugging purpose
-    pub fn get_js_piece(&self, coord: &TileCoord) -> JsValue {
+    pub fn js_piece(&self, coord: &TileCoord) -> JsValue {
         let tile = self.get_tile(coord);
         match tile {
             Some(tile) => match tile.piece() {
@@ -70,15 +70,15 @@ impl Board {
     /// used to get current state of king castle moves
     /// used in move_piece method to check if valid
     /// king castle move can be made
-    pub fn king_castle_state(&self) -> *const KingCastleBoardState {
-        &self.king_castle_state
+    pub fn king_castle_state(&self) -> KingCastleBoardState {
+        self.king_castle_state.clone()
     }
 
     // tile methods
 
     pub fn set_new_tile(
         &mut self,
-        coord: TileCoord,
+        coord: &TileCoord,
         piece_type: Option<PieceType>,
         piece_color: Option<PieceColor>,
     ) {
@@ -86,14 +86,18 @@ impl Board {
         let piece = if piece_type.is_none() || piece_color.is_none() {
             None
         } else {
-            Some(Piece::new(piece_type.unwrap(), piece_color.unwrap(), coord))
+            Some(Piece::new(
+                piece_type.unwrap(),
+                piece_color.unwrap(),
+                coord.clone(),
+            ))
         };
 
         // get tile idx
         let tile_idx = Board::tile_idx_from_coord(&coord.clone());
 
         // create new tile
-        let new_tile = Tile::new(coord, tile_idx as u8, TileState::Inactive, piece);
+        let new_tile = Tile::new(coord.clone(), tile_idx as u8, TileState::Inactive, piece);
 
         // write new tile to board array
         self.tiles[tile_idx] = new_tile;
@@ -163,7 +167,7 @@ impl Board {
 
     pub fn clear_tile(&mut self, row: u8, col: u8) {
         let coord = TileCoord::new(row, col);
-        self.set_new_tile(coord, None, None);
+        self.set_new_tile(&coord, None, None);
     }
 
     // piece methods
@@ -174,16 +178,10 @@ impl Board {
 
     /// main public method used to move pieces,
     /// updates board with new pieces
-    pub fn move_piece(
-        &mut self,
-        old_row: u8,
-        old_col: u8,
-        new_row: u8,
-        new_col: u8,
-    ) -> Option<MoveResult> {
+    pub fn move_piece(&mut self, old_coord: TileCoord, new_coord: TileCoord) -> Option<MoveResult> {
         // do not ignore check on main method to move pieces
         // board is updated with new pieces after this method
-        let result = self.handle_move_piece(old_row, old_col, new_row, new_col, false);
+        let result = self.handle_move_piece(old_coord, new_coord, false);
 
         // update king castle state after move is completed
         self.king_castle_state.update_state(&*self);
@@ -194,9 +192,11 @@ impl Board {
     /// method used to move piece ignoring if king is in check
     /// used to check if possible to move in/out of check
     pub fn move_piece_ignore_check(&mut self, old_row: u8, old_col: u8, new_row: u8, new_col: u8) {
+        let old_coord: TileCoord = TileCoord::new(old_row, old_col);
+        let new_coord: TileCoord = TileCoord::new(new_row, new_col);
         // ignore check flag active
         // method used to check if king is in check
-        self.handle_move_piece(old_row, old_col, new_row, new_col, true);
+        self.handle_move_piece(old_coord, new_coord, true);
     }
 
     /// used as base move command to move pieces
@@ -205,14 +205,10 @@ impl Board {
     /// ignore flag is useful in validating moving into/out of check
     fn handle_move_piece(
         &mut self,
-        old_row: u8,
-        old_col: u8,
-        new_row: u8,
-        new_col: u8,
+        old_coord: TileCoord,
+        new_coord: TileCoord,
         ignore_check: bool,
     ) -> Option<MoveResult> {
-        let old_coord: TileCoord = TileCoord::new(old_row, old_col);
-        let new_coord: TileCoord = TileCoord::new(new_row, new_col);
         // get old tile
         let tile = self.get_tile(&old_coord);
 
@@ -261,7 +257,7 @@ impl Board {
                 // remove enemy piece pawn from their current coord
                 // ie. where the last en passant coord was set
                 // to be taken
-                self.set_new_tile(last_en_passant_coord, None, None);
+                self.set_new_tile(&last_en_passant_coord, None, None);
                 // clear last en passant
                 self.set_last_en_passant(None);
             }
@@ -285,7 +281,7 @@ impl Board {
             self.clear_tile(old_coord.row(), old_coord.col());
 
             // set new tile
-            self.set_new_tile(new_coord, Some(piece.piece_type()), Some(piece.color()));
+            self.set_new_tile(&new_coord, Some(piece.piece_type()), Some(piece.color()));
             let is_promote_piece =
                 self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
 
@@ -350,27 +346,18 @@ impl Board {
     }
 
     pub fn is_checkmate(&self) -> Option<PieceColor> {
-        // SAFETY:
-        // there is always a king on the board
+        // check each color if is in checkmate
+        for piece_color in [PieceColor::White, PieceColor::Black] {
+            // SAFETY:
+            // there is always a king on the board
+            let king_coord = self.get_king_coord(piece_color);
+            let king = self.get_piece(&king_coord).unwrap();
 
-        // check if white is in checkmate
-        let king_coord = self.get_king_coord(PieceColor::White).unwrap();
+            let piece_strategy = self.new_piece_strategy(king);
 
-        let king = self.get_piece(&king_coord).unwrap();
-
-        let piece_strategy = self.new_piece_strategy(king);
-        if MoveValidator::is_checkmate(piece_strategy.as_ref(), self) {
-            return Some(PieceColor::White);
-        }
-
-        // check if black is in checkmate
-        let king_coord = self.get_king_coord(PieceColor::Black).unwrap();
-
-        let king = self.get_piece(&king_coord).unwrap();
-
-        let piece_strategy = self.new_piece_strategy(king);
-        if MoveValidator::is_checkmate(piece_strategy.as_ref(), self) {
-            return Some(PieceColor::Black);
+            if MoveValidator::is_checkmate(piece_strategy.color(), self) {
+                return Some(piece_color);
+            }
         }
 
         None
@@ -411,15 +398,19 @@ impl Board {
         }
     }
 
-    fn get_king_coord(&self, piece_color: PieceColor) -> Option<TileCoord> {
+    fn get_king_coord(&self, piece_color: PieceColor) -> TileCoord {
         for tile in &self.tiles {
             if let Some(piece) = tile.piece() {
                 if piece.color() == piece_color && piece.piece_type() == PieceType::King {
-                    return Some(tile.coord());
+                    return tile.coord();
                 }
             }
         }
-        None
+
+        // NOTE:
+        // this is never reached
+        // there is always a king on the board
+        TileCoord::new(1, 1)
     }
 
     fn is_promote_piece(

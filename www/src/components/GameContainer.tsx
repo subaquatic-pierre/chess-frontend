@@ -11,9 +11,10 @@ import {
 import useLoadingContext from '../hooks/useLoadingContext';
 import useGameContext from '../hooks/useGameContext';
 import useBoardContext from '../hooks/useBoardContext';
-import { handleCheckmate } from '../handlers/game';
+import { handleCheckmate, handlePlaySavedMoves } from '../handlers/game';
 import { LastMove } from '../types/Board';
 import { handleBoardPieceMove } from '../handlers/board';
+import { saveGameMoves } from '../util/game';
 
 interface Props extends React.PropsWithChildren {}
 
@@ -37,6 +38,8 @@ const GameContainer: React.FC<Props> = ({ children }) => {
       // updated board
       console.log('Move Result: ', lastMove.to_json());
 
+      console.log(board.js_tiles()[62].to_json());
+
       const moveStr = MoveParser.move_result_to_str(lastMove, board);
 
       // TODO:
@@ -46,12 +49,11 @@ const GameContainer: React.FC<Props> = ({ children }) => {
       // add last move to game
       game.add_move(moveStr, pieceColor);
 
+      // save moves to local session
+      // saveGameMoves(game);
+
       // set moves on UI
       setMoves(game.moves().str_array());
-
-      // const moveResult = MoveParser.str_to_move_result(moveStr, pieceColor);
-
-      // console.log('moveResult: ', moveResult.to_json());
     }
 
     // TODO
@@ -75,26 +77,18 @@ const GameContainer: React.FC<Props> = ({ children }) => {
   // update board and game state from session
   // only set loading false after game is initialized
   const initGame = () => {
-    // const moveWriter = board.move_writer();
-    // const savedMoves = getSavedMoves();
+    // handlePlaySavedMoves(board, game);
 
-    // console.log(savedMoves);
-
-    // savedMoves.forEach((moveResult: MoveResult) => {
-    // console.log(moveResult);
-    // const moveResult: MoveResult = MoveResult.from_json(moveResultObj);
-
-    // playMove(moveResult);
-
-    // const moveStr = moveWriter.write_move(moveResult);
-    // game.add_move(moveStr, moveResult.piece_color);
-    // });
+    // set moves on UI
+    // setMoves(game.moves().str_array());
 
     // completed loading
     setTimeout(() => {
       setLoading(false);
     }, 10);
   };
+
+  // initialized game from session
   useEffect(() => {
     initGame();
   }, []);

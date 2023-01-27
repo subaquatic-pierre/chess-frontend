@@ -18,7 +18,7 @@ impl PieceMoveStrategy for KnightMoveStrategy {
 
     fn moves(&self) -> Vec<TileCoord> {
         let mut moves_vec = vec![];
-        let (row, col) = self.row_col();
+        let (row, col) = self.coord().row_col();
 
         let move_1 = TileCoord::new(row - 2, col - 1);
         let move_2 = TileCoord::new(row - 1, col - 2);

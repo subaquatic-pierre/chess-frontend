@@ -38,9 +38,8 @@ impl MoveParser {
         move_reader.parse_move(move_str, piece_color)
     }
 
-    pub fn split_all_moves(all_moves_str: String) -> Array {
-        let move_reader = MoveReader::default();
-        let (white_moves, black_moves) = move_reader.split_white_black_moves(all_moves_str);
+    pub fn js_split_all_moves(all_moves_str: String) -> Array {
+        let (white_moves, black_moves) = MoveReader::split_white_black_moves(all_moves_str);
 
         let moves_arr = Array::new_with_length(white_moves.len() as u32);
 
@@ -110,38 +109,6 @@ impl MoveResult {
     pub fn set_promote_piece(&mut self, piece_type: PieceType) {
         self.promote_piece_type = Some(piece_type)
     }
-
-    // ---
-    // Accessor methods
-    // ---
-
-    // pub fn piece_color(&self) -> PieceColor {
-    //     self.piece_color
-    // }
-    // pub fn piece_type(&self) -> PieceType {
-    //     self.piece_type
-    // }
-    // pub fn from_coord(&self) -> TileCoord {
-    //     self.from_coord
-    // }
-    // pub fn to_coord(&self) -> TileCoord {
-    //     self.to_coord
-    // }
-    // pub fn promote_piece_type(&self) -> Option<PieceType> {
-    //     self.promote_piece_type
-    // }
-    // pub fn is_promote_piece(&self) -> bool {
-    //     self.is_promote_piece
-    // }
-    // pub fn is_take(&self) -> bool {
-    //     self.is_take
-    // }
-    // pub fn is_short_castle(&self) -> bool {
-    //     self.is_short_castle
-    // }
-    // pub fn is_long_castle(&self) -> bool {
-    //     self.is_long_castle
-    // }
 }
 
 #[wasm_bindgen]
@@ -192,21 +159,26 @@ impl MoveWriter {
             "".to_string()
         };
 
-        // get piece type string
-        let piece_str = move_res.piece_type.to_string();
+        // used to check or checkmate status of enemy
+        let enemy_piece_color = PieceColor::opposite_color(move_res.piece_color);
 
         // add '+' to move string if check or '#' if checkmate
-        let check_or_checkmate_str = if board.is_checkmate().is_some() {
+        let check_or_checkmate_str = if MoveValidator::is_checkmate(enemy_piece_color, board) {
             "#".to_string()
+        } else if MoveValidator::is_check(enemy_piece_color, board) {
+            "+".to_string()
         } else {
-            self.get_check_string(move_res, board)
+            "".to_string()
         };
+
+        // get piece type string
+        let piece_str = move_res.piece_type.to_string();
 
         // return promote piece string if promote piece
         if let Some(promote_piece) = move_res.promote_piece_type {
             return format!(
-                "{}{}{}={}",
-                from_coord_str, take_str, to_coord_str, promote_piece
+                "{}{}{}={}{}",
+                from_coord_str, take_str, to_coord_str, promote_piece, check_or_checkmate_str
             );
         }
 
@@ -214,30 +186,6 @@ impl MoveWriter {
             "{}{}{}{}{}",
             piece_str, from_coord_str, take_str, to_coord_str, check_or_checkmate_str
         )
-    }
-
-    fn get_check_string(&self, move_res: &MoveResult, board: &Board) -> String {
-        let new_coord = move_res.to_coord;
-
-        // get opposite piece color
-        let piece_color = if move_res.piece_color == PieceColor::White {
-            PieceColor::Black
-        } else {
-            PieceColor::White
-        };
-
-        // build new king strategy to validate king in check
-        let king_strategy =
-            StrategyBuilder::new_piece_strategy(PieceType::King, new_coord, piece_color, board);
-
-        // check if king is in check
-        let is_check = MoveValidator::is_check(king_strategy.as_ref(), board);
-
-        if is_check {
-            "+".to_string()
-        } else {
-            "".to_string()
-        }
     }
 }
 
@@ -313,7 +261,7 @@ impl MoveReader {
         // king castle possible
         // return king coord move position if castle move
         if self.is_long_castle(move_str) || self.is_short_castle(move_str) {
-            KingCastleValidator::king_start_coord(piece_color);
+            return KingCastleValidator::king_start_coord(piece_color);
         }
 
         // remove last char if check or checkmate
@@ -396,10 +344,10 @@ impl MoveReader {
     }
 }
 
-type WhiteBlackMovesSplit = (Vec<String>, Vec<String>);
+pub type WhiteBlackMovesSplit = (Vec<String>, Vec<String>);
 
 impl MoveReader {
-    pub fn split_white_black_moves(&self, all_moves_str: String) -> WhiteBlackMovesSplit {
+    pub fn split_white_black_moves(all_moves_str: String) -> WhiteBlackMovesSplit {
         let mut black_moves = Vec::new();
         let mut white_moves = Vec::new();
 
@@ -431,7 +379,7 @@ impl MoveReader {
     }
 
     fn parse_moves(&self, all_moves_str: String) -> Vec<MoveResult> {
-        let (white_moves, black_moves) = self.split_white_black_moves(all_moves_str);
+        let (white_moves, black_moves) = MoveReader::split_white_black_moves(all_moves_str);
 
         let mut move_results = vec![];
 

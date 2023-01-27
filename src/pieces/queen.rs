@@ -13,7 +13,7 @@ pub struct QueenMoveStrategy {
 
 impl PieceMoveStrategy for QueenMoveStrategy {
     fn tiles_between(&self, new_coord: TileCoord) -> Vec<TileCoord> {
-        let (row, col) = self.row_col();
+        let (row, col) = self.coord().row_col();
 
         let direction = self.move_direction(new_coord);
 

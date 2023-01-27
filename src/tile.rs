@@ -114,13 +114,6 @@ impl Tile {
             TileColor::White
         }
     }
-
-    // ---
-    // static methods
-    // ---
-    pub fn from_bytes(bytes: Vec<u8>) -> Tile {
-        bincode::deserialize(&bytes).unwrap()
-    }
 }
 
 #[wasm_bindgen]
@@ -155,7 +148,7 @@ impl From<u8> for TileState {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Ord, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Copy, Ord, Eq, Hash)]
 pub enum TileFile {
     FileA,
     FileB,
@@ -169,7 +162,7 @@ pub enum TileFile {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Ord, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Copy, Ord, Eq, Hash)]
 pub enum TileRank {
     Rank1,
     Rank2,
@@ -313,12 +306,25 @@ impl Into<u8> for TileRank {
 pub struct TileCoord {
     row: u8,
     col: u8,
+    file: TileFile,
+    rank: TileRank,
+}
+
+impl TileCoord {
+    pub fn row_col(&self) -> (u8, u8) {
+        (self.row, self.col)
+    }
 }
 
 #[wasm_bindgen]
 impl TileCoord {
     pub fn new(row: u8, col: u8) -> Self {
-        Self { col, row }
+        Self {
+            col,
+            row,
+            file: col.into(),
+            rank: row.into(),
+        }
     }
 
     pub fn col(&self) -> u8 {
@@ -354,7 +360,12 @@ impl From<usize> for TileCoord {
     fn from(index: usize) -> Self {
         let col = index as u8 % 8;
         let row = index as u8 / 8_u8;
-        TileCoord { row, col }
+        TileCoord {
+            row,
+            col,
+            file: col.into(),
+            rank: row.into(),
+        }
     }
 }
 

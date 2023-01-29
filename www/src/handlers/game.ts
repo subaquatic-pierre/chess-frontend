@@ -11,13 +11,20 @@ import {
 import { handleBoardPieceMove } from './board';
 import { getSavedGameMoves } from '../util/game';
 
-export const handleCheckmate = (game: Game) => {
+export const handleCheckmate = (game: Game, board: Board) => {
+  // set checkmate status
+  const checkmateColor = board.is_checkmate();
+  if (checkmateColor === PieceColor.White) {
+    game.set_winner(PieceColor.White);
+  } else if (checkmateColor === PieceColor.Black) {
+    game.set_winner(PieceColor.Black);
+  }
+
   if (game.state() === GameState.Ended) {
     if (game.get_winner() === PieceColor.White) {
       alert(`Black Wins!, white is in checkmate`);
     } else if (game.get_winner() === PieceColor.Black) {
       alert(`White Wins!, black is in checkmate`);
-      game.update_state(GameState.Ended);
     }
   }
 };
@@ -32,8 +39,6 @@ export const handleGameStringMove = (
     moveStr,
     pieceColor
   );
-
-  console.log('moveRes in HandleGameStringMove: ', moveResult.to_json());
 
   // make board move for white
   handleBoardPieceMove(moveResult.from_coord, moveResult.to_coord, board, game);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   MoveReader,
   MoveResult,
@@ -11,67 +11,49 @@ import {
 import useLoadingContext from '../hooks/useLoadingContext';
 import useGameContext from '../hooks/useGameContext';
 import useBoardContext from '../hooks/useBoardContext';
-import { handleCheckmate, handlePlaySavedMoves } from '../handlers/game';
+import { handleCheckmate, handleGameStringMove } from '../handlers/game';
 import { LastMove } from '../types/Board';
 import { handleBoardPieceMove } from '../handlers/board';
 import { saveGameMoves } from '../util/game';
+import useConnectionContext from '../hooks/useConnectionContext';
 
 interface Props extends React.PropsWithChildren {}
 
 const GameContainer: React.FC<Props> = ({ children }) => {
+  const { sendMoveMsg } = useConnectionContext();
   const { loading, setLoading } = useLoadingContext();
-  const { board } = useBoardContext();
-  const { game, updateGame, lastMove, setMoves } = useGameContext();
+  const { board, setTiles, tiles } = useBoardContext();
+  const { game, lastMove, setMoves } = useGameContext();
 
   // used as global effect to game change
   // updated each time board is updated
   // used to write move to game
   // used to make network request with move result
   useEffect(() => {
-    handleCheckmate(game);
-
     if (lastMove) {
-      const pieceColor = lastMove.piece_color;
-
       // board will have been updated with new tile positions
       // after move is made ie. lastMove is the result returned from the
       // updated board
-      console.log('Move Result: ', lastMove.to_json());
+      console.log('lastMove', lastMove.to_json());
+      const moveStr = MoveParser.move_result_to_str(lastMove);
 
-      console.log(board.js_tiles()[62].to_json());
-
-      const moveStr = MoveParser.move_result_to_str(lastMove, board);
-
-      // TODO:
-      // fix why move string not showing check after promote
-      console.log('moveStr: ', moveStr);
+      const playerTurn = game.player_turn();
 
       // add last move to game
-      game.add_move(moveStr, pieceColor);
+      handleGameStringMove(moveStr, playerTurn, board, game);
 
       // save moves to local session
       // saveGameMoves(game);
 
+      // make network request with new move notation
+      sendMoveMsg(moveStr);
+
       // set moves on UI
       setMoves(game.moves().str_array());
+      setTiles(board.js_tiles());
+      handleCheckmate(game, board);
     }
-
-    // TODO
-    // write moves to session
-
-    // TODO
-    // make network request with new move notation
-
-    // TODO
-    // set board with new tiles
-  }, [updateGame]);
-
-  const playMove = (moveResult: MoveResult) => {
-    // console.log('Playing move on board ...', moveResult.to_json());
-    const toCoord = TileCoord.from_json(moveResult.to_coord);
-    const fromCoord = TileCoord.from_json(moveResult.from_coord);
-    handleBoardPieceMove(fromCoord, toCoord, board, game);
-  };
+  }, [lastMove]);
 
   // check user session for current game state
   // update board and game state from session

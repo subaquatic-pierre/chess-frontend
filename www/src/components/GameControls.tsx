@@ -6,7 +6,7 @@ import useBoardContext from '../hooks/useBoardContext';
 import useForceUpdate from '../hooks/forceUpdate';
 import useGameContext from '../hooks/useGameContext';
 
-const Controls = () => {
+const GameControls = () => {
   const { setBoardDirection, boardDirection, resetAll, setTiles, board } =
     useBoardContext();
   const { setShowCoords, showCoords } = useGameContext();
@@ -45,4 +45,4 @@ const Controls = () => {
   );
 };
 
-export default Controls;
+export default GameControls;

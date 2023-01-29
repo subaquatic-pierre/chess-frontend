@@ -28,9 +28,9 @@ impl MoveParser {
         Self {}
     }
 
-    pub fn move_result_to_str(move_result: &MoveResult, board: &Board) -> String {
+    pub fn move_result_to_str(move_result: &MoveResult) -> String {
         let move_writer = MoveWriter::default();
-        move_writer.write_move(move_result, board)
+        move_writer.write_move(move_result)
     }
 
     pub fn str_to_move_result(move_str: &str, piece_color: PieceColor) -> MoveResult {
@@ -70,6 +70,8 @@ pub struct MoveResult {
     pub is_take: bool,
     pub is_short_castle: bool,
     pub is_long_castle: bool,
+    pub is_check: bool,
+    pub is_checkmate: bool,
 }
 
 #[wasm_bindgen]
@@ -84,6 +86,8 @@ impl MoveResult {
         is_take: bool,
         is_short_castle: bool,
         is_long_castle: bool,
+        is_check: bool,
+        is_checkmate: bool,
     ) -> Self {
         Self {
             piece_type,
@@ -95,6 +99,8 @@ impl MoveResult {
             is_long_castle,
             promote_piece_type,
             is_promote_piece,
+            is_check,
+            is_checkmate,
         }
     }
 
@@ -122,7 +128,7 @@ impl MoveWriter {
     }
     /// main method used to write a move to string from a move result
     /// it is the opposite of parse_move method
-    pub fn write_move(&self, move_res: &MoveResult, board: &Board) -> String {
+    pub fn write_move(&self, move_res: &MoveResult) -> String {
         // SAFETY
         // board is always valid pointer
         // move writer is only ever created by the board
@@ -159,13 +165,10 @@ impl MoveWriter {
             "".to_string()
         };
 
-        // used to check or checkmate status of enemy
-        let enemy_piece_color = PieceColor::opposite_color(move_res.piece_color);
-
         // add '+' to move string if check or '#' if checkmate
-        let check_or_checkmate_str = if MoveValidator::is_checkmate(enemy_piece_color, board) {
+        let check_or_checkmate_str = if move_res.is_checkmate {
             "#".to_string()
-        } else if MoveValidator::is_check(enemy_piece_color, board) {
+        } else if move_res.is_check {
             "+".to_string()
         } else {
             "".to_string()
@@ -216,6 +219,8 @@ impl MoveReader {
             is_take,
             is_short_castle: self.is_short_castle(move_str),
             is_long_castle: self.is_long_castle(move_str),
+            is_check: self.is_check(move_str),
+            is_checkmate: self.is_checkmate(move_str),
         }
     }
 

@@ -29,8 +29,7 @@ const BoardContainer = () => {
     setPromotePiece
   } = useBoardContext();
   const { setModalContent } = useModalContext();
-  const { game, lastMove, setLastMove, setUpdateGame, updateGame } =
-    useGameContext();
+  const { game, setLastMove, setUpdateGame } = useGameContext();
 
   // handle move state
   // set promotable tile if tile is promotable
@@ -59,11 +58,9 @@ const BoardContainer = () => {
         const fromCoord = board.get_selected_piece_coord();
 
         if (fromCoord) {
-          const moveResult = handleBoardPieceMove(
+          const moveResult = board.pre_move_result(
             fromCoord,
-            selectedTile.coord(),
-            board,
-            game
+            selectedTile.coord()
           );
 
           if (moveResult) {
@@ -87,8 +84,9 @@ const BoardContainer = () => {
 
       // clear selected tile from coord
       setSelectedTile(null);
-      setTiles(board.js_tiles());
+      handleHighlightMoves(selectedTile, board);
     }
+    setTiles(board.js_tiles());
   }, [selectedTile]);
 
   // handle piece promote sate
@@ -104,18 +102,6 @@ const BoardContainer = () => {
   useEffect(() => {
     // clear promote piece after board update
     if (promotePiece && tileToPromote && tileToPromote.promoteTile) {
-      const coord = TileCoord.new(
-        tileToPromote.promoteTile.coord().row(),
-        tileToPromote.promoteTile.coord().col()
-      );
-
-      // update board with new piece
-      board.set_new_tile(
-        coord,
-        promotePiece.piece_type(),
-        promotePiece.color()
-      );
-
       // update move result board with new tile
       tileToPromote.moveResult.set_promote_piece(promotePiece.piece_type());
 
@@ -130,24 +116,6 @@ const BoardContainer = () => {
       setTiles(board.js_tiles());
     }
   }, [promotePiece]);
-
-  // last move state, used to write moves to game
-  // used to check if game is over
-  // used to update global game state with updateGame toggle
-  useEffect(() => {
-    if (lastMove) {
-      const checkmateColor = board.is_checkmate();
-
-      if (checkmateColor === PieceColor.White) {
-        game.set_winner(PieceColor.White);
-      } else if (checkmateColor === PieceColor.Black) {
-        game.set_winner(PieceColor.Black);
-      }
-
-      // update game state for any listeners to updateGame
-      setUpdateGame(!updateGame);
-    }
-  }, [lastMove]);
 
   return (
     <Container className="justify-content-center d-flex my-5">

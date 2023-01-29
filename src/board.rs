@@ -176,12 +176,24 @@ impl Board {
         StrategyBuilder::new_piece_strategy(piece.piece_type(), piece.coord(), piece.color(), self)
     }
 
+    /// main public method used to get move result without updating board,
+    /// updates board with new pieces
+    pub fn pre_move_result(
+        &mut self,
+        old_coord: TileCoord,
+        new_coord: TileCoord,
+    ) -> Option<MoveResult> {
+        // do not ignore check on main method to move pieces
+        // board is NOT updated with new pieces after this method
+        self.handle_move_piece(old_coord, new_coord, false, false)
+    }
+
     /// main public method used to move pieces,
     /// updates board with new pieces
     pub fn move_piece(&mut self, old_coord: TileCoord, new_coord: TileCoord) -> Option<MoveResult> {
         // do not ignore check on main method to move pieces
         // board is updated with new pieces after this method
-        let result = self.handle_move_piece(old_coord, new_coord, false);
+        let result = self.handle_move_piece(old_coord, new_coord, false, true);
 
         // update king castle state after move is completed
         self.king_castle_state.update_state(&*self);
@@ -196,7 +208,7 @@ impl Board {
         let new_coord: TileCoord = TileCoord::new(new_row, new_col);
         // ignore check flag active
         // method used to check if king is in check
-        self.handle_move_piece(old_coord, new_coord, true);
+        self.handle_move_piece(old_coord, new_coord, true, true);
     }
 
     /// used as base move command to move pieces
@@ -208,6 +220,7 @@ impl Board {
         old_coord: TileCoord,
         new_coord: TileCoord,
         ignore_check: bool,
+        update_board: bool,
     ) -> Option<MoveResult> {
         // get old tile
         let tile = self.get_tile(&old_coord);
@@ -275,15 +288,14 @@ impl Board {
             king_castle_result = move_handler.handle_king_castle_move(piece_strategy.as_ref());
         }
 
-        // only clear tiles if not king take, ie. cannot take king off board
-        if !is_king_take {
-            // clear old tile
-            self.clear_tile(old_coord.row(), old_coord.col());
+        let is_promote_piece = self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
 
-            // set new tile
-            self.set_new_tile(&new_coord, Some(piece.piece_type()), Some(piece.color()));
-            let is_promote_piece =
-                self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
+        // return early if NOT updated_board flag
+        if !update_board {
+            let enemy_piece_color = PieceColor::opposite_color(piece_strategy.color());
+            // make move to see if possible check or checkmate
+            let mut board_copy = self.clone();
+            board_copy.move_piece(old_coord, new_coord);
 
             return Some(MoveResult {
                 piece_type: piece_strategy.piece_type(),
@@ -295,11 +307,38 @@ impl Board {
                 is_take,
                 is_short_castle: king_castle_result == Some(KingCastleMoveResult::ShortCastle),
                 is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
+                is_check: MoveValidator::is_check(enemy_piece_color, &board_copy),
+                is_checkmate: MoveValidator::is_checkmate(enemy_piece_color, &board_copy),
             });
         }
 
-        // if no piece if moved
-        // return false
+        // only clear tiles if not king take, ie. cannot take king off board
+        // update board
+        if !is_king_take {
+            // clear old tile
+            self.clear_tile(old_coord.row(), old_coord.col());
+
+            // set new tile
+            self.set_new_tile(&new_coord, Some(piece.piece_type()), Some(piece.color()));
+
+            return Some(MoveResult {
+                piece_type: piece_strategy.piece_type(),
+                piece_color: piece_strategy.color(),
+                from_coord: old_coord,
+                to_coord: new_coord,
+                promote_piece_type: None,
+                is_promote_piece,
+                is_take,
+                is_short_castle: king_castle_result == Some(KingCastleMoveResult::ShortCastle),
+                is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
+                // always false, can never move into check or checkmate
+                is_check: false,
+                is_checkmate: false,
+            });
+        }
+
+        // if no piece is moved
+        // return None
         None
     }
 

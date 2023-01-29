@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Board,
   MoveParser,
@@ -67,9 +67,14 @@ const MovesContainer = () => {
               onChange={handleInputChange}
             />
             <ListGroup css={{ marginTop: 10 }}>
-              <ListGroupItem>
-                <Button onClick={handleMakeMoveClick}>Make Move</Button>
+              {/* <ListGroupItem>
+                <Button onClick={() => joinRoom('new')}>Join "New" Room</Button>
               </ListGroupItem>
+              <ListGroupItem>
+                <Button onClick={() => sendMsg('Test Text')}>
+                  Send Message
+                </Button>
+              </ListGroupItem> */}
               <ListGroupItem>
                 <Button onClick={() => saveGameMoves(game)}>Save Moves</Button>
               </ListGroupItem>

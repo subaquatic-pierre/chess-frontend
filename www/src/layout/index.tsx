@@ -8,20 +8,19 @@ import GameContextProvider from '../context/GameContext';
 import LoadingContextProvider from '../context/LoadingContext';
 import ModalContextProvider from '../context/ModalContext';
 import BoardContextProvider from '../context/BoardContext';
+import ConnectionContextProvider from '../context/ConnectionContext';
 
 const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <LoadingContextProvider>
-      <GameContextProvider>
-        <BoardContextProvider>
-          <ModalContextProvider>
-            <ThemeProvider theme={theme}>
-              <Header />
-              {children}
-            </ThemeProvider>
-          </ModalContextProvider>
-        </BoardContextProvider>
-      </GameContextProvider>
+      <ConnectionContextProvider>
+        <ModalContextProvider>
+          <ThemeProvider theme={theme}>
+            <Header />
+            {children}
+          </ThemeProvider>
+        </ModalContextProvider>
+      </ConnectionContextProvider>
     </LoadingContextProvider>
   );
 };

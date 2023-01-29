@@ -96,3 +96,30 @@ npm run watch
 ## TODO:
 
 1. Fix why move string not showing check after promote
+
+## Improvements
+
+1. Fix piece move logic in board container react component, ie. promote piece
+
+- Should call is promote piece first
+- if true, open modal
+- then move move in game container
+- should create get pre-move result on board, can be used to get move result before
+  updating board
+
+2. Encapsulate board logic in game proxy methods
+
+- all board actions should be made through game proxy methods
+- get rid of JS handler methods, use only wasm to handle game state
+
+3. Split `board.handle_move_piece` method
+
+- method is too long and complicated
+- split method into smaller parts to be used around moving a piece
+
+## Features
+
+1. User profile create
+2. Save game in backend storage
+3. Add game timer
+4. Chat box between players on same game

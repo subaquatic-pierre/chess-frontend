@@ -88,7 +88,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
 
     // set new board
     const newBoard = Board.new();
-    setTiles(newBoard.tiles());
+    setTiles(newBoard.js_tiles());
 
     setBoard(newBoard);
 

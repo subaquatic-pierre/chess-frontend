@@ -4,13 +4,11 @@ import { graphql, HeadFC } from 'gatsby';
 import '../static/js/main.ts';
 
 import { INavLink } from '../types/NavLink';
+import { Container } from 'react-bootstrap';
 
 import Layout from '../layout/index';
-import BoardContainer from '../components/BoardContainer';
-import Controls from '../components/Controls';
-import useGameContext from '../hooks/useGameContext';
-import GameContainer from '../components/GameContainer';
-import MovesContainer from '../components/MovesContainer';
+import ChatContainer from '../components/ChatContainer';
+import LobbyControls from '../components/LobbyControls';
 
 interface ISiteMeta {
   site: {
@@ -28,11 +26,9 @@ interface Props {
 const IndexPage: React.FC = () => {
   return (
     <Layout>
-      <GameContainer>
-        <Controls />
-        <BoardContainer />
-        <MovesContainer />
-      </GameContainer>
+      <Container>Home Page</Container>
+      <LobbyControls />
+      <ChatContainer />
     </Layout>
   );
 };

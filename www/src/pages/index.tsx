@@ -7,8 +7,9 @@ import { INavLink } from '../types/NavLink';
 import { Container } from 'react-bootstrap';
 
 import Layout from '../layout/index';
-import ChatContainer from '../components/ChatContainer';
-import LobbyControls from '../components/LobbyControls';
+import ChatContainer from '../components/ChatContainer/ChatContainer';
+import LobbyControls from '../components/ChatContainer/LobbyControls';
+import ChatContextProvider from '../context/ChatContext';
 
 interface ISiteMeta {
   site: {
@@ -26,9 +27,9 @@ interface Props {
 const IndexPage: React.FC = () => {
   return (
     <Layout>
-      <Container>Home Page</Container>
-      <LobbyControls />
-      <ChatContainer />
+      <ChatContextProvider>
+        <ChatContainer />
+      </ChatContextProvider>
     </Layout>
   );
 };

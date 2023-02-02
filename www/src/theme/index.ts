@@ -1,5 +1,11 @@
 import { Theme } from '@emotion/react';
 
+export const INFO = '#BFDB38';
+export const SELF = '#1f418a';
+export const OTHER = '#1f2527';
+export const STATUS = '#38a974';
+export const ERROR = '#fc0d00';
+
 const theme: Theme = {
   colors: {
     board: {

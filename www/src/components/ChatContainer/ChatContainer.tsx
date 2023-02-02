@@ -39,23 +39,18 @@ const ChatContainer = () => {
       <Container>
         <Row>
           <Col
-            order={{ xs: 2, md: 1 }}
             style={{ height: '100%' }}
-            xs={12}
-            md={2}
+            xs={{ span: 12, order: 2 }}
+            md={{ span: 2, order: 1 }}
           >
             <RoomListBox />
           </Col>
-          <Col order={{ xs: 1, md: 2 }} xs={12} md={10}>
-            <Row>
-              <Col xs={12} md={9}>
-                <MainChatBox />
-              </Col>
-              <Col xs={12} md={3}>
-                <UserListBox />
-              </Col>
-            </Row>
+          <Col xs={{ span: 12, order: 1 }} md={{ span: 8, order: 2 }}>
+            <MainChatBox />
             <ChatInputRow />
+          </Col>
+          <Col xs={{ span: 12, order: 3 }} md={{ span: 2, order: 3 }}>
+            <UserListBox />
           </Col>
         </Row>
       </Container>

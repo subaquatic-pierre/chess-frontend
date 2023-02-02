@@ -45,7 +45,7 @@ const ChatInputRow: React.FC = () => {
 
   return (
     <Row>
-      <Col xs={12} md={8}>
+      <Col xs={12} md={10}>
         <InputGroup className="mb-3">
           {connected && (
             <InputGroup.Text id="basic-addon1">@{username}:</InputGroup.Text>
@@ -59,7 +59,7 @@ const ChatInputRow: React.FC = () => {
           />
         </InputGroup>
       </Col>
-      <Col xs={12} md={4}>
+      <Col xs={12} md={2}>
         <Button
           disabled={!connected}
           onClick={handleInputSubmit}

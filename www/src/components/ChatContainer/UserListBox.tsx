@@ -53,7 +53,7 @@ const UserListBox: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           border: '1px solid black',
-          height: '500px',
+          height: '545px',
           overflowY: 'scroll',
           borderRadius: '5px'
         }}

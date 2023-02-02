@@ -105,6 +105,7 @@ const LobbyControls = () => {
                   <FormControl
                     type="text"
                     id="textInput"
+                    placeholder="Username"
                     onChange={handleInputChange}
                     onKeyUp={handleInputKeyUp}
                   />
@@ -133,13 +134,12 @@ const LobbyControls = () => {
             </Col>
           </Row>
         ) : (
-          <div
-            className="d-flex py-3 my-2"
-            css={{ '& > button': { marginRight: '1rem' } }}
-          >
-            <Button variant="danger" onClick={handleDisconnect}>
-              Disconnect
-            </Button>
+          <Row>
+            <Col>
+              <Button variant="danger" onClick={handleDisconnect}>
+                Disconnect
+              </Button>
+            </Col>
             {/* <Button variant="info" onClick={listRooms}>
               List Rooms
             </Button>
@@ -153,18 +153,9 @@ const LobbyControls = () => {
             )} */}
             {/* <Button onClick={handleNewGame}>New Game</Button> */}
             {/* <Button onClick={handleNewRoom}>New Room</Button> */}
-          </div>
+          </Row>
         )}
       </div>
-      {/* <div className="mb-3" css={{ '& > button': { marginRight: '1rem' } }}>
-        <Row>
-          <Col xs={4}>
-            <Button variant="info" onClick={checkSession}>
-              Server Info
-            </Button>
-          </Col>
-        </Row>
-      </div> */}
     </Container>
   );
 };

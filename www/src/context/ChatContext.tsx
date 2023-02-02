@@ -74,7 +74,9 @@ const ChatContextProvider: React.FC<React.PropsWithChildren> = ({
   };
 
   useEffect(() => {
-    handleUpdateChat();
+    if (msgs) {
+      handleUpdateChat();
+    }
   }, [updateChat]);
 
   return (

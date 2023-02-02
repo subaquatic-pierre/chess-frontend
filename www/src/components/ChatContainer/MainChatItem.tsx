@@ -27,7 +27,7 @@ const formatMessageString = (msg: Message): string => {
       return `${msg.content}`;
 
     case MessageType.ClientMessage:
-      return `@ ${msg.username}: ${msg.content}`;
+      return `${msg.username}: ${msg.content}`;
 
     case MessageType.Command:
       return `> ${msg.content}`;

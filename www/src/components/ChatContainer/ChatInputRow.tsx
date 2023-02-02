@@ -55,11 +55,13 @@ const ChatInputRow: React.FC = () => {
             id="textInput"
             onChange={handleInputChange}
             onKeyUp={handleInputKeyUp}
+            disabled={!connected}
           />
         </InputGroup>
       </Col>
       <Col xs={12} md={4}>
         <Button
+          disabled={!connected}
           onClick={handleInputSubmit}
           style={{ width: '100%' }}
           variant="success"

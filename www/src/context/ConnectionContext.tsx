@@ -27,10 +27,9 @@ export interface IConnectionContext {
   listRooms: () => void;
   listUsers: () => void;
   updateChat: boolean;
-  setUpdateChat: React.Dispatch<React.SetStateAction<boolean>>;
+  setUpdateChat: SetState<boolean>;
   activeRoom: string;
   username: string;
-  lastMsg: Message | null;
   connected: boolean;
   msgs: Message[];
 }
@@ -56,21 +55,33 @@ const parseMessage = (msg: string): Message => {
 const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
+  const location = useLocation();
+
+  // main ref holding all messages from web socket
   const msgRef = useRef<Message[]>([]);
+
+  // TODO:
+  // recheck update check method
+  // it is not being called on every message
+  // received from the web socket message event
+  // state should be updated on each receive of message
+  // from web socket
   const [updateChat, setUpdateChat] = useState(false);
+
+  // TODO:
+  // update username and active room storing method
+  // should be retrieved from server
+  // and cached on client side
   const [username, setUsername] = useState('');
   const [activeRoom, setActiveRoom] = useState('');
-  const { game, setMoves } = useGameContext();
-  const { board, setTiles } = useBoardContext();
 
-  const location = useLocation();
+  // main socket connection
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [lastMsg, setLastMessage] = useState<Message | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
 
+  // main connection method called
+  // from connect button in Chat LobbyControl component
   const connect = (username: string) => {
-    disconnect();
-
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
     const wsUri = `${proto}://localhost:8080/ws/${username}`;
     // const wsUri = `${proto}://${location.hostname}/ws`;
@@ -82,6 +93,31 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     setSocket(socket);
   };
 
+  // TODO:
+  // invert dependencies on GameContext
+  // the ConnectionContext should update the GameContext
+  // on message received. This way the ConnectionContext
+  // can be the highest component in the component tree
+  const { game, setMoves } = useGameContext();
+  const { board, setTiles } = useBoardContext();
+
+  const handleGameMove = (msg: Message) => {
+    const moveStr = msg.content;
+    const playerTurn = game.player_turn();
+
+    // add last move to game
+    handleGameStringMove(moveStr, playerTurn, board, game);
+
+    // save moves to local session
+    // saveGameMoves(game);
+
+    // set moves on UI
+    setMoves(game.moves().str_array());
+    setTiles(board.js_tiles());
+    handleCheckmate(game, board);
+  };
+
+  // setup socket listeners once socket is connected
   useEffect(() => {
     if (socket) {
       socket.addEventListener('open', () => {
@@ -93,24 +129,21 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
       });
 
       socket.addEventListener('message', (ev: any) => {
-        if (ev.data.startsWith('Move')) {
-          const moveStr = ev.data.split(':')[1];
-          const playerTurn = game.player_turn();
+        const msg = parseMessage(ev.data);
 
-          // add last move to game
-          handleGameStringMove(moveStr, playerTurn, board, game);
-
-          // save moves to local session
-          // saveGameMoves(game);
-
-          // set moves on UI
-          setMoves(game.moves().str_array());
-          setTiles(board.js_tiles());
-          handleCheckmate(game, board);
-        } else {
-          const msg = parseMessage(ev.data);
-          msgRef.current.push(msg);
-          setUpdateChat((old) => !old);
+        try {
+          if (msg.msg_type === MessageType.GameMove) {
+            handleGameMove(msg);
+          } else {
+            msgRef.current.push(msg);
+            setUpdateChat((old) => !old);
+          }
+        } catch (e) {
+          console.log(
+            'There was an error parsing the message from the server!'
+          );
+          console.log(e);
+          console.log('ev.data: ', ev.data);
         }
       });
 
@@ -118,7 +151,7 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         console.log('Disconnected');
 
         const msg = buildOwnMsg(
-          'You successfully disconnected from the server',
+          'You disconnected from the server',
           MessageType.Status
         );
 
@@ -135,6 +168,20 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
   // ---
   // Command Helpers
   // ---
+
+  const joinRoom = (roomName: string) => {
+    if (socket) {
+      socket.send(`/join-room ${roomName}`);
+      socket.send('/list-rooms');
+    }
+  };
+
+  const disconnect = () => {
+    if (socket) {
+      console.log('Disconnecting...');
+      socket.close();
+    }
+  };
 
   const sendMoveMsg = (text: string) => {
     if (socket) {
@@ -154,28 +201,9 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     }
   };
 
-  const joinRoom = (roomName: string) => {
-    if (socket) {
-      socket.send(`/join-room ${roomName}`);
-      setActiveRoom(roomName);
-      listRooms();
-    }
-  };
-
   const listUsers = () => {
     if (socket) {
       socket.send(`/list-users`);
-    }
-  };
-
-  // ---
-  // End command helpers
-  // ---
-
-  const disconnect = () => {
-    if (socket) {
-      console.log('Disconnecting...');
-      socket.close();
     }
   };
 
@@ -185,23 +213,28 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     }
   };
 
+  // ---
+  // End command helpers
+  // ---
+
   return (
     <ConnectionContext.Provider
       value={{
         msgs: msgRef.current,
-        sendCommand,
-        listUsers,
-        sendMoveMsg,
         setUpdateChat,
-        disconnect,
         connect,
         updateChat,
-        listRooms,
         username,
         activeRoom,
         connected,
-        lastMsg,
+
+        // commands
+        sendCommand,
+        listUsers,
         sendTextMsg,
+        sendMoveMsg,
+        disconnect,
+        listRooms,
         joinRoom
       }}
     >

@@ -185,10 +185,6 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         // set client state
         setConnected(true);
         setActiveRoom('main');
-
-        // set session storage variables
-        window.sessionStorage.setItem('activeRoom', 'main');
-        window.sessionStorage.setItem('username', username);
       });
 
       socket.addEventListener('message', (ev: any) => {
@@ -224,6 +220,11 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     }
   }, [socket]);
 
+  useEffect(() => {
+    if (username) window.sessionStorage.setItem('username', username);
+    if (activeRoom) window.sessionStorage.setItem('activeRoom', activeRoom);
+  }, [username, activeRoom]);
+
   // ---
   // Command Helpers
   // ---
@@ -232,7 +233,7 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     if (socket) {
       socket.send(`/join-room ${roomName}`);
       socket.send('/list-rooms');
-      window.sessionStorage.setItem('activeRoom', roomName);
+      setActiveRoom(roomName);
     }
   };
 

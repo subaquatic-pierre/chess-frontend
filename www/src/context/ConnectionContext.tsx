@@ -61,8 +61,8 @@ export interface IConnectionContext {
   joinRoom: (roomName: string) => void;
   listRooms: () => void;
   listUsers: () => void;
-  updateChat: boolean;
-  setUpdateChat: SetState<boolean>;
+  updateApp: boolean;
+  setUpdateApp: SetState<boolean>;
   activeRoom: string;
   username: string;
   connected: boolean;
@@ -103,7 +103,7 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
   // received from the web socket message event
   // state should be updated on each receive of message
   // from web socket
-  const [updateChat, setUpdateChat] = useState(false);
+  const [updateApp, setUpdateApp] = useState(false);
 
   // TODO:
   // update username and active room storing method
@@ -171,7 +171,7 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
 
       default:
         msgRef.current.push(msg);
-        setUpdateChat((old) => !old);
+        setUpdateApp((old) => !old);
         break;
     }
   };
@@ -320,9 +320,9 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     <ConnectionContext.Provider
       value={{
         msgs: msgRef.current,
-        setUpdateChat,
+        setUpdateApp,
         connect,
-        updateChat,
+        updateApp,
         username,
         activeRoom,
         connected,

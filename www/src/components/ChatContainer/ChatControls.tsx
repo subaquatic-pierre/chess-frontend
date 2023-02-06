@@ -5,12 +5,13 @@ import useChatContext from '../../hooks/useChatContext';
 import useConnectionContext from '../../hooks/useConnectionContext';
 
 import { MessageType, Message } from '../../models/message';
+import ControlsContainer from '../ControlsContainer';
 
 function makeId() {
   return Math.random().toString(36).slice(2, 7);
 }
 
-const LobbyControls = () => {
+const ChatControls = () => {
   const [inputText, setInputText] = useState('');
   const [inputError, setInputError] = useState('');
   const {
@@ -92,72 +93,72 @@ const LobbyControls = () => {
   };
 
   return (
-    <Container>
-      <div
-        className="py-3 my-2"
-        css={{ '& > button': { marginRight: '1rem' } }}
-      >
-        {!connected ? (
-          <Row>
-            <Col xs={12} md={6}>
-              <Row>
-                <Col xs={8}>
-                  <FormControl
-                    type="text"
-                    id="textInput"
-                    placeholder="Username"
-                    onChange={handleInputChange}
-                    onKeyUp={handleInputKeyUp}
-                  />
-                  {inputError && (
-                    <p
-                      style={{
-                        marginLeft: 10,
-                        color: 'red',
-                        fontSize: '0.8rem'
-                      }}
-                    >
-                      {inputError}
-                    </p>
-                  )}
-                </Col>
-                <Col xs={4}>
-                  <Button
-                    className="ml-2"
-                    variant="success"
-                    onClick={handleConnect}
+    <ControlsContainer>
+      {!connected ? (
+        <Row>
+          <Col xs={12} md={6}>
+            <Row>
+              <Col xs={8}>
+                <FormControl
+                  type="text"
+                  id="textInput"
+                  placeholder="Username"
+                  onChange={handleInputChange}
+                  onKeyUp={handleInputKeyUp}
+                />
+                {inputError && (
+                  <p
+                    style={{
+                      marginLeft: 10,
+                      color: 'red',
+                      fontSize: '0.8rem'
+                    }}
                   >
-                    Connect
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        ) : (
-          <Row>
-            <Col>
-              <Button variant="danger" onClick={handleDisconnect}>
-                Disconnect
-              </Button>
-            </Col>
-            {/* <Button variant="info" onClick={listRooms}>
+                    {inputError}
+                  </p>
+                )}
+              </Col>
+              <Col xs={4}>
+                <Button
+                  className="ml-2"
+                  variant="success"
+                  onClick={handleConnect}
+                >
+                  Connect
+                </Button>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      ) : (
+        <div css={{ display: 'flex', justifyContent: 'space-between' }}>
+          {/* Left side of controls when connected */}
+          <div css={{ display: 'flex' }}></div>
+
+          {/* Right Side of controls when connected */}
+          <div css={{ display: 'flex' }}>
+            <Button variant="danger" onClick={handleDisconnect}>
+              Disconnect
+            </Button>
+          </div>
+
+          {/* <Button variant="info" onClick={listRooms}>
               List Rooms
             </Button>
             <Button variant="warning" onClick={() => handleUpdateChat()}>
               Update Chat
             </Button> */}
-            {/* {activeRoom !== 'main' && (
+          {/* {activeRoom !== 'main' && (
               <Button variant="info" onClick={() => joinRoom('main')}>
                 Leave Room
               </Button>
             )} */}
-            {/* <Button onClick={handleNewGame}>New Game</Button> */}
-            {/* <Button onClick={handleNewRoom}>New Room</Button> */}
-          </Row>
-        )}
-      </div>
-    </Container>
+          {/* <Button onClick={handleNewGame}>New Game</Button> */}
+          {/* <Button onClick={handleNewRoom}>New Room</Button> */}
+        </div>
+      )}
+    </ControlsContainer>
   );
 };
 
-export default LobbyControls;
+export default ChatControls;

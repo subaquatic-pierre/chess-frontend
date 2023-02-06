@@ -5,6 +5,8 @@ import { Container } from 'react-bootstrap';
 import Layout from '../layout/index';
 import { INavLink } from '../types/NavLink';
 
+import LobbyContainer from '../components/LobbyContainer';
+
 interface ISiteMeta {
   site: {
     siteMetadata: {
@@ -21,7 +23,7 @@ interface Props {
 const LobbyPage: React.FC = () => {
   return (
     <Layout>
-      <Container>Lobby Page</Container>
+      <LobbyContainer />
     </Layout>
   );
 };

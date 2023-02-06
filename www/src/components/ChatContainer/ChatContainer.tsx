@@ -9,7 +9,7 @@ import MainChatBox from './MainChatBox';
 
 import { MessageType, Message } from '../../models/message';
 import { buildOwnMsg } from '../../util/message';
-import LobbyControls from './LobbyControls';
+import ChatControls from './ChatControls';
 import useChatContext from '../../hooks/useChatContext';
 import UserListBox from './UserListBox';
 
@@ -34,7 +34,7 @@ const ChatContainer = () => {
 
   return (
     <>
-      <LobbyControls />
+      <ChatControls />
 
       <Container>
         <Row>

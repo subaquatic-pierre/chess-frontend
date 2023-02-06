@@ -8,7 +8,6 @@ import { INavLink } from '../types/NavLink';
 import Layout from '../layout/index';
 import BoardContainer from '../components/BoardContainer';
 import GameControls from '../components/GameControls';
-import useGameContext from '../hooks/useGameContext';
 import GameContainer from '../components/GameContainer';
 import MovesContainer from '../components/MovesContainer';
 import GameContextProvider from '../context/GameContext';

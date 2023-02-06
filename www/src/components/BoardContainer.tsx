@@ -118,7 +118,7 @@ const BoardContainer = () => {
   }, [promotePiece]);
 
   return (
-    <Container className="justify-content-center d-flex my-5">
+    <Container className="justify-content-center d-flex my-5 board-container">
       {showCoords ? (
         <div
           css={{

@@ -3,12 +3,16 @@ export enum MessageType {
   ClientMessage = 'ClientMessage',
   RoomList = 'RoomList',
   UserList = 'UserList',
-  GameMove = 'GameMove',
   Status = 'Status',
   Error = 'Error',
   Join = 'Join',
   Connect = 'Connect',
-  Command = 'Command'
+  Command = 'Command',
+
+  // Game messages
+  GameMove = 'GameMove',
+  AvailableGameList = 'AvailableGameList',
+  AllGameList = 'AllGameList'
 }
 
 export interface Message {

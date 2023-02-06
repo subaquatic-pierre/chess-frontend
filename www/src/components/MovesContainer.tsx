@@ -53,39 +53,12 @@ const MovesContainer = () => {
     <Container css={{ marginBottom: 50 }}>
       <Row>
         <Col xs={4}>
+          <h5 css={{ textAlign: 'center' }}>Game moves:</h5>
           <ListGroup variant="flush">
             {moves.map((moveStr, idx) => (
               <ListGroupItem key={idx}>{moveStr}</ListGroupItem>
             ))}
           </ListGroup>
-        </Col>
-        <Col xs={4}>
-          <Form>
-            <FormControl
-              type="text"
-              placeholder="Enter Move"
-              onChange={handleInputChange}
-            />
-            <ListGroup css={{ marginTop: 10 }}>
-              {/* <ListGroupItem>
-                <Button onClick={() => joinRoom('new')}>Join "New" Room</Button>
-              </ListGroupItem>
-              <ListGroupItem>
-                <Button onClick={() => sendMsg('Test Text')}>
-                  Send Message
-                </Button>
-              </ListGroupItem> */}
-              <ListGroupItem>
-                <Button onClick={() => saveGameMoves(game)}>Save Moves</Button>
-              </ListGroupItem>
-              <ListGroupItem>
-                <Button onClick={logSavedMoves}>Log Saved Moves</Button>
-              </ListGroupItem>
-              <ListGroupItem>
-                <Button onClick={playSavedMoves}>Play Saved Moves</Button>
-              </ListGroupItem>
-            </ListGroup>
-          </Form>
         </Col>
       </Row>
     </Container>
@@ -93,3 +66,34 @@ const MovesContainer = () => {
 };
 
 export default MovesContainer;
+
+/**
+<Col xs={4}>
+<Form>
+<FormControl
+type="text"
+placeholder="Enter Move"
+onChange={handleInputChange}
+/>
+<ListGroup css={{ marginTop: 10 }}>
+<ListGroupItem>
+<Button onClick={() => joinRoom('new')}>Join "New" Room</Button>
+</ListGroupItem>
+<ListGroupItem>
+<Button onClick={() => sendMsg('Test Text')}>
+Send Message
+</Button>
+</ListGroupItem>
+<ListGroupItem>
+<Button onClick={() => saveGameMoves(game)}>Save Moves</Button>
+</ListGroupItem>
+<ListGroupItem>
+<Button onClick={logSavedMoves}>Log Saved Moves</Button>
+</ListGroupItem>
+<ListGroupItem>
+<Button onClick={playSavedMoves}>Play Saved Moves</Button>
+</ListGroupItem>
+</ListGroup>
+</Form>
+</Col>
+*/

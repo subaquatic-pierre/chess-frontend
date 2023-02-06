@@ -8,7 +8,7 @@ import { Container } from 'react-bootstrap';
 
 import Layout from '../layout/index';
 import ChatContainer from '../components/ChatContainer/ChatContainer';
-import LobbyControls from '../components/ChatContainer/LobbyControls';
+import ChatControls from '../components/ChatContainer/ChatControls';
 import ChatContextProvider from '../context/ChatContext';
 
 interface ISiteMeta {

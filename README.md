@@ -95,7 +95,7 @@ npm run watch
 
 ## TODO:
 
-1. Fix why move string not showing check after promote
+1. Fix king able to move to either of king castle square if castle option is no longer valid
 
 ## Improvements
 
@@ -116,6 +116,19 @@ npm run watch
 
 - method is too long and complicated
 - split method into smaller parts to be used around moving a piece
+
+4. Use single component in frontend for controls
+
+5. Currently server does not support maintaining socket sessions
+   across multiple tabs or between page refreshes
+
+   - Save session profile in server, check last heartbeat on interval for each session
+     if heartbeat is over time, clear session from server. This will allow clients to
+     continue session between page reloads, which terminate session connection by protocol.
+
+6. Separate GameManager from ChatServer, create RoomManager
+   to handle room logic and GameManager to handle game logic, both
+   can be contained by ChatServer
 
 ## Features
 

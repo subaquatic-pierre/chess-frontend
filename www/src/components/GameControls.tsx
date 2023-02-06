@@ -5,6 +5,7 @@ import { Button, Container } from 'react-bootstrap';
 import useBoardContext from '../hooks/useBoardContext';
 import useForceUpdate from '../hooks/forceUpdate';
 import useGameContext from '../hooks/useGameContext';
+import ControlsContainer from './ControlsContainer';
 
 const GameControls = () => {
   const { setBoardDirection, boardDirection, resetAll, setTiles, board } =
@@ -32,16 +33,19 @@ const GameControls = () => {
   };
 
   return (
-    <Container>
-      <div
-        className="d-flex py-3 my-2"
-        css={{ '& > button': { marginRight: '1rem' } }}
-      >
-        <Button onClick={changeBoardDirection}>Toggle Board Direction</Button>
-        <Button onClick={handleReset}>Reset Game</Button>
-        <Button onClick={handleShowCoords}>Toggle Show Coords</Button>
+    <ControlsContainer>
+      <div css={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div css={{ display: 'flex' }}>
+          <Button onClick={changeBoardDirection}>Change Board Direction</Button>
+          <Button className="hide-mobile" onClick={handleShowCoords}>
+            {showCoords ? 'Hide Coords' : 'Show Coords'}
+          </Button>
+        </div>
+        <div css={{ display: 'flex' }}>
+          <Button onClick={handleReset}>Reset Game</Button>
+        </div>
       </div>
-    </Container>
+    </ControlsContainer>
   );
 };
 

@@ -20,7 +20,7 @@ export const ChatContext = React.createContext({} as IChatContext);
 const ChatContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
-  const { msgs, updateChat, setUpdateChat } = useConnectionContext();
+  const { msgs, updateApp, setUpdateApp } = useConnectionContext();
 
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [chatRooms, setChatRooms] = useState<string[]>([]);
@@ -70,14 +70,14 @@ const ChatContextProvider: React.FC<React.PropsWithChildren> = ({
 
     msgs.push(msg);
 
-    setUpdateChat((old) => !old);
+    setUpdateApp((old) => !old);
   };
 
   useEffect(() => {
     if (msgs) {
       handleUpdateChat();
     }
-  }, [updateChat]);
+  }, [updateApp]);
 
   return (
     <ChatContext.Provider

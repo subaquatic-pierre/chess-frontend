@@ -5,7 +5,7 @@ interface Props {
   content?: string;
 }
 
-const ChatBoxHeading: React.FC<Props> = ({ title, content }) => {
+const ListBoxHeading: React.FC<Props> = ({ title, content }) => {
   return (
     <div
       style={{
@@ -25,4 +25,4 @@ const ChatBoxHeading: React.FC<Props> = ({ title, content }) => {
   );
 };
 
-export default ChatBoxHeading;
+export default ListBoxHeading;

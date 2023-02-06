@@ -11,3 +11,15 @@ a {
     cursor: pointer;
   }
 }
+
+.board-container {
+  @media (min-width: 982px) {
+    height: 700px;
+  }
+}
+
+.hide-mobile {
+  @media (max-width: 982px) {
+    display: none;
+  }
+}

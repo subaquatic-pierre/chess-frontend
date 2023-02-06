@@ -14,7 +14,7 @@ import useConnectionContext from '../../hooks/useConnectionContext';
 import useChatContext from '../../hooks/useChatContext';
 
 import UserListItem from './UserListItem';
-import ChatBoxHeading from './ChatBoxHeading';
+import ListBoxHeading from '../ListBoxHeading';
 
 const UserListBox: React.FC = () => {
   const { chatRooms, users, handleUpdateChat } = useChatContext();
@@ -46,7 +46,7 @@ const UserListBox: React.FC = () => {
 
   return (
     <div>
-      <ChatBoxHeading title="Users" />
+      <ListBoxHeading title="Users" />
       <div
         id="roomList"
         style={{

@@ -63,16 +63,24 @@ const InfoListItem: React.FC<MainChatItemProps> = ({ message }) => {
   };
   return (
     <ListGroupItem style={styles}>
-      <p
+      {/* <p
+        style={{
+          padding: 0,
+          margin: 0,
+          color: formatMessageColor(message)
+        }}
+      > */}
+      <pre
         style={{
           padding: 0,
           margin: 0,
           color: formatMessageColor(message)
         }}
       >
-        <pre>{JSON.stringify(message, null, 2)}</pre>
-        {/* {formatMessageString(message)} */}
-      </p>
+        {JSON.stringify(message, null, 2)}
+      </pre>
+      {/* {formatMessageString(message)} */}
+      {/* </p> */}
     </ListGroupItem>
   );
 };

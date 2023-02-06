@@ -8,6 +8,7 @@ import { MessageType, Message } from '../../models/message';
 import LobbyControls from './LobbyControls';
 import GameListBox from './GameListBox';
 import InfoListBox from './InfoListBox';
+import CommandInputRow from './CommandInputRow';
 
 const parseGames = (msgs: Message[], gameListType: MessageType): string[] => {
   for (const msg of msgs) {
@@ -78,6 +79,7 @@ const LobbyContainer = () => {
           </Col>
           <Col xs={12} md={6}>
             <InfoListBox info={info} />
+            <CommandInputRow />
           </Col>
         </Row>
       </Container>

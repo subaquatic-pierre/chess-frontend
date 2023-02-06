@@ -9,6 +9,9 @@ export enum MessageType {
   Connect = 'Connect',
   Command = 'Command',
 
+  // UserInfo
+  SelfInfo = 'SelfInfo',
+
   // Game messages
   GameMove = 'GameMove',
   AvailableGameList = 'AvailableGameList',

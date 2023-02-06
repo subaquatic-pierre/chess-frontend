@@ -15,14 +15,16 @@ interface Props {
 }
 
 const InfoListBox: React.FC<Props> = ({ info }) => {
+  const [msgCount, setMsgCount] = useState(0);
   const { updateApp } = useConnectionContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && msgCount < info.length) {
       containerRef.current.scrollTop += containerRef.current.scrollHeight;
+      setMsgCount(info.length);
     }
-  }, [updateApp]);
+  }, [info]);
 
   return (
     <div>

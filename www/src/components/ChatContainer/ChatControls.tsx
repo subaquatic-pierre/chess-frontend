@@ -33,6 +33,8 @@ const ChatControls = () => {
 
   const handleDisconnect = () => {
     disconnect();
+    window.sessionStorage.removeItem('savedUsername');
+    window.location.reload();
   };
 
   const handleNewRoom = () => {

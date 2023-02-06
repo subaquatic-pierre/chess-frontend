@@ -73,7 +73,12 @@ export const ConnectionContext = React.createContext({} as IConnectionContext);
 
 const parseMessage = (msg: string): Message => {
   try {
-    const parsed = JSON.parse(msg);
+    const parsed: Message = JSON.parse(msg);
+
+    if (parsed.msg_type === MessageType.SelfInfo) {
+      parsed.content = JSON.parse(parsed.content);
+    }
+
     return parsed;
   } catch (e) {
     console.log('An error ocurred parsing the last Chat Message: ', msg);
@@ -128,6 +133,9 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
 
     setUsername(username);
     setSocket(globalSocket);
+
+    // save username for future automatic connection
+    window.sessionStorage.setItem('savedUsername', username);
   };
 
   // TODO:
@@ -163,7 +171,6 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         break;
 
       case MessageType.Connect:
-        console.log('Connect message type received: ', msg);
         if (msg.content) {
           window.sessionStorage.setItem('wsId', msg.content);
         }
@@ -202,7 +209,8 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
       socket.addEventListener('close', () => {
         const msg = buildOwnMsg(
           'You disconnected from the server',
-          MessageType.Status
+          MessageType.Status,
+          'server'
         );
 
         msgRef.current.push(msg);
@@ -301,6 +309,12 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         setActiveRoom(activeRoom as string);
 
         setConnected(true);
+      } else {
+        const savedUserName = window.sessionStorage.getItem('savedUsername');
+
+        if (savedUserName) {
+          connect(savedUserName);
+        }
       }
     } catch (e) {
       console.log('There was an error checking sessionID', e);

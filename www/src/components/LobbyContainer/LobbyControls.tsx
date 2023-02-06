@@ -12,6 +12,9 @@ const LobbyControls = () => {
 
   const handleDisconnect = () => {
     disconnect();
+
+    window.sessionStorage.removeItem('savedUsername');
+    window.location.reload();
   };
 
   const handleNewGame = () => {
@@ -26,6 +29,9 @@ const LobbyControls = () => {
           <div css={{ display: 'flex' }}>
             <Button variant="success" onClick={handleNewGame}>
               New Game
+            </Button>
+            <Button variant="info" onClick={() => sendCommand('/self-info')}>
+              Self Info
             </Button>
             <Button
               variant="info"

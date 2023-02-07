@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { PieceColor } from 'chess-lib';
 import { Button, Container } from 'react-bootstrap';
@@ -6,11 +6,12 @@ import useBoardContext from '../hooks/useBoardContext';
 import useForceUpdate from '../hooks/forceUpdate';
 import useGameContext from '../hooks/useGameContext';
 import ControlsContainer from './ControlsContainer';
+import { navigate } from 'gatsby';
 
 const GameControls = () => {
   const { setBoardDirection, boardDirection, resetAll, setTiles, board } =
     useBoardContext();
-  const { setShowCoords, showCoords } = useGameContext();
+  const { setShowCoords, showCoords, online } = useGameContext();
   const forceUpdate = useForceUpdate();
 
   const changeBoardDirection = () => {
@@ -32,19 +33,36 @@ const GameControls = () => {
     forceUpdate();
   };
 
+  const onlineControls = (
+    <div css={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div css={{ display: 'flex' }}>
+        <Button className="hide-mobile" onClick={handleShowCoords}>
+          {showCoords ? 'Hide Coords' : 'Show Coords'}
+        </Button>
+      </div>
+      <div css={{ display: 'flex' }}>
+        <Button onClick={() => navigate('/lobby')}>Leave Game</Button>
+      </div>
+    </div>
+  );
+
+  const localControls = (
+    <div css={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div css={{ display: 'flex' }}>
+        <Button onClick={changeBoardDirection}>Change Board Direction</Button>
+        <Button className="hide-mobile" onClick={handleShowCoords}>
+          {showCoords ? 'Hide Coords' : 'Show Coords'}
+        </Button>
+      </div>
+      <div css={{ display: 'flex' }}>
+        <Button onClick={handleReset}>Reset Game</Button>
+      </div>
+    </div>
+  );
+
   return (
     <ControlsContainer>
-      <div css={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div css={{ display: 'flex' }}>
-          <Button onClick={changeBoardDirection}>Change Board Direction</Button>
-          <Button className="hide-mobile" onClick={handleShowCoords}>
-            {showCoords ? 'Hide Coords' : 'Show Coords'}
-          </Button>
-        </div>
-        <div css={{ display: 'flex' }}>
-          <Button onClick={handleReset}>Reset Game</Button>
-        </div>
-      </div>
+      {online ? onlineControls : localControls}
     </ControlsContainer>
   );
 };

@@ -11,19 +11,55 @@ import {
 import useLoadingContext from '../hooks/useLoadingContext';
 import useGameContext from '../hooks/useGameContext';
 import useBoardContext from '../hooks/useBoardContext';
-import { handleCheckmate, handleGameStringMove } from '../handlers/game';
+import {
+  handleCheckmate,
+  handleGameStringMove,
+  handlePlaySavedMoves
+} from '../handlers/game';
+
 import { LastMove } from '../types/Board';
 import { handleBoardPieceMove } from '../handlers/board';
 import { saveGameMoves } from '../util/game';
 import useConnectionContext from '../hooks/useConnectionContext';
 
+import { Message, MessageType } from '../models/message';
+
+const getLastMoveFromMsgs = (msgs: Message[]): Message | null => {
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    let msg = msgs[i];
+    if (msg.msg_type === MessageType.GameMove) {
+      return msg;
+    }
+  }
+
+  return null;
+};
+
 interface Props extends React.PropsWithChildren {}
 
 const GameContainer: React.FC<Props> = ({ children }) => {
-  const { sendMoveMsg } = useConnectionContext();
+  const { sendMoveMsg, updateApp, msgs } = useConnectionContext();
+
   const { loading, setLoading } = useLoadingContext();
-  const { board, setTiles, tiles } = useBoardContext();
-  const { game, lastMove, setMoves } = useGameContext();
+  const { board, setTiles, tiles, setBoardDirection } = useBoardContext();
+  const { game, lastMove, setMoves, setLastMove, setOnline, online } =
+    useGameContext();
+
+  const handleGameMove = (msg: Message) => {
+    const moveStr = msg.content;
+    const playerTurn = game.player_turn();
+
+    // add last move to game
+    handleGameStringMove(moveStr, playerTurn, board, game);
+
+    // save moves to local session
+    // saveGameMoves(game);
+
+    // set moves on UI
+    setMoves(game.moves().str_array());
+    setTiles(board.js_tiles());
+    handleCheckmate(game, board);
+  };
 
   // used as global effect to game change
   // updated each time board is updated
@@ -43,7 +79,9 @@ const GameContainer: React.FC<Props> = ({ children }) => {
       handleGameStringMove(moveStr, playerTurn, board, game);
 
       // save moves to local session
-      // saveGameMoves(game);
+      if (!online) {
+        saveGameMoves(game);
+      }
 
       // make network request with new move notation
       sendMoveMsg(moveStr);
@@ -58,12 +96,7 @@ const GameContainer: React.FC<Props> = ({ children }) => {
   // check user session for current game state
   // update board and game state from session
   // only set loading false after game is initialized
-  const initGame = () => {
-    // handlePlaySavedMoves(board, game);
-
-    // set moves on UI
-    // setMoves(game.moves().str_array());
-
+  const initLoading = () => {
     // completed loading
     setTimeout(() => {
       setLoading(false);
@@ -72,8 +105,47 @@ const GameContainer: React.FC<Props> = ({ children }) => {
 
   // initialized game from session
   useEffect(() => {
-    initGame();
+    initLoading();
+
+    window.onbeforeunload = function () {
+      sessionStorage.removeItem('playerColor');
+    };
+
+    return () => {
+      window.sessionStorage.removeItem('playerColor');
+    };
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      const playerColor = window.sessionStorage.getItem('playerColor');
+
+      if (playerColor) {
+        setOnline(true);
+        game.set_online(true);
+
+        if (playerColor === 'black') {
+          game.set_player_color(PieceColor.Black);
+          setBoardDirection(PieceColor.Black);
+        } else {
+          game.set_player_color(PieceColor.White);
+          setBoardDirection(PieceColor.White);
+        }
+      } else {
+        handlePlaySavedMoves(board, game);
+        // set moves on UI
+        setMoves(game.moves().str_array());
+      }
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const maybeLastMoveMsg = getLastMoveFromMsgs(msgs);
+
+    if (maybeLastMoveMsg) {
+      handleGameMove(maybeLastMoveMsg);
+    }
+  }, [updateApp]);
 
   return <>{loading ? <>Loading ...</> : <>{children}</>}</>;
 };

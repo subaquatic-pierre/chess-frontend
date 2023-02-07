@@ -71,9 +71,13 @@ export const getBorderLabels = (
 };
 
 export const isPlayerTurn = (tile: Tile, game: Game): boolean => {
-  const curPlayerTurn = game.player_turn();
+  let curPlayerTurn = game.player_turn();
 
   if (tile && tile.piece()) {
+    if (game.is_online() && curPlayerTurn !== game.player_color()) {
+      return false;
+    }
+
     if (curPlayerTurn !== tile.piece()?.color()) {
       return false;
     }

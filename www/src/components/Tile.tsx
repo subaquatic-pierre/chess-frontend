@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
+  GameState,
   Piece as IPiece,
   PieceColor,
   Tile as ITile,
@@ -19,7 +20,7 @@ interface Props {
 }
 
 const Tile: React.FC<Props> = ({ tile }) => {
-  const { game } = useGameContext();
+  const { game, online } = useGameContext();
   const { boardDirection, setSelectedTile } = useBoardContext();
 
   const handleTileClick = () => {
@@ -27,14 +28,24 @@ const Tile: React.FC<Props> = ({ tile }) => {
   };
 
   const curPlayerTurnAndPiece = (): boolean => {
+    if (game.state() === GameState.Ended) {
+      return false;
+    }
+
+    if (tile.state() === TileState.Highlight) {
+      return true;
+    }
+
+    if (online && game.player_color() !== tile.piece()?.color()) {
+      return false;
+    }
+
     if (tile.piece()) {
       if (game.player_turn() === tile.piece()?.color()) {
         return true;
       }
     }
-    if (tile.state() === TileState.Highlight) {
-      return true;
-    }
+
     return false;
   };
 

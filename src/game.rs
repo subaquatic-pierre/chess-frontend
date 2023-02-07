@@ -22,6 +22,8 @@ pub struct Game {
     state: GameState,
     player_turn: PieceColor,
     moves: GameMoves,
+    player_color: PieceColor,
+    online: bool,
     board: Board,
     winner: Option<PieceColor>,
 }
@@ -33,6 +35,8 @@ impl Game {
             state: GameState::Started,
             player_turn: PieceColor::White,
             moves: GameMoves::default(),
+            online: false,
+            player_color: PieceColor::White,
             winner: None,
             board: Board::default(),
         }
@@ -154,13 +158,34 @@ impl Game {
             // make black move if exists
         }
 
+        // TODO:
+        // update is online game
+        // update piece_color
         Self {
             state: GameState::Started,
             player_turn: PieceColor::White,
             moves: GameMoves::default(),
+            online: false,
+            player_color: PieceColor::White,
             winner: None,
             board: Board::default(),
         }
+    }
+
+    pub fn set_online(&mut self, is_online: bool) {
+        self.online = is_online
+    }
+
+    pub fn set_player_color(&mut self, piece_color: PieceColor) {
+        self.player_color = piece_color
+    }
+
+    pub fn player_color(&self) -> PieceColor {
+        self.player_color
+    }
+
+    pub fn is_online(&self) -> bool {
+        self.online
     }
 
     // ---

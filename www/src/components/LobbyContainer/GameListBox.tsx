@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { navigate } from 'gatsby';
 
 import { Button, Col, Row, ListGroup } from 'react-bootstrap';
 import useConnectionContext from '../../hooks/useConnectionContext';
@@ -8,24 +9,29 @@ import ListBoxHeading from '../ListBoxHeading';
 import { Message, MessageType } from '../../models/message';
 
 interface Props {
-  availableGames: string[];
   allGames: string[];
+  availableGames: string[];
 }
 
-const GameListBox: React.FC<Props> = ({ availableGames, allGames }) => {
-  const { connected, sendCommand } = useConnectionContext();
+const GameListBox: React.FC<Props> = ({ allGames, availableGames }) => {
+  const {
+    connected,
+    sendCommand,
+    updateApp,
+    msgs,
+    joinGame,
+    leaveGame,
+    newGame
+  } = useConnectionContext();
 
   const gameListRef = useRef<HTMLDivElement>(null);
   const [selectedGame, setSelectedGame] = useState('');
 
-  const listGames = () => {
-    sendCommand('/list-available-games');
-    sendCommand('/list-all-games');
-  };
-
   const handleJoinClick = () => {
-    sendCommand(`/join-game ${selectedGame}`);
+    joinGame(selectedGame);
     setSelectedGame('');
+    window.sessionStorage.setItem('playerColor', 'black');
+    navigate('/game');
   };
 
   const gameClickListener = (e: any) => {
@@ -39,11 +45,29 @@ const GameListBox: React.FC<Props> = ({ availableGames, allGames }) => {
     return () => window.removeEventListener('click', gameClickListener);
   }, []);
 
-  useEffect(() => {
-    if (connected) {
-      listGames();
-    }
-  }, [connected]);
+  // useEffect(() => {
+  //   if (connected && !intervalId) {
+  //     const id = setInterval(handleUpdateGames, 1000);
+  //     setIntervalId(id);
+  //   }
+  //   return () => clearInterval(intervalId);
+  // }, [connected]);
+
+  // // on first render if connected, call listGames command
+  // useEffect(() => {
+  //   if (connected) {
+  //     listGames();
+  //   }
+  // }, [connected]);
+
+  // useEffect(() => {
+  // handleUpdateGames();
+  // const allGames = parseGames(msgs, MessageType.AllGameList);
+  // const availableGames = parseGames(msgs, MessageType.AvailableGameList);
+
+  // console.log('allGames', allGames);
+  // console.log('availableGames', availableGames);
+  // }, [updateApp]);
 
   return (
     <Row>
@@ -68,7 +92,7 @@ const GameListBox: React.FC<Props> = ({ availableGames, allGames }) => {
                 {availableGames.map((item, idx) => (
                   <GameListItem
                     selected={selectedGame === item}
-                    handleRoomClick={setSelectedGame}
+                    handleGameClick={setSelectedGame}
                     gameName={item}
                     availableGame
                     key={idx}
@@ -109,11 +133,7 @@ const GameListBox: React.FC<Props> = ({ availableGames, allGames }) => {
             {connected && (
               <ListGroup style={{ borderRadius: 0 }}>
                 {allGames.map((item, idx) => (
-                  <GameListItem
-                    handleRoomClick={setSelectedGame}
-                    gameName={item}
-                    key={idx}
-                  />
+                  <GameListItem gameName={item} key={idx} />
                 ))}
               </ListGroup>
             )}

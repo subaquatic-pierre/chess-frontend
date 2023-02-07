@@ -26,6 +26,10 @@ export interface IGameContext {
   // used as global toggle to update game state
   updateGame: boolean;
   setUpdateGame: SetState<boolean>;
+
+  // used to set if game is online or not
+  online: boolean;
+  setOnline: SetState<boolean>;
 }
 
 export const GameContext = React.createContext({} as IGameContext);
@@ -41,6 +45,7 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   const [lastMove, setLastMove] = useState<MoveResult | null>(null);
   const [updateGame, setUpdateGame] = useState(false);
   const [moves, setMoves] = useState<string[]>([]);
+  const [online, setOnline] = useState(false);
 
   // players
   const [players, setPlayers] = useState(0);
@@ -67,7 +72,10 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
         setLastMove,
 
         updateGame,
-        setUpdateGame
+        setUpdateGame,
+
+        online,
+        setOnline
       }}
     >
       {children}

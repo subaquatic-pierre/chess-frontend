@@ -25,8 +25,27 @@ import { getSavedGameMoves, saveGameMoves } from '../util/game';
 
 import useBoardContext from '../hooks/useBoardContext';
 import useGameContext from '../hooks/useGameContext';
+import InfoListBox from './LobbyContainer/InfoListBox';
+import useConnectionContext from '../hooks/useConnectionContext';
+
+import { MessageType, Message } from '../models/message';
+import CommandInputRow from './LobbyContainer/CommandInputRow';
+
+const parseInfo = (msgs: Message[]): Message[] => {
+  const _msgs = [];
+  for (const msg of msgs) {
+    if (msg.msg_type !== MessageType.ClientMessage) {
+      _msgs.push(msg);
+    }
+  }
+
+  return _msgs;
+};
 
 const MovesContainer = () => {
+  const { updateApp, msgs } = useConnectionContext();
+  const [info, setInfo] = useState<Message[]>([]);
+
   const { game, updateGame, moves, setMoves } = useGameContext();
   const { board, setTiles, resetAll } = useBoardContext();
   const [moveStr, setMoveStr] = useState('');
@@ -49,6 +68,11 @@ const MovesContainer = () => {
     setMoves(game.moves().str_array());
   };
 
+  useEffect(() => {
+    const info = parseInfo(msgs);
+    setInfo(info);
+  }, [updateApp]);
+
   return (
     <Container css={{ marginBottom: 50 }}>
       <Row>
@@ -59,6 +83,11 @@ const MovesContainer = () => {
               <ListGroupItem key={idx}>{moveStr}</ListGroupItem>
             ))}
           </ListGroup>
+        </Col>
+        <Col xs={2}></Col>
+        <Col xs={6}>
+          <InfoListBox info={info} />
+          <CommandInputRow />
         </Col>
       </Row>
     </Container>

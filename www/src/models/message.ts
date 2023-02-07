@@ -15,7 +15,9 @@ export enum MessageType {
   // Game messages
   GameMove = 'GameMove',
   AvailableGameList = 'AvailableGameList',
-  AllGameList = 'AllGameList'
+  AllGameList = 'AllGameList',
+  GameJoin = 'GameJoin',
+  GameLeave = 'GameLeave'
 }
 
 export interface Message {

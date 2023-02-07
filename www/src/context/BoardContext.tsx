@@ -47,7 +47,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   const [board, setBoard] = useState<Board>(firstBoard);
-  const { setGame, setMoves, setUpdateGame } = useGameContext();
+  const { setGame, setMoves, game, setOnline } = useGameContext();
 
   // promote piece state
   const [tileToPromote, setTileToPromote] = useState<LastMove | null>(null);
@@ -69,7 +69,18 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
     setTiles(board.js_tiles());
 
     // set board direction
-    setBoardDirection(PieceColor.White);
+    // check if currently online game for session
+    const playerColor = window.sessionStorage.getItem('playerColor');
+
+    if (playerColor) {
+      if (playerColor === 'black') {
+        setBoardDirection(PieceColor.Black);
+      } else {
+        setBoardDirection(PieceColor.White);
+      }
+    } else {
+      setBoardDirection(PieceColor.White);
+    }
   };
 
   // used to reset entire game

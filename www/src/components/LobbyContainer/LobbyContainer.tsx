@@ -10,15 +10,6 @@ import GameListBox from './GameListBox';
 import InfoListBox from './InfoListBox';
 import CommandInputRow from './CommandInputRow';
 
-const parseGames = (msgs: Message[], gameListType: MessageType): string[] => {
-  for (const msg of msgs) {
-    if (msg.msg_type === gameListType && msg.content) {
-      return msg.content.split(',');
-    }
-  }
-  return [];
-};
-
 const parseInfo = (msgs: Message[]): Message[] => {
   const _msgs = [];
   for (const msg of msgs) {
@@ -30,25 +21,44 @@ const parseInfo = (msgs: Message[]): Message[] => {
   return _msgs;
 };
 
-const LobbyContainer = () => {
-  const { connected, updateApp, msgs } = useConnectionContext();
+const parseGames = (msgs: Message[], gameListType: MessageType): string[] => {
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    const msg = msgs[i];
+    if (msg.msg_type === gameListType && msg.content) {
+      return msg.content.split(',');
+    }
+  }
 
-  const [flashUpdate, setFlashUpdate] = useState(false);
+  return [];
+};
+
+const LobbyContainer = () => {
+  const [intervalId, setIntervalId] = useState<any>();
 
   const [allGames, setAllGames] = useState<string[]>([]);
   const [availableGames, setAvailableGames] = useState<string[]>([]);
+
+  const { connected, sendCommand, updateApp, msgs } = useConnectionContext();
+
   const [info, setInfo] = useState<Message[]>([]);
 
-  const [intervalId, setIntervalId] = useState<any>();
-
   const handleUpdateLobby = () => {
-    const allGames = parseGames(msgs, MessageType.AvailableGameList);
-    const availableGames = parseGames(msgs, MessageType.AllGameList);
     const info = parseInfo(msgs);
+    const allGames = parseGames(msgs, MessageType.AllGameList);
+    const availableGames = parseGames(msgs, MessageType.AvailableGameList);
 
     setAllGames(allGames);
     setAvailableGames(availableGames);
     setInfo(info);
+  };
+
+  useEffect(() => {
+    handleUpdateLobby();
+  }, [updateApp]);
+
+  const listGames = () => {
+    sendCommand('/list-available-games');
+    sendCommand('/list-all-games');
   };
 
   // used as a interval to update UI
@@ -57,16 +67,16 @@ const LobbyContainer = () => {
   // which have been pushed to global message list
   // react is unable to update state fast enough
   useEffect(() => {
+    if (connected) {
+      listGames();
+    }
+
     if (connected && !intervalId) {
-      const id = setInterval(handleUpdateLobby, 500);
+      const id = setInterval(handleUpdateLobby, 1000);
       setIntervalId(id);
     }
     return () => clearInterval(intervalId);
   }, [connected]);
-
-  useEffect(() => {
-    handleUpdateLobby();
-  }, [updateApp]);
 
   return (
     <>

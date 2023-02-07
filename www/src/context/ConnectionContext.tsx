@@ -15,41 +15,6 @@ import useConnectionContext from '../hooks/useConnectionContext';
 import { MessageType, Message } from '../models/message';
 import { buildOwnMsg } from '../util/message';
 
-// const webSocketWorker = new SharedWorker('web-sockets-worker.js');
-
-// /**
-//  * Sends a message to the worker and passes that to the Web Socket.
-//  * @param {any} message
-//  */
-// const sendMessageToSocket = (message:any) => {
-//   webSocketWorker.port.postMessage({
-//     action: 'send',
-//     value: message,
-//   });
-// };
-
-// // Event to listen for incoming data from the worker and update the DOM.
-// webSocketWorker.port.addEventListener('message', ({ data }) => {
-//   requestAnimationFrame(() => {
-//     appendGatePublicTickersData(data);
-//   });
-// });
-
-// // Initialize the port connection.
-// webSocketWorker.port.start();
-
-// // Remove the current worker port from the connected ports list.
-// // This way your connectedPorts list stays true to the actual connected ports,
-// // as they array won't get automatically updated when a port is disconnected.
-// window.addEventListener('beforeunload', () => {
-//   webSocketWorker.port.postMessage({
-//     action: 'unload',
-//     value: null,
-//   });
-
-//   webSocketWorker.port.close();
-// });
-
 // define context interface
 export interface IConnectionContext {
   // tiles used to render the current board state
@@ -63,10 +28,17 @@ export interface IConnectionContext {
   listUsers: () => void;
   updateApp: boolean;
   setUpdateApp: SetState<boolean>;
+  setActiveRoom: SetState<string>;
   activeRoom: string;
   username: string;
   connected: boolean;
   msgs: Message[];
+
+  // game
+  joinGame: (gameName: string) => void;
+  newGame: () => void;
+  leaveGame: () => void;
+  joinLobby: () => void;
 }
 
 export const ConnectionContext = React.createContext({} as IConnectionContext);
@@ -74,6 +46,8 @@ export const ConnectionContext = React.createContext({} as IConnectionContext);
 const parseMessage = (msg: string): Message => {
   try {
     const parsed: Message = JSON.parse(msg);
+
+    // console.log(parsed);
 
     if (parsed.msg_type === MessageType.SelfInfo) {
       parsed.content = JSON.parse(parsed.content);
@@ -136,39 +110,19 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
 
     // save username for future automatic connection
     window.sessionStorage.setItem('savedUsername', username);
-  };
 
-  // TODO:
-  // invert dependencies on GameContext
-  // the ConnectionContext should update the GameContext
-  // on message received. This way the ConnectionContext
-  // can be the highest component in the component tree
-  const { game, setMoves } = useGameContext();
-  const { board, setTiles } = useBoardContext();
-
-  const handleGameMove = (msg: Message) => {
-    const moveStr = msg.content;
-    const playerTurn = game.player_turn();
-
-    // add last move to game
-    handleGameStringMove(moveStr, playerTurn, board, game);
-
-    // save moves to local session
-    // saveGameMoves(game);
-
-    // set moves on UI
-    setMoves(game.moves().str_array());
-    setTiles(board.js_tiles());
-    handleCheckmate(game, board);
+    if (location.pathname.includes('/lobby')) {
+      joinRoom('lobby');
+    }
   };
 
   const handleSocketMessage = (data: any) => {
     const msg = parseMessage(data);
 
     switch (msg.msg_type) {
-      case MessageType.GameMove:
-        handleGameMove(msg);
-        break;
+      // case MessageType.GameMove:
+      //   handleGameMove(msg);
+      //   break;
 
       case MessageType.Connect:
         if (msg.content) {
@@ -191,7 +145,13 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
 
         // set client state
         setConnected(true);
-        setActiveRoom('main');
+
+        // set active room, side effect is to join room
+        if (globalSocket && location.pathname === '/lobby/') {
+          setActiveRoom('lobby');
+        } else {
+          setActiveRoom('main');
+        }
       });
 
       socket.addEventListener('message', (ev: any) => {
@@ -228,6 +188,7 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     }
   }, [socket]);
 
+  // used to set session on any changes to username or active room
   useEffect(() => {
     if (username) window.sessionStorage.setItem('username', username);
     if (activeRoom) window.sessionStorage.setItem('activeRoom', activeRoom);
@@ -240,7 +201,8 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
   const joinRoom = (roomName: string) => {
     if (socket) {
       socket.send(`/join-room ${roomName}`);
-      socket.send('/list-rooms');
+      listUsers();
+      listRooms();
       setActiveRoom(roomName);
     }
   };
@@ -249,12 +211,6 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     if (socket) {
       console.log('Disconnecting...');
       socket.close();
-    }
-  };
-
-  const sendMoveMsg = (text: string) => {
-    if (socket) {
-      socket.send(`GameMove:${text}`);
     }
   };
 
@@ -282,6 +238,59 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
     }
   };
 
+  // --- Game Commands
+  const sendMoveMsg = (text: string) => {
+    if (socket) {
+      socket.send(`/game-move ${text}`);
+    }
+  };
+
+  const joinGame = (gameName: string) => {
+    if (socket) {
+      socket.send(`/join-game ${gameName}`);
+      setActiveRoom('in_game');
+    }
+  };
+
+  const newGame = () => {
+    if (socket) {
+      socket.send(`/new-game`);
+      setActiveRoom('in_game');
+    }
+  };
+
+  const leaveGame = () => {
+    if (socket) {
+      socket.send(`/leave-game`);
+      setActiveRoom('main');
+    }
+  };
+
+  const joinLobby = () => {
+    if (socket) {
+      socket.send(`/join-room lobby`);
+      listAvailableGames();
+      listAllGames();
+      setActiveRoom('lobby');
+    }
+  };
+
+  const listAvailableGames = () => {
+    if (socket) {
+      socket.send('/list-available-games');
+    }
+  };
+
+  const listAllGames = () => {
+    if (socket) {
+      socket.send('/list-all-games');
+    }
+  };
+
+  // ---
+  // END Command Helpers
+  // ---
+
   // check if session exits
   // query the server for given session id
   // set connected if exists
@@ -297,16 +306,30 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         setSocket(globalSocket);
         setConnected(true);
 
-        if (globalSocket) {
-          globalSocket.send('/list-rooms');
-          globalSocket.send('/list-users');
-        }
-
         const username = window.sessionStorage.getItem('username');
         const activeRoom = window.sessionStorage.getItem('activeRoom');
 
         setUsername(username as string);
-        setActiveRoom(activeRoom as string);
+
+        if (location.pathname === '/') {
+          if (activeRoom) {
+            if (activeRoom === 'lobby' || activeRoom === 'in_game') {
+              globalSocket?.send('/join-room main');
+              setActiveRoom('main');
+            } else {
+              globalSocket?.send(`/join-room ${activeRoom}`);
+              setActiveRoom(activeRoom);
+            }
+          } else {
+            globalSocket?.send('/join-room main');
+            setActiveRoom('main');
+          }
+        }
+
+        if (location.pathname.includes('/lobby')) {
+          globalSocket?.send('/join-room lobby');
+          setActiveRoom('lobby');
+        }
 
         setConnected(true);
       } else {
@@ -323,12 +346,20 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
 
   // check socket in session storage
   useEffect(() => {
+    console.log('Connection context reload');
     checkCurrentSession();
   }, []);
 
-  // ---
-  // End command helpers
-  // ---
+  useEffect(() => {
+    const sessionRoom = window.sessionStorage.getItem('activeRoom');
+    if (activeRoom === 'lobby') {
+      if (sessionRoom) {
+        joinRoom(sessionRoom);
+      } else {
+        joinRoom('main');
+      }
+    }
+  }, [connected, location.pathname]);
 
   return (
     <ConnectionContext.Provider
@@ -339,6 +370,7 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         updateApp,
         username,
         activeRoom,
+        setActiveRoom,
         connected,
 
         // commands
@@ -348,7 +380,13 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
         sendMoveMsg,
         disconnect,
         listRooms,
-        joinRoom
+        joinRoom,
+
+        // game
+        joinGame,
+        joinLobby,
+        newGame,
+        leaveGame
       }}
     >
       {children}

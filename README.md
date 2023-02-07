@@ -130,6 +130,16 @@ npm run watch
    to handle room logic and GameManager to handle game logic, both
    can be contained by ChatServer
 
+7. Better way to update received messages from the server
+
+- currently an interval is set on the components to query a message list
+  which i a ref object on the ConnectionContext. This is needed because React
+  fails to update DOM on each socket message received. If messages are received
+  in quick succession the state is not updated effectively.
+
+8. Update active room and game join logic on frontend. Currently the room or game
+   is changed before confirmation from the server.
+
 ## Features
 
 1. User profile create

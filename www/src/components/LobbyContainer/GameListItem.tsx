@@ -1,15 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import {
-  Button,
-  Col,
-  Container,
-  Row,
-  ListGroup,
-  ListGroupItem,
-  FormText,
-  FormControl
-} from 'react-bootstrap';
+import { ListGroupItem } from 'react-bootstrap';
 import useConnectionContext from '../../hooks/useConnectionContext';
 
 const ACTIVE_ROOM = '#9fa3a34d';
@@ -19,29 +10,40 @@ import { INFO, STATUS } from '../../theme';
 
 interface Props {
   gameName: string;
-  handleRoomClick: (roomName: string) => void;
+  handleGameClick?: (gameName: string) => void;
   selected?: boolean;
   availableGame?: boolean;
 }
 
 const GameListItem: React.FC<Props> = ({
-  handleRoomClick,
+  handleGameClick,
   selected,
   gameName,
   availableGame
 }) => {
+  const { username } = useConnectionContext();
   const styles = {};
 
   return (
     <ListGroupItem
       style={{
-        backgroundColor: selected ? SELECTED_ROOM : 'white'
+        backgroundColor: selected
+          ? SELECTED_ROOM
+          : username === gameName
+          ? ACTIVE_ROOM
+          : 'white'
       }}
-      className={availableGame ? 'hover-pointer' : ''}
-      data-type={availableGame ? 'roomListItem' : ''}
-      onClick={availableGame ? () => handleRoomClick(gameName) : undefined}
+      className={availableGame && username !== gameName ? 'hover-pointer' : ''}
+      data-type={
+        availableGame && username !== gameName ? 'availableGameItem' : ''
+      }
+      onClick={
+        username !== gameName && handleGameClick
+          ? () => handleGameClick(gameName)
+          : undefined
+      }
     >
-      <div data-type={availableGame ? 'roomListItem' : ''}>{gameName}</div>
+      <div data-type={availableGame ? 'availableGameItem' : ''}>{gameName}</div>
     </ListGroupItem>
   );
 };

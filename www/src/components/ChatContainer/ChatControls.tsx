@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from '@reach/router';
 
 import { Button, Col, Container, FormControl, Row } from 'react-bootstrap';
 import useChatContext from '../../hooks/useChatContext';
@@ -23,6 +24,7 @@ const ChatControls = () => {
     listRooms,
     msgs
   } = useConnectionContext();
+  const location = useLocation();
   const { handleUpdateChat } = useChatContext();
 
   const handleNewGame = () => {};

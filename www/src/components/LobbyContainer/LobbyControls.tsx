@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { navigate } from 'gatsby';
 
 import { Button, Col, Container, FormControl, Row } from 'react-bootstrap';
 import useChatContext from '../../hooks/useChatContext';
@@ -8,7 +9,8 @@ import { MessageType, Message } from '../../models/message';
 import ControlsContainer from '../ControlsContainer';
 
 const LobbyControls = () => {
-  const { connected, disconnect, sendCommand } = useConnectionContext();
+  const { connected, disconnect, leaveGame, sendCommand, activeRoom, newGame } =
+    useConnectionContext();
 
   const handleDisconnect = () => {
     disconnect();
@@ -18,7 +20,9 @@ const LobbyControls = () => {
   };
 
   const handleNewGame = () => {
-    sendCommand('/new-game');
+    newGame();
+    window.sessionStorage.setItem('playerColor', 'white');
+    navigate('/game');
   };
 
   return (
@@ -30,6 +34,11 @@ const LobbyControls = () => {
             <Button variant="success" onClick={handleNewGame}>
               New Game
             </Button>
+            {activeRoom === 'in_game' && (
+              <Button variant="success" onClick={leaveGame}>
+                Leave Game
+              </Button>
+            )}
             <Button variant="info" onClick={() => sendCommand('/self-info')}>
               Self Info
             </Button>

@@ -1,18 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from '@reach/router';
 
-import { Board, Game, Piece, PieceColor, Tile, MoveParser } from 'chess-lib';
-
 import { SetState } from '../types/Context';
-import useGameContext from '../hooks/useGameContext';
-import useBoardContext from '../hooks/useBoardContext';
-import { handleCheckmate, handleGameStringMove } from '../handlers/game';
-import { LastMove } from '../types/Board';
-import { handleBoardPieceMove } from '../handlers/board';
-import { saveGameMoves } from '../util/game';
-import useConnectionContext from '../hooks/useConnectionContext';
 
-import { MessageType, Message } from '../models/message';
+import { MessageType, Message } from '../types/Message';
 import { buildOwnMsg } from '../util/message';
 
 // define context interface

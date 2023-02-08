@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece as IPiece, PieceType } from 'chess-lib';
-import { getPieceImage } from '../util/piece';
+import { getPieceImage } from '../../util/piece';
 
 interface Props {
   piece: IPiece;

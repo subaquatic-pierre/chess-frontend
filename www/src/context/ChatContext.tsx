@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import useConnectionContext from '../hooks/useConnectionContext';
 
-import { Message, MessageType } from '../models/message';
+import { Message, MessageType } from '../types/Message';
 
 import { buildOwnMsg } from '../util/message';
 

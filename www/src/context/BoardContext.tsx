@@ -47,7 +47,7 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   children
 }) => {
   const [board, setBoard] = useState<Board>(firstBoard);
-  const { setGame, setMoves, game, setOnline } = useGameContext();
+  const { setGame, setMoves } = useGameContext();
 
   // promote piece state
   const [tileToPromote, setTileToPromote] = useState<LastMove | null>(null);
@@ -89,8 +89,6 @@ const BoardContextProvider: React.FC<React.PropsWithChildren> = ({
   // ie. board and setBoard is not available in GameContext
   // as GameContext is the parent of BoardContext
   const resetAll = () => {
-    // TODO
-    // clear session state
     clearSavedGameMoves();
 
     // set new game

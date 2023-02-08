@@ -7,7 +7,7 @@ import ChatInputRow from './ChatInputRow';
 import RoomListBox from './RoomListBox';
 import MainChatBox from './MainChatBox';
 
-import { MessageType, Message } from '../../models/message';
+import { MessageType, Message } from '../../types/Message';
 import { buildOwnMsg } from '../../util/message';
 import ChatControls from './ChatControls';
 import useChatContext from '../../hooks/useChatContext';

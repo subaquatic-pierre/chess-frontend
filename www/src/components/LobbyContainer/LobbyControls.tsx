@@ -5,7 +5,7 @@ import { Button, Col, Container, FormControl, Row } from 'react-bootstrap';
 import useChatContext from '../../hooks/useChatContext';
 import useConnectionContext from '../../hooks/useConnectionContext';
 
-import { MessageType, Message } from '../../models/message';
+import { MessageType, Message } from '../../types/Message';
 import ControlsContainer from '../ControlsContainer';
 
 const LobbyControls = () => {

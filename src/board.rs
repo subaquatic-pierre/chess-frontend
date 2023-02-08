@@ -309,6 +309,7 @@ impl Board {
                 is_long_castle: king_castle_result == Some(KingCastleMoveResult::LongCastle),
                 is_check: MoveValidator::is_check(enemy_piece_color, &board_copy),
                 is_checkmate: MoveValidator::is_checkmate(enemy_piece_color, &board_copy),
+                is_from_remote: false,
             });
         }
 
@@ -334,6 +335,7 @@ impl Board {
                 // always false, can never move into check or checkmate
                 is_check: false,
                 is_checkmate: false,
+                is_from_remote: false,
             });
         }
 

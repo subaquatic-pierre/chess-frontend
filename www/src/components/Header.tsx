@@ -30,9 +30,7 @@ const Header = () => {
     <>
       <Navbar bg="dark" variant="dark">
         <Container>
-          <Navbar.Brand href="#home">
-            {data.site.siteMetadata.title}
-          </Navbar.Brand>
+          <Navbar.Brand href="/">{data.site.siteMetadata.title}</Navbar.Brand>
           <Nav className="ml-auto">
             {headerNavLinks.map((item: INavLink, idx: number) => (
               <Nav.Link

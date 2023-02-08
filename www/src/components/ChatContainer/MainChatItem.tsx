@@ -12,7 +12,7 @@ import {
   FormControl
 } from 'react-bootstrap';
 import useConnectionContext from '../../hooks/useConnectionContext';
-import { Message, MessageType } from '../../models/message';
+import { Message, MessageType } from '../../types/Message';
 
 import { INFO, SELF, OTHER, STATUS, ERROR } from '../../theme';
 

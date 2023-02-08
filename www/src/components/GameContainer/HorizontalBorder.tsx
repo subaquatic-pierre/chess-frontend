@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { getBorderLabels } from '../util/board';
-import { BorderSide } from '../types/Board';
-import { TILE_SPACE } from '../types/Board';
-import useBoardContext from '../hooks/useBoardContext';
+import { getBorderLabels } from '../../util/board';
+import { BorderSide } from '../../types/Board';
+import { TILE_SPACE } from '../../types/Board';
+import useBoardContext from '../../hooks/useBoardContext';
 
 interface Props {
   side: BorderSide;

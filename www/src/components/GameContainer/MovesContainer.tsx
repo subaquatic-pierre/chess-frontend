@@ -18,35 +18,34 @@ import {
   ListGroupItem,
   Row
 } from 'react-bootstrap';
-import { handleBoardPieceMove } from '../handlers/board';
-import { handleGameStringMove, handlePlaySavedMoves } from '../handlers/game';
+import { handlePlaySavedMoves } from '../../handlers/game';
 
-import { getSavedGameMoves, saveGameMoves } from '../util/game';
+import { getSavedGameMoves, saveGameMoves } from '../../util/game';
 
-import useBoardContext from '../hooks/useBoardContext';
-import useGameContext from '../hooks/useGameContext';
-import InfoListBox from './LobbyContainer/InfoListBox';
-import useConnectionContext from '../hooks/useConnectionContext';
+import useBoardContext from '../../hooks/useBoardContext';
+import useGameContext from '../../hooks/useGameContext';
+import InfoListBox from '../InfoListBox';
+import useConnectionContext from '../../hooks/useConnectionContext';
 
-import { MessageType, Message } from '../models/message';
-import CommandInputRow from './LobbyContainer/CommandInputRow';
+import { MessageType, Message } from '../../types/Message';
+import CommandInputRow from '../LobbyContainer/CommandInputRow';
 
-const parseInfo = (msgs: Message[]): Message[] => {
-  const _msgs = [];
-  for (const msg of msgs) {
-    if (msg.msg_type !== MessageType.ClientMessage) {
-      _msgs.push(msg);
-    }
-  }
+interface Props {
+  info?: Message[];
+}
 
-  return _msgs;
-};
-
-const MovesContainer = () => {
+const MovesContainer: React.FC<Props> = ({ info }) => {
+  const [showMovesContainer, setShowMovesContainer] = useState(true);
   const { updateApp, msgs } = useConnectionContext();
-  const [info, setInfo] = useState<Message[]>([]);
 
-  const { game, updateGame, moves, setMoves } = useGameContext();
+  const {
+    game,
+    updateGame,
+    onlineGameState,
+    setOnlineGameState,
+    moves,
+    setMoves
+  } = useGameContext();
   const { board, setTiles, resetAll } = useBoardContext();
   const [moveStr, setMoveStr] = useState('');
 
@@ -69,27 +68,36 @@ const MovesContainer = () => {
   };
 
   useEffect(() => {
-    const info = parseInfo(msgs);
-    setInfo(info);
-  }, [updateApp]);
+    if (onlineGameState && onlineGameState !== 'joined') {
+      setShowMovesContainer(false);
+    } else {
+      setShowMovesContainer(true);
+    }
+  }, [onlineGameState]);
 
   return (
     <Container css={{ marginBottom: 50 }}>
-      <Row>
-        <Col xs={4}>
-          <h5 css={{ textAlign: 'center' }}>Game moves:</h5>
-          <ListGroup variant="flush">
-            {moves.map((moveStr, idx) => (
-              <ListGroupItem key={idx}>{moveStr}</ListGroupItem>
-            ))}
-          </ListGroup>
-        </Col>
-        <Col xs={2}></Col>
-        <Col xs={6}>
-          <InfoListBox info={info} />
-          <CommandInputRow />
-        </Col>
-      </Row>
+      {showMovesContainer ? (
+        <Row>
+          <Col xs={4}>
+            <h5 css={{ textAlign: 'center' }}>Game moves:</h5>
+            <ListGroup variant="flush">
+              {moves.map((moveStr, idx) => (
+                <ListGroupItem key={idx}>{moveStr}</ListGroupItem>
+              ))}
+            </ListGroup>
+          </Col>
+          <Col xs={2}></Col>
+          {onlineGameState && (
+            <Col xs={6}>
+              <InfoListBox info={info ? info : []} />
+              <CommandInputRow />
+            </Col>
+          )}
+        </Row>
+      ) : (
+        <></>
+      )}
     </Container>
   );
 };

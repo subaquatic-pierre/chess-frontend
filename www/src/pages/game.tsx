@@ -6,10 +6,8 @@ import '../static/js/main.ts';
 import { INavLink } from '../types/NavLink';
 
 import Layout from '../layout/index';
-import BoardContainer from '../components/BoardContainer';
-import GameControls from '../components/GameControls';
-import GameContainer from '../components/GameContainer';
-import MovesContainer from '../components/MovesContainer';
+import GameContainer from '../components/GameContainer/GameContainer';
+
 import GameContextProvider from '../context/GameContext';
 import BoardContextProvider from '../context/BoardContext';
 
@@ -31,11 +29,7 @@ const GamePage: React.FC = () => {
     <Layout>
       <GameContextProvider>
         <BoardContextProvider>
-          <GameContainer>
-            <GameControls />
-            <BoardContainer />
-            <MovesContainer />
-          </GameContainer>
+          <GameContainer />
         </BoardContextProvider>
       </GameContextProvider>
     </Layout>

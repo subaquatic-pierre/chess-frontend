@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { ListGroup } from 'react-bootstrap';
 
-import { Message } from '../../models/message';
+import { Message } from '../types/Message';
 
-import useChatContext from '../../hooks/useChatContext';
-import useConnectionContext from '../../hooks/useConnectionContext';
+import useChatContext from '../hooks/useChatContext';
+import useConnectionContext from '../hooks/useConnectionContext';
 
 import InfoListItem from './InfoListItem';
-import ListBoxHeading from '../ListBoxHeading';
+import ListBoxHeading from './ListBoxHeading';
 
 interface Props {
   info: Message[];

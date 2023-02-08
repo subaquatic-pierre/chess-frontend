@@ -10,21 +10,29 @@ import {
 
 import { handleBoardPieceMove } from './board';
 import { getSavedGameMoves } from '../util/game';
+import { SetState } from '../types/Context';
+import { OnlineGameState } from '../types/Game';
 
-export const handleCheckmate = (game: Game, board: Board) => {
+export const handleCheckmate = (
+  game: Game,
+  board: Board,
+  setOnlineGameState: SetState<OnlineGameState | null>
+) => {
   // set checkmate status
-  const checkmateColor = board.is_checkmate();
-  if (checkmateColor === PieceColor.White) {
-    game.set_winner(PieceColor.White);
-  } else if (checkmateColor === PieceColor.Black) {
+  const colorInCheckmate = board.is_checkmate();
+  if (colorInCheckmate === PieceColor.White) {
     game.set_winner(PieceColor.Black);
+  } else if (colorInCheckmate === PieceColor.Black) {
+    game.set_winner(PieceColor.White);
   }
 
-  if (game.state() === GameState.Ended) {
+  if (game.is_online() && game.state() === GameState.Ended) {
+    setOnlineGameState('winner');
+  } else if (game.state() === GameState.Ended) {
     if (game.get_winner() === PieceColor.White) {
-      alert(`Black Wins!, white is in checkmate`);
-    } else if (game.get_winner() === PieceColor.Black) {
       alert(`White Wins!, black is in checkmate`);
+    } else if (game.get_winner() === PieceColor.Black) {
+      alert(`Black Wins!, white is in checkmate`);
     }
   }
 };

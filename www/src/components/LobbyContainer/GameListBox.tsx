@@ -6,7 +6,7 @@ import useConnectionContext from '../../hooks/useConnectionContext';
 
 import GameListItem from './GameListItem';
 import ListBoxHeading from '../ListBoxHeading';
-import { Message, MessageType } from '../../models/message';
+import { Message, MessageType } from '../../types/Message';
 
 interface Props {
   allGames: string[];

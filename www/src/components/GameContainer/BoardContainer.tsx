@@ -6,14 +6,17 @@ import { Container } from 'react-bootstrap';
 import Board from './Board';
 import HorizontalBorder from './HorizontalBorder';
 import VerticalBorder from './VerticalBorder';
-import PromotePieceModal from './PromotePieceModal';
+import { buildPromoteModal } from '../PromotePieceModal';
 
-import useModalContext from '../hooks/useModalContext';
-import { BorderSide, TILE_SPACE, LastMove } from '../types/Board';
-import useBoardContext from '../hooks/useBoardContext';
-import useGameContext from '../hooks/useGameContext';
-import { handleBoardPieceMove, handleHighlightMoves } from '../handlers/board';
-import { isPlayerTurn } from '../util/board';
+import useModalContext from '../../hooks/useModalContext';
+import { BorderSide, TILE_SPACE, LastMove } from '../../types/Board';
+import useBoardContext from '../../hooks/useBoardContext';
+import useGameContext from '../../hooks/useGameContext';
+import {
+  handleBoardPieceMove,
+  handleHighlightMoves
+} from '../../handlers/board';
+import { isPlayerTurn } from '../../util/board';
 
 const BoardContainer = () => {
   const { showCoords } = useGameContext();
@@ -94,7 +97,9 @@ const BoardContainer = () => {
   // show modal if tile to promote is set
   useEffect(() => {
     if (tileToPromote) {
-      setModalContent(PromotePieceModal);
+      console.log('tileToPromote', tileToPromote);
+
+      setModalContent(buildPromoteModal(tileToPromote, setPromotePiece));
     }
   }, [tileToPromote]);
 

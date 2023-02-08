@@ -72,6 +72,7 @@ pub struct MoveResult {
     pub is_long_castle: bool,
     pub is_check: bool,
     pub is_checkmate: bool,
+    pub is_from_remote: bool,
 }
 
 #[wasm_bindgen]
@@ -101,6 +102,7 @@ impl MoveResult {
             is_promote_piece,
             is_check,
             is_checkmate,
+            is_from_remote: false,
         }
     }
 
@@ -114,6 +116,10 @@ impl MoveResult {
 
     pub fn set_promote_piece(&mut self, piece_type: PieceType) {
         self.promote_piece_type = Some(piece_type)
+    }
+
+    pub fn set_is_from_remote(&mut self, is_from_remote: bool) {
+        self.is_from_remote = is_from_remote
     }
 }
 
@@ -221,6 +227,7 @@ impl MoveReader {
             is_long_castle: self.is_long_castle(move_str),
             is_check: self.is_check(move_str),
             is_checkmate: self.is_checkmate(move_str),
+            is_from_remote: false,
         }
     }
 

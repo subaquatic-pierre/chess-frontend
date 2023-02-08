@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import useConnectionContext from '../../hooks/useConnectionContext';
 
-import { MessageType, Message } from '../../models/message';
+import { MessageType, Message } from '../../types/Message';
 
 import LobbyControls from './LobbyControls';
 import GameListBox from './GameListBox';
-import InfoListBox from './InfoListBox';
+import InfoListBox from '../InfoListBox';
 import CommandInputRow from './CommandInputRow';
 
 const parseInfo = (msgs: Message[]): Message[] => {
@@ -24,8 +24,12 @@ const parseInfo = (msgs: Message[]): Message[] => {
 const parseGames = (msgs: Message[], gameListType: MessageType): string[] => {
   for (let i = msgs.length - 1; i >= 0; i--) {
     const msg = msgs[i];
-    if (msg.msg_type === gameListType && msg.content) {
-      return msg.content.split(',');
+    if (msg.msg_type === gameListType) {
+      if (msg.content === '') {
+        return [];
+      } else {
+        return msg.content.split(',');
+      }
     }
   }
 

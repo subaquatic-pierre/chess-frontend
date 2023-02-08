@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SetState } from '../types/Context';
 import { Game, MoveResult, PieceColor } from 'chess-lib';
 import { LastMove } from '../types/Board';
+import { OnlineGameState } from '../types/Game';
 
 export interface IGameContext {
   setGame: SetState<Game>;
@@ -28,8 +29,11 @@ export interface IGameContext {
   setUpdateGame: SetState<boolean>;
 
   // used to set if game is online or not
-  online: boolean;
-  setOnline: SetState<boolean>;
+  // online: boolean;
+  // setOnline: SetState<boolean>;
+
+  onlineGameState: OnlineGameState | null;
+  setOnlineGameState: SetState<OnlineGameState | null>;
 }
 
 export const GameContext = React.createContext({} as IGameContext);
@@ -45,7 +49,8 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
   const [lastMove, setLastMove] = useState<MoveResult | null>(null);
   const [updateGame, setUpdateGame] = useState(false);
   const [moves, setMoves] = useState<string[]>([]);
-  const [online, setOnline] = useState(false);
+  const [onlineGameState, setOnlineGameState] =
+    useState<OnlineGameState | null>(null);
 
   // players
   const [players, setPlayers] = useState(0);
@@ -74,8 +79,8 @@ const GameContextProvider: React.FC<React.PropsWithChildren> = ({
         updateGame,
         setUpdateGame,
 
-        online,
-        setOnline
+        onlineGameState,
+        setOnlineGameState
       }}
     >
       {children}

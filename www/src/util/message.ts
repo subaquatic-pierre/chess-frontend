@@ -1,4 +1,4 @@
-import { MessageType, Message } from '../models/message';
+import { MessageType, Message } from '../types/Message';
 
 export const buildOwnMsg = (
   msg: string,

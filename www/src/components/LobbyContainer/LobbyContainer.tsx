@@ -9,6 +9,7 @@ import LobbyControls from './LobbyControls';
 import GameListBox from './GameListBox';
 import InfoListBox from '../InfoListBox';
 import CommandInputRow from './CommandInputRow';
+import LobbyInfoText from './LobbyInfoText';
 
 const parseInfo = (msgs: Message[]): Message[] => {
   const _msgs = [];
@@ -92,8 +93,9 @@ const LobbyContainer = () => {
             <GameListBox allGames={allGames} availableGames={availableGames} />
           </Col>
           <Col xs={12} md={6}>
-            <InfoListBox info={info} />
-            <CommandInputRow />
+            <LobbyInfoText />
+            {/* <InfoListBox info={info} /> */}
+            {/* <CommandInputRow /> */}
           </Col>
         </Row>
       </Container>

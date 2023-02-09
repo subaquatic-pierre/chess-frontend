@@ -117,7 +117,7 @@ const GameControls = () => {
                 {showCoords ? 'Hide Coords' : 'Show Coords'}
               </Button>
               <Button
-                variant="danger"
+                variant="warning"
                 onClick={() => window.location.assign('/lobby')}
               >
                 Leave Game
@@ -141,7 +141,7 @@ const GameControls = () => {
             >
               {showCoords ? 'Hide Coords' : 'Show Coords'}
             </Button>
-            <Button variant="danger" onClick={handleReset}>
+            <Button variant="warning" onClick={handleReset}>
               Reset Game
             </Button>
           </div>

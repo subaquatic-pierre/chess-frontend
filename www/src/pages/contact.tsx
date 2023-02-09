@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { graphql, HeadFC } from 'gatsby';
-import { Container } from 'react-bootstrap';
 
 import Layout from '../layout/index';
 import { INavLink } from '../types/NavLink';
+import ContactContainer from '../components/ContactContainer/ContactContainer';
 
 interface ISiteMeta {
   site: {
@@ -21,7 +21,7 @@ interface Props {
 const ContactPageQuery: React.FC = () => {
   return (
     <Layout>
-      <Container>Contact Page</Container>
+      <ContactContainer />
     </Layout>
   );
 };

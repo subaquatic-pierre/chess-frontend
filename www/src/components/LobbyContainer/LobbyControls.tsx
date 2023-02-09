@@ -34,7 +34,7 @@ const LobbyControls = () => {
             <Button variant="success" onClick={handleNewGame}>
               New Game
             </Button>
-            {activeRoom === 'in_game' && (
+            {/* {activeRoom === 'in_game' && (
               <Button variant="success" onClick={leaveGame}>
                 Leave Game
               </Button>
@@ -53,15 +53,15 @@ const LobbyControls = () => {
               onClick={() => sendCommand('/list-available-games')}
             >
               List Available Games
-            </Button>
+            </Button> */}
           </div>
 
           {/* Right Side of controls when connected */}
-          <div css={{ display: 'flex' }}>
+          {/* <div css={{ display: 'flex' }}>
             <Button variant="danger" onClick={handleDisconnect}>
               Disconnect
             </Button>
-          </div>
+          </div> */}
         </div>
       ) : (
         <div css={{ display: 'flex', justifyContent: 'space-between' }}>

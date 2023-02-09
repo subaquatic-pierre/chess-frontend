@@ -15,12 +15,12 @@ const ListBoxHeading: React.FC<Props> = ({ title, content }) => {
         justifyContent: 'center'
       }}
     >
-      <p>
+      <h5 className="mb-4">
         {title} {content && `: ${content}`}
         {/* <span style={{ backgroundColor: connected ? 'green' : 'red' }}>
         {connected ? activeRoom : 'Disconnected'}
       </span> */}
-      </p>
+      </h5>
     </div>
   );
 };

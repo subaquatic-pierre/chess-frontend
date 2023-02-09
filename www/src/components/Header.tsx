@@ -2,9 +2,10 @@ import React from 'react';
 import { useLocation } from '@reach/router';
 import { graphql, Link, useStaticQuery } from 'gatsby';
 
-import { Container, Nav, Navbar } from 'react-bootstrap';
+import { Container, Nav, Navbar, Button } from 'react-bootstrap';
 import { INavLink } from '../types/NavLink';
 import { headerNavLinks } from '../config/navLinks';
+import useConnectionContext from '../hooks/useConnectionContext';
 
 const query = graphql`
   query {
@@ -17,18 +18,29 @@ const query = graphql`
 `;
 
 const Header = () => {
+  const { connected, disconnect } = useConnectionContext();
   const data = useStaticQuery(query);
   const location = useLocation();
+
   const isActiveLink = (link: string, location: Location): boolean => {
-    if (link === location.pathname) {
+    const _link = link === '/' ? '/' : `${link}/`;
+    if (_link === location.pathname) {
       return true;
     } else {
       return false;
     }
   };
+
+  const handleDisconnect = () => {
+    disconnect();
+
+    window.sessionStorage.removeItem('savedUsername');
+    window.location.assign('/');
+  };
+
   return (
-    <>
-      <Navbar bg="dark" variant="dark">
+    <div css={{ height: 56 }}>
+      <Navbar bg="dark" fixed="top" variant="dark">
         <Container>
           <Navbar.Brand href="/">{data.site.siteMetadata.title}</Navbar.Brand>
           <Nav className="ml-auto">
@@ -42,10 +54,18 @@ const Header = () => {
                 {item.label}
               </Nav.Link>
             ))}
+            {/* Right Side of controls when connected */}
+            {connected && (
+              <div css={{ display: 'flex', marginLeft: 20 }}>
+                <Button variant="danger" onClick={handleDisconnect}>
+                  Disconnect
+                </Button>
+              </div>
+            )}
           </Nav>
         </Container>
       </Navbar>
-    </>
+    </div>
   );
 };
 

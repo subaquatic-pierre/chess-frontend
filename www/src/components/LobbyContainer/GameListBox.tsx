@@ -72,49 +72,49 @@ const GameListBox: React.FC<Props> = ({ allGames, availableGames }) => {
   return (
     <Row>
       {/* Available Games */}
-      <Col xs={12} md={6}>
-        <div>
-          <ListBoxHeading title="Available Games" />
-          <div
-            id="availableGameList"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              border: '1px solid black',
-              height: '545px',
-              overflowY: 'scroll',
-              borderRadius: '5px'
-            }}
-            className="my-2"
-          >
-            {connected && (
-              <ListGroup ref={gameListRef} style={{ borderRadius: 0 }}>
-                {availableGames.map((item, idx) => (
-                  <GameListItem
-                    selected={selectedGame === item}
-                    handleGameClick={setSelectedGame}
-                    gameName={item}
-                    availableGame
-                    key={idx}
-                  />
-                ))}
-              </ListGroup>
-            )}
-            {selectedGame && (
-              <div style={{ marginTop: 'auto', display: 'flex' }}>
-                <Button
-                  onClick={handleJoinClick}
-                  style={{ width: '100%', borderRadius: 0 }}
-                >
-                  Join
-                </Button>
-              </div>
-            )}
-          </div>
+      {/* <Col xs={12} md={6}> */}
+      <div>
+        <ListBoxHeading title="Available Games" />
+        <div
+          id="availableGameList"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            border: '1px solid black',
+            height: '545px',
+            overflowY: 'scroll',
+            borderRadius: '5px'
+          }}
+          className="my-2"
+        >
+          {connected && (
+            <ListGroup ref={gameListRef} style={{ borderRadius: 0 }}>
+              {availableGames.map((item, idx) => (
+                <GameListItem
+                  selected={selectedGame === item}
+                  handleGameClick={setSelectedGame}
+                  gameName={item}
+                  availableGame
+                  key={idx}
+                />
+              ))}
+            </ListGroup>
+          )}
+          {selectedGame && (
+            <div style={{ marginTop: 'auto', display: 'flex' }}>
+              <Button
+                onClick={handleJoinClick}
+                style={{ width: '100%', borderRadius: 0 }}
+              >
+                Join
+              </Button>
+            </div>
+          )}
         </div>
-      </Col>
+      </div>
+      {/* </Col> */}
 
-      {/* All Games */}
+      {/* All Games
       <Col xs={12} md={6}>
         <div>
           <ListBoxHeading title="All Games" />
@@ -139,7 +139,7 @@ const GameListBox: React.FC<Props> = ({ allGames, availableGames }) => {
             )}
           </div>
         </div>
-      </Col>
+      </Col> */}
     </Row>
   );
 };

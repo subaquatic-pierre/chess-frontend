@@ -5,7 +5,7 @@ const ControlsContainer: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <Container>
       <div
-        className="py-3 my-2"
+        className="py-3 mb-2"
         css={{ height: '80px', '& button': { marginRight: '1rem' } }}
       >
         {children}

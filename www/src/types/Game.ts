@@ -1,1 +1,1 @@
-export type OnlineGameState = 'joined' | 'waiting' | 'resigned' | 'winner';
+export type OnlineGameState = 'started' | 'waiting' | 'resigned' | 'winner';

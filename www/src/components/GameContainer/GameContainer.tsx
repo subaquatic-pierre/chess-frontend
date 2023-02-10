@@ -147,7 +147,7 @@ const GameContainer: React.FC<Props> = ({ children }) => {
         game.set_online(true);
         if (playerColor === 'black') {
           game.set_player_color(PieceColor.Black);
-          setOnlineGameState('joined');
+          setOnlineGameState('started');
           setBoardDirection(PieceColor.Black);
         } else {
           game.set_player_color(PieceColor.White);
@@ -169,7 +169,7 @@ const GameContainer: React.FC<Props> = ({ children }) => {
     for (const msg of msgs) {
       switch (msg.msg_type) {
         case MessageType.GameJoin:
-          setOnlineGameState('joined');
+          setOnlineGameState('started');
           _msgs.push(msg);
           continue;
         case MessageType.GameLeave:

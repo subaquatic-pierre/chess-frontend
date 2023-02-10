@@ -8,11 +8,13 @@ import useGameContext from '../../hooks/useGameContext';
 import ControlsContainer from '../ControlsContainer';
 import { navigate } from 'gatsby';
 import { OnlineGameState } from '../../types/Game';
+import useConnectionContext from '../../hooks/useConnectionContext';
 
 const GameControls = () => {
   const { setBoardDirection, boardDirection, resetAll, setTiles, board } =
     useBoardContext();
   const { setShowCoords, showCoords, onlineGameState, game } = useGameContext();
+  const { username } = useConnectionContext();
   const forceUpdate = useForceUpdate();
 
   const [onlineControls, setOnlineControls] = useState<boolean>(false);
@@ -36,12 +38,20 @@ const GameControls = () => {
     forceUpdate();
   };
 
+  const handleGoOnlineClick = () => {
+    if (username) {
+      navigate('/lobby');
+    } else {
+      navigate('/');
+    }
+  };
+
   const parseOnlineGameState = (
     onlineGameState: null | OnlineGameState,
     game: Game
   ): string => {
     switch (onlineGameState) {
-      case 'joined':
+      case 'started':
         return 'Game Started';
 
       case 'winner':
@@ -66,7 +76,7 @@ const GameControls = () => {
 
   const getBackgroundColor = (onlineGameState: null | OnlineGameState) => {
     switch (onlineGameState) {
-      case 'joined':
+      case 'started':
         return 'green';
       case 'winner':
         return 'purple';
@@ -131,6 +141,9 @@ const GameControls = () => {
             <h5>Local Game</h5>
           </div>
           <div css={{ display: 'flex' }}>
+            <Button variant="success" onClick={handleGoOnlineClick}>
+              Go Online
+            </Button>
             <Button variant="secondary" onClick={changeBoardDirection}>
               Change Board Direction
             </Button>

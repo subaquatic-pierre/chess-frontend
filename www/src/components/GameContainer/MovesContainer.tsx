@@ -68,7 +68,7 @@ const MovesContainer: React.FC<Props> = ({ info }) => {
   };
 
   useEffect(() => {
-    if (onlineGameState && onlineGameState !== 'joined') {
+    if (onlineGameState && onlineGameState !== 'started') {
       setShowMovesContainer(false);
     } else {
       setShowMovesContainer(true);

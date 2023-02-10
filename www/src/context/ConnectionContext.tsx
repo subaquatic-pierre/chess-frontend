@@ -3,6 +3,8 @@ import { useLocation } from '@reach/router';
 
 import { SetState } from '../types/Context';
 
+import { getApiConfig } from '../config/api';
+
 import { MessageType, Message } from '../types/Message';
 import { buildOwnMsg } from '../util/message';
 
@@ -89,9 +91,8 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
   // main connection method called
   // from connect button in Chat LobbyControl component
   const connect = (username: string) => {
-    const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
-    const wsUri = `${proto}://localhost:8080/ws/${username}`;
-    // const wsUri = `${proto}://${location.hostname}/ws`;
+    const { hostName, wsProtocol, wsEndpoint, port } = getApiConfig(location);
+    const wsUri = `${wsProtocol}//${hostName}:${port}/${wsEndpoint}/${username}`;
 
     console.log('Connecting...');
     globalSocket = new WebSocket(wsUri);
@@ -285,11 +286,17 @@ const ConnectionContextProvider: React.FC<React.PropsWithChildren> = ({
   // check if session exits
   // query the server for given session id
   // set connected if exists
+  // TODO:
+  // move to utl utils
   const checkCurrentSession = async () => {
     try {
       const maybeSessionId = window.sessionStorage.getItem('wsId');
       const wsId = maybeSessionId ? maybeSessionId : '123456789';
-      const res = await fetch(`http://localhost:8080/check-session/${wsId}`);
+
+      const { hostName, httpProtocol, port } = getApiConfig(location);
+      const uri = `${httpProtocol}//${hostName}:${port}/check-session/${wsId}`;
+      const res = await fetch(uri);
+
       const rawBody = await res.json();
       const jsonBody = JSON.parse(rawBody);
 

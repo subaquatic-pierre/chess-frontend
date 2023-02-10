@@ -42,7 +42,9 @@ const Board = () => {
 
   useEffect(() => {
     if (onlineGameState) {
-      if (onlineGameState === 'resigned' || onlineGameState === 'winner') {
+      if (onlineGameState === 'started') {
+        setBoardDisabled(false);
+      } else {
         setBoardDisabled(true);
       }
     } else {

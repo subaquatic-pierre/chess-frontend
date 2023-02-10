@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Col, FormControl, Row, Container } from 'react-bootstrap';
 
+import { getApiConfig } from '../config/api';
+
 import useConnectionContext from '../hooks/useConnectionContext';
 
 import { MessageType, Message } from '../types/Message';
@@ -16,11 +18,13 @@ const ConnectControl = () => {
     window.location.reload();
   };
 
+  // TODO:
+  // Move method to utils
   const isAvailableUsername = async (): Promise<string> => {
     // check the username is available before connecting to Web socket
-    const res = await fetch(
-      `http://localhost:8080/check-username/${inputText}`
-    );
+    const { hostName, httpProtocol, port } = getApiConfig(location);
+    const uri = `${httpProtocol}//${hostName}:${port}/check-username/${inputText}`;
+    const res = await fetch(uri);
 
     const bodyStr: string = await res.json();
     const body: Message = JSON.parse(bodyStr);

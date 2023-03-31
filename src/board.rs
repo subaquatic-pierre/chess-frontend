@@ -324,8 +324,6 @@ impl Board {
             // set new tile
             self.set_new_tile(&new_coord, Some(piece.piece_type()), Some(piece.color()));
 
-            console_log!("new_coord: {}", new_coord);
-
             return Some(MoveResult {
                 piece_type: piece_strategy.piece_type(),
                 piece_color: piece_strategy.color(),

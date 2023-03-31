@@ -89,7 +89,7 @@ impl Board {
             Some(Piece::new(
                 piece_type.unwrap(),
                 piece_color.unwrap(),
-                coord.clone(),
+                *coord,
             ))
         };
 
@@ -97,7 +97,7 @@ impl Board {
         let tile_idx = Board::tile_idx_from_coord(&coord.clone());
 
         // create new tile
-        let new_tile = Tile::new(coord.clone(), tile_idx as u8, TileState::Inactive, piece);
+        let new_tile = Tile::new(*coord, tile_idx as u8, TileState::Inactive, piece);
 
         // write new tile to board array
         self.tiles[tile_idx] = new_tile;
@@ -291,6 +291,8 @@ impl Board {
         let is_promote_piece = self.is_promote_piece(new_coord, piece.piece_type(), piece.color());
 
         // return early if NOT updated_board flag
+        // used to validate if king in check or checkmate
+        // or able to move out of check or checkmate
         if !update_board {
             let enemy_piece_color = PieceColor::opposite_color(piece_strategy.color());
             // make move to see if possible check or checkmate
@@ -321,6 +323,8 @@ impl Board {
 
             // set new tile
             self.set_new_tile(&new_coord, Some(piece.piece_type()), Some(piece.color()));
+
+            console_log!("new_coord: {}", new_coord);
 
             return Some(MoveResult {
                 piece_type: piece_strategy.piece_type(),

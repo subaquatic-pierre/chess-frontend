@@ -129,7 +129,11 @@ const ChatControls = () => {
           {/* <Button onClick={handleNewRoom}>New Room</Button> */}
         </div>
       ) : (
-        <div css={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div
+          className="alert alert-primary"
+          role="alert"
+          css={{ display: 'flex', justifyContent: 'space-between' }}
+        >
           Please go to home page to connect!
         </div>
       )}

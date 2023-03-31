@@ -64,7 +64,10 @@ const LobbyControls = () => {
           </div> */}
         </div>
       ) : (
-        <div css={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div
+          className="alert alert-primary"
+          css={{ display: 'flex', justifyContent: 'space-between' }}
+        >
           Please go to home page to connect!
         </div>
       )}

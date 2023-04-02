@@ -10,36 +10,6 @@ import {
   Piece
 } from 'chess-lib';
 
-export const handleHighlightMoves = (tile: Tile, board: Board) => {
-  // clear all current active tiles
-  board.clear_active_tiles();
-
-  const piece = tile.piece();
-
-  // only set tile as active if has piece
-  if (piece) {
-    // set current tile as active
-    board.set_tile_state(tile.coord(), TileState.Active);
-
-    // highlight active tile moves
-    board.highlight_moves(tile.coord());
-  }
-};
-
-const movePiece = (
-  oldCoord: TileCoord,
-  newCoord: TileCoord,
-  board: Board
-): MoveResult | undefined => {
-  const piece = board.get_piece(oldCoord);
-
-  if (piece) {
-    const moveResult = board.move_piece(oldCoord, newCoord);
-    return moveResult;
-  }
-  return undefined;
-};
-
 export const handleBoardPieceMove = (
   fromCoord: TileCoord,
   toCoord: TileCoord,
@@ -49,20 +19,24 @@ export const handleBoardPieceMove = (
   // check if current player turn
   const curPlayerPiece = board.get_piece(fromCoord);
 
-  const moveResult = movePiece(fromCoord, toCoord, board);
+  const piece = board.get_piece(fromCoord);
 
-  // change player turn if piece moved
-  if (moveResult) {
-    // get current player move color
-    // change current player turn if piece moved
+  if (piece) {
+    const moveResult = board.move_piece(fromCoord, toCoord);
 
-    if (curPlayerPiece && curPlayerPiece.color() === PieceColor.White) {
-      game.set_player_turn(PieceColor.Black);
-    } else {
-      game.set_player_turn(PieceColor.White);
+    // change player turn if piece moved
+    if (moveResult) {
+      // get current player move color
+      // change current player turn if piece moved
+
+      if (curPlayerPiece && curPlayerPiece.color() === PieceColor.White) {
+        game.set_player_turn(PieceColor.Black);
+      } else {
+        game.set_player_turn(PieceColor.White);
+      }
     }
-  }
 
-  board.clear_active_tiles();
-  return moveResult;
+    board.clear_active_tiles();
+    return moveResult;
+  }
 };

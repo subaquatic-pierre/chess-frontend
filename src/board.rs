@@ -185,7 +185,9 @@ impl Board {
     ) -> Option<MoveResult> {
         // do not ignore check on main method to move pieces
         // board is NOT updated with new pieces after this method
-        self.handle_move_piece(old_coord, new_coord, false, false)
+
+        self.clone()
+            .handle_move_piece(old_coord, new_coord, false, false)
     }
 
     /// main public method used to move pieces,
@@ -253,8 +255,8 @@ impl Board {
         let move_validator = MoveValidator::new(new_coord, self);
 
         // check if piece take
-        let is_take = move_validator.is_take()
-            | move_validator.is_en_passant_take(&piece_strategy.moves(), piece_strategy.as_ref());
+        let is_take =
+            move_validator.is_take() | move_validator.is_en_passant_take(piece_strategy.as_ref());
 
         // check if king take
         let is_king_take = move_validator.is_king_take();
@@ -265,7 +267,7 @@ impl Board {
         }
 
         // if en passant take clear en passant coord
-        if move_validator.is_en_passant_take(&piece_strategy.moves(), piece_strategy.as_ref()) {
+        if move_validator.is_en_passant_take(piece_strategy.as_ref()) {
             if let Some(last_en_passant_coord) = self.last_en_passant() {
                 // remove enemy piece pawn from their current coord
                 // ie. where the last en passant coord was set

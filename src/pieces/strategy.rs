@@ -273,7 +273,7 @@ impl<'a> MoveValidator<'a> {
         let is_diagonal = diagonal_moves.contains(&self.new_coord);
 
         // check if can take en passant
-        if self.is_en_passant_take(&piece_strategy.moves(), piece_strategy) {
+        if self.is_en_passant_take(piece_strategy) {
             return true;
         }
 
@@ -302,11 +302,8 @@ impl<'a> MoveValidator<'a> {
     }
 
     /// check if pawn can take with en passant move
-    pub fn is_en_passant_take(
-        &self,
-        possible_moves: &[TileCoord],
-        piece_strategy: &dyn PieceMoveStrategy,
-    ) -> bool {
+    pub fn is_en_passant_take(&self, piece_strategy: &dyn PieceMoveStrategy) -> bool {
+        let possible_moves = piece_strategy.moves();
         if possible_moves.contains(&self.new_coord)
             && piece_strategy.piece_type() == PieceType::Pawn
             && PawnMoveStrategy::is_en_passant_take(

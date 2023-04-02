@@ -12,11 +12,8 @@ import useModalContext from '../../hooks/useModalContext';
 import { BorderSide, TILE_SPACE, LastMove } from '../../types/Board';
 import useBoardContext from '../../hooks/useBoardContext';
 import useGameContext from '../../hooks/useGameContext';
-import {
-  handleBoardPieceMove,
-  handleHighlightMoves
-} from '../../handlers/board';
-import { isPlayerTurn } from '../../util/board';
+import { handleBoardPieceMove } from '../../handlers/board';
+import { isPlayerTurn, highlightMoves } from '../../utils/board';
 
 const BoardContainer = () => {
   const { showCoords } = useGameContext();
@@ -82,12 +79,12 @@ const BoardContainer = () => {
           }
         }
       } else {
-        handleHighlightMoves(selectedTile, board);
+        highlightMoves(selectedTile, board);
       }
 
       // clear selected tile from coord
       setSelectedTile(null);
-      handleHighlightMoves(selectedTile, board);
+      highlightMoves(selectedTile, board);
     }
     setTiles(board.js_tiles());
   }, [selectedTile]);

@@ -1,6 +1,10 @@
 import type { GatsbyConfig } from 'gatsby';
 import { headerNavLinks } from './src/config/navLinks';
 
+require('dotenv').config({
+  path: `.env.${process.env.NODE_ENV}`
+});
+
 const config: GatsbyConfig = {
   siteMetadata: {
     title: `Chess Rust`,

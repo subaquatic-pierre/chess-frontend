@@ -12,7 +12,7 @@
     "watch": "npm-watch develop",
     "start": "gatsby develop",
     "build": "gatsby build",
-    "serve": "gatsby serve",
+    "serve": "gatsby serve -p 8009",
     "clean": "gatsby clean",
     "typecheck": "tsc --noEmit"
   },

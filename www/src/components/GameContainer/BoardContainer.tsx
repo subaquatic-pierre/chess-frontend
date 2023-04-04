@@ -50,9 +50,9 @@ const BoardContainer = () => {
 
       // TODO
       // uncomment to enable player turn capabilities
-      // if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
-      //   return;
-      // }
+      if (!curActiveCoord && !isPlayerTurn(selectedTile, game)) {
+        return;
+      }
 
       if (curActiveCoord) {
         const fromCoord = board.get_selected_piece_coord();

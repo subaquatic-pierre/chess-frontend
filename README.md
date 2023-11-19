@@ -1,8 +1,4 @@
-# WASM Gatsby Starter
-
-Starter code for developing WebAssembly using Rust
-
-The main technologies rely on wasm-pack to bundle the WASM into the NPM distributable `pkg` directory.
+# Chess Frontend
 
 ## Installation
 
